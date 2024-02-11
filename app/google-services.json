@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "806589059954",
+    "firebase_url": "https://weatherwish-c5a90-default-rtdb.firebaseio.com",
+    "project_id": "weatherwish-c5a90",
+    "storage_bucket": "weatherwish-c5a90.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:806589059954:android:6d00052b3e6c0d414f83eb",
+        "android_client_info": {
+          "package_name": "com.example.weatherwish"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "806589059954-5hmbpgklj1jlhcn61gg3v5gvi6kssv9v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.weatherwish",
+            "certificate_hash": "930bd5bb36e3c3db4319b363a68b7a64999fb126"
+          }
+        },
+        {
+          "client_id": "806589059954-hl0bgnug2g90qdjqstvd0jvsapdk8f35.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2OogTdbtP-DV7zCFtuF6rC4UMJ4bcmok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "806589059954-hl0bgnug2g90qdjqstvd0jvsapdk8f35.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

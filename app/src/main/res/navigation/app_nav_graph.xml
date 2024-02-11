@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/app_nav_graph"
+    app:startDestination="@id/fr_dashboard">
+
+    <fragment
+        android:id="@+id/fr_dashboard"
+        android:name="com.example.weatherwish.ui.dashboard.DashboardFragment"
+        tools:layout="@layout/fragment_dashboard">
+
+        <action
+            android:id="@+id/action_dashboard_to_settings_fragment"
+            app:destination="@id/fr_settings" />
+
+        <action
+            android:id="@+id/action_dashboard_to_air_quality_fragment"
+            app:destination="@id/fr_air_quality" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fr_settings"
+        android:name="com.example.weatherwish.ui.setting.SettingsFragment"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settings_to_weather_updates_fragment"
+            app:destination="@id/fr_weather_updates" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fr_weather_updates"
+        android:name="com.example.weatherwish.ui.periodicWeatherUpdates.WeatherUpdatesFragment"
+        tools:layout="@layout/fragment_weather_updates" />
+
+    <fragment
+        android:id="@+id/fr_air_quality"
+        android:name="com.example.weatherwish.ui.airquality.AirQualityFragment"
+        tools:layout="@layout/fragment_air_quality" />
+
+</navigation>

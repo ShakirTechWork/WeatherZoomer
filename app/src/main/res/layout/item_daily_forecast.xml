@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="5.5">
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            tools:text="27/07"
+            style="@style/SmallRegularText"
+            android:layout_weight="1"/>
+        <TextView
+            android:id="@+id/tv_day"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            tools:text="Wed"
+            style="@style/SmallRegularText"
+            android:layout_weight="0.5"/>
+        <ImageView
+            android:id="@+id/img_icon"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            tools:src="@drawable/day113"
+            android:layout_weight="0.5"/>
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            tools:text="Sunny"
+            style="@style/SmallRegularText"
+            android:gravity="center_vertical"
+            android:layout_weight="2"/>
+        <TextView
+            android:id="@+id/tv_highest_temperature"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="27"
+            style="@style/SmallRegularText"
+            android:layout_weight="0.75"/>
+        <TextView
+            android:id="@+id/tv_lowest_temperature"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="10"
+            style="@style/SmallRegularText"
+            android:layout_weight="0.75"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
