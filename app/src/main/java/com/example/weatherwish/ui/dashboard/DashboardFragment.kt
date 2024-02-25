@@ -31,6 +31,7 @@ import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
 import com.example.weatherwish.ui.walkthrough.WalkThroughActivity
+import com.example.weatherwish.utils.ProgressDialog
 import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment() {
@@ -108,6 +109,8 @@ class DashboardFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun attachObserver() {
 //        CustomProgressDialog.showProgressDialog(requireContext(), "Loading weather updates")
+        ProgressDialog.initialize(requireContext())
+        ProgressDialog.show("Loading weather data")
         lifecycleScope.launch {
             val userDataResult = dashboardViewModel.getUserData()
             when (userDataResult) {
@@ -127,6 +130,7 @@ class DashboardFragment : Fragment() {
                                             val data = it.data
                                             if (data != null) {
 //                                                CustomProgressDialog.dismissProgressDialog()
+                                                ProgressDialog.dismiss()
                                                 Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${data.location.region}")
                                                 binding.tvDateTime.text =
                                                     Utils.convertUnixTimeToFormattedDayAndDate(data.current.last_updated_epoch.toLong())
@@ -239,6 +243,7 @@ class DashboardFragment : Fragment() {
 
                                         is ApiResponse.Failure -> {
 //                                            CustomProgressDialog.dismissProgressDialog()
+                                            ProgressDialog.dismiss()
                                             Utils.printErrorLog("Fetch_Weather_forecast :: Failure ${it.exception}")
                                             ExceptionHandler.handleException(requireContext(),
                                                 it.exception!!
@@ -259,6 +264,7 @@ class DashboardFragment : Fragment() {
                                 "OKAY",
                                 false
                             ) {
+                                ProgressDialog.dismiss()
                                 val intent = Intent(requireContext(), LocationActivity::class.java)
                                 startActivity(intent)
                                 requireActivity().finish()
@@ -273,6 +279,7 @@ class DashboardFragment : Fragment() {
                             "OKAY",
                             false
                         ) {
+                            ProgressDialog.dismiss()
                             val intent = Intent(requireContext(), SignInActivity::class.java)
                             startActivity(intent)
                             requireActivity().finish()
@@ -282,6 +289,7 @@ class DashboardFragment : Fragment() {
 
                 is FirebaseResponse.Failure -> {
 //                    CustomProgressDialog.dismissProgressDialog()
+                    ProgressDialog.dismiss()
                     Utils.printErrorLog("Fetching_User_Data :: Failure: ${userDataResult.exception}")
                     Utils.singleOptionAlertDialog(
                         requireContext(),

@@ -21,7 +21,7 @@ object CustomProgressDialog {
         }
 
         // Update the text
-        dialog?.findViewById<TextView>(R.id.tvProgressText)?.text = text
+        dialog?.findViewById<TextView>(R.id.tv_message)?.text = text
 
         if (!dialog?.isShowing!!) {
             dialog?.show()
