@@ -16,6 +16,7 @@ import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.ui.signUp.SignUpActivity
+import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import kotlinx.coroutines.launch
 
@@ -57,15 +58,19 @@ class SignInActivity : AppCompatActivity() {
                             ExceptionErrorCodes.UNKNOWN_EXCEPTION,
                             getString(R.string.something_went_wrong)))
                     }
+                    ProgressDialog.dismiss()
                 }
 
                 is FirebaseResponse.Failure -> {
                     Utils.printErrorLog("Signing_User_In: Failure ${it.exception}")
+                    ProgressDialog.dismiss()
                     ExceptionHandler.handleException(this@SignInActivity, it.exception!!)
                 }
 
                 is FirebaseResponse.Loading -> {
                     Utils.printDebugLog("Signing_User_In: loading")
+                    ProgressDialog.initialize(this@SignInActivity)
+                    ProgressDialog.show("Signing you in")
                 }
             }
         }

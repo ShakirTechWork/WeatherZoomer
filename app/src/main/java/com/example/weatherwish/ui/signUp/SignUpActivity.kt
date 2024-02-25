@@ -15,6 +15,7 @@ import com.example.weatherwish.databinding.ActivitySignUpBinding
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.ui.signIn.SignInActivity
+import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
@@ -50,17 +51,20 @@ class SignUpActivity : AppCompatActivity() {
             when (it) {
                 is FirebaseResponse.Success -> {
                     Utils.printDebugLog("Signup_User :: Success")
+                    ProgressDialog.dismiss()
                     Utils.showLongToast(this@SignUpActivity, "Registration Successful")
                     startActivity(Intent(this, SignInActivity::class.java))
                     finish()
                 }
                 is FirebaseResponse.Failure -> {
                     Utils.printErrorLog("Signup_User :: ${it.exception}")
+                    ProgressDialog.dismiss()
                     ExceptionHandler.handleException(this@SignUpActivity, it.exception!!)
                 }
                 is FirebaseResponse.Loading -> {
                     Utils.printDebugLog("Signup_User :: Loading")
-                    Utils.showShortToast(this@SignUpActivity, "Loading Please wait")
+                    ProgressDialog.initialize(this@SignUpActivity)
+                    ProgressDialog.show("Creating your account")
                 }
                 else -> {
                     Utils.printErrorLog("Signup_User :: No Status Found")

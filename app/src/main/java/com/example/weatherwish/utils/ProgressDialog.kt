@@ -17,25 +17,19 @@ object ProgressDialog {
         dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog?.setContentView(R.layout.custom_progress_dialog)
         dialog?.setCancelable(false)
-
-        val progressBar = dialog?.findViewById<ProgressBar>(R.id.progress_bar)
-        val messageTextView = dialog?.findViewById<TextView>(R.id.tv_message)
-    }
-
-    fun setProgressVisibility(visible: Boolean) {
-        dialog?.findViewById<ProgressBar>(R.id.progress_bar)?.visibility =
-            if (visible) ProgressBar.VISIBLE else ProgressBar.GONE
     }
 
     fun show(message: String) {
-        isVisible = true
         dialog?.findViewById<TextView>(R.id.tv_message)?.text = message
         dialog?.show()
+        isVisible = true
     }
 
     fun dismiss() {
-        if (isVisible) {
+        if (isVisible && dialog != null) {
             dialog?.dismiss()
+            dialog = null
+            isVisible = false
         }
     }
 }
