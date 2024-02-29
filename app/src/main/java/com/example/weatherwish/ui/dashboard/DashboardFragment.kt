@@ -75,13 +75,13 @@ class DashboardFragment : Fragment() {
 
     private fun attachClickListener() {
 
-        binding.imgHamBurgerMenu.setOnClickListener {
+        /*binding.imgHamBurgerMenu.setOnClickListener {
             val intent = Intent(requireContext(), WalkThroughActivity::class.java)
             startActivity(intent)
             requireActivity().finish()
-        }
+        }*/
 
-        binding.tvLocation.setOnClickListener {
+        binding.tvChangeLocation.setOnClickListener {
             Utils.singleOptionAlertDialog(
                 requireContext(),
                 "Change Location",
@@ -99,11 +99,11 @@ class DashboardFragment : Fragment() {
             navController.navigate(R.id.action_dashboard_to_settings_fragment)
         }
 
-        binding.cvAirQuality.setOnClickListener {
+        /*binding.cvAirQuality.setOnClickListener {
             val bundle = Bundle()
             bundle.putString("location", location)
             navController.navigate(R.id.action_dashboard_to_air_quality_fragment, bundle)
-        }
+        }*/
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -1,17 +1,10 @@
 package com.example.weatherwish.ui.setting
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.TextView
-import android.widget.TimePicker
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -21,12 +14,10 @@ import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.example.weatherwish.Application
 import com.example.weatherwish.R
-import com.example.weatherwish.broadcastReceivers.WeatherUpdateReceiver
 import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.databinding.FragmentSettingsBinding
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.utils.Utils
-import java.util.Calendar
 
 
 class SettingsFragment : Fragment() {
@@ -68,7 +59,7 @@ class SettingsFragment : Fragment() {
     }
 
     private fun attachClickListener() {
-        binding.clTopUnitLayout.setOnClickListener {
+        /*binding.clTopUnitLayout.setOnClickListener {
             if (binding.llBottomTemperatureLayout.isVisible) {
                 // The transition of the hiddenView is carried out by the TransitionManager class.
                 // Here we use an object of the AutoTransition Class to create a default transition
@@ -92,7 +83,7 @@ class SettingsFragment : Fragment() {
             binding.imgImperialTick.setImageResource(R.drawable.tick_circle)
             binding.imgMetricTick.setImageResource(0)
             settingsViewModel.updateUserUnitPreference("imperial")
-        }
+        }*/
 
         binding.cdThemeLayout.setOnClickListener {
             Utils.twoOptionAlertDialog(
@@ -130,9 +121,9 @@ class SettingsFragment : Fragment() {
                 {})
         }
 
-        binding.cdPeriodicLayout.setOnClickListener {
+        /*binding.cdPeriodicLayout.setOnClickListener {
             navController.navigate(R.id.action_settings_to_weather_updates_fragment)
-        }
+        }*/
 
     }
 
