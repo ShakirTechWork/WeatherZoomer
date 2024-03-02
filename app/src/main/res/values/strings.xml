@@ -1,12 +1,15 @@
 <resources>
     <string name="app_name">WeatherWish</string>
     <string name="app_logo">App Logo</string>
+    <string name="app_version">App Version:</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="set_your_location">Set your location to start getting \nweather updates</string>
     <string name="enable_location">Enable device location</string>
     <string name="location_note">We only access your location while you are using the app to improve your experience.</string>
     <string name="enter_location_manually">Enter location manually</string>
+    <string name="enter_location_of_ur_choice">Enter location of your choice.</string>
+    <string name="type_ur_location">Type your location.</string>
     <string name="set_location">Set location</string>
     <string name="user_name">User Name</string>
     <string name="confirm_password">Confirm Password</string>
@@ -59,4 +62,5 @@
     Go live on YouTube from webcam, mobile and encoder streaming.</string>
     <string name="startDesc">Create a long video or shorts and upload on youtube. Interact with your subscribers on youtube live.</string>
     <string name="change_location">Change location</string>
+    <string name="cancel">Cancel</string>
 </resources>

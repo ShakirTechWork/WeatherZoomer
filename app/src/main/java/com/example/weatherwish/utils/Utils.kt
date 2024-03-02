@@ -168,15 +168,15 @@ object Utils {
     }
 
     fun printDebugLog(message: String) {
-        if (BuildConfig.DEBUG) {
+//        if (BuildConfig.DEBUG) {
             Log.d("WEATHER_WISH_LOG:", message)
-        }
+//        }
     }
 
     fun printErrorLog(message: String) {
-        if (BuildConfig.DEBUG) {
+//        if (BuildConfig.DEBUG) {
             Log.e("WEATHER_WISH_LOG:", message)
-        }
+//        }
     }
 
 }

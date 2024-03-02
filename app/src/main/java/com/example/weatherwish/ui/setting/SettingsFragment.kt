@@ -5,14 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.transition.AutoTransition
-import androidx.transition.TransitionManager
 import com.example.weatherwish.Application
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.R
 import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.databinding.FragmentSettingsBinding
@@ -55,6 +53,7 @@ class SettingsFragment : Fragment() {
             SettingsViewModelFactory(repository)
         )[SettingsViewModel::class.java]
 
+        binding.tvAppVersion.text = "${getString(R.string.app_version)} ${BuildConfig.VERSION_NAME}"
         attachClickListener()
     }
 

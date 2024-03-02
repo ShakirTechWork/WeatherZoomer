@@ -1,0 +1,58 @@
+<!-- res/layout/custom_dialog_layout.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="16dp">
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/enter_location_of_ur_choice"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:padding="16dp"
+        android:background="@color/blue"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        style="@style/TextInputLayoutStyle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edt_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/type_ur_location"
+            style="@style/TextInputEditTextStyle"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cancel"
+            android:background="?android:attr/selectableItemBackground"
+            android:textColor="@color/red"/>
+
+        <Button
+            android:id="@+id/btn_set_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/set_location"
+            android:background="?android:attr/selectableItemBackground"
+            android:textColor="@color/blue"/>
+
+    </LinearLayout>
+</LinearLayout>

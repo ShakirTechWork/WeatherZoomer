@@ -1,6 +1,8 @@
 package com.example.weatherwish.ui.dashboard
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -8,7 +10,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
@@ -17,6 +21,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherwish.Application
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.CenterScrollLayoutManager
 import com.example.weatherwish.adapter.DailyForecastAdapter
 import com.example.weatherwish.adapter.TemperatureAdapter
@@ -30,8 +35,10 @@ import com.example.weatherwish.exceptionHandler.ExceptionHandler
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
-import com.example.weatherwish.ui.walkthrough.WalkThroughActivity
 import com.example.weatherwish.utils.ProgressDialog
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.UpdateAvailability
 import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment() {
@@ -187,19 +194,11 @@ class DashboardFragment : Fragment() {
                                                     }
                                                 }
 
-                                                // Calculate the offset to center the item
-//            val offset = (binding.rvForecastTemp.width - resources.displayMetrics.widthPixels) / 2
-//            binding.rvForecastTemp.post {
-//                binding.rvForecastTemp.smoothScrollToPosition(nearestTimePosition)
-//                binding.rvForecastTemp.scrollBy(-offset, 0)
-//            }
-
                                                 val temperatureAdapter =
                                                     TemperatureAdapter(
                                                         data.forecast.forecastday[0].hour,
                                                         requireContext()
                                                     )
-//            binding.rvForecastTemp.adapter = adapter
 
                                                 binding.rvForecastTemp.apply {
                                                     adapter = temperatureAdapter
@@ -211,8 +210,6 @@ class DashboardFragment : Fragment() {
                                                         )
                                                     scrollToPosition(nearestTimePosition)
                                                 }
-
-//            binding.rvForecastTemp.smoothScrollToPosition(nearestTimePosition)
 
                                                 val airQuality =
                                                     when (data.current.air_quality.`us-epa-index`) {
@@ -356,16 +353,8 @@ class DashboardFragment : Fragment() {
                 }
             }
 
-            // Calculate the offset to center the item
-//            val offset = (binding.rvForecastTemp.width - resources.displayMetrics.widthPixels) / 2
-//            binding.rvForecastTemp.post {
-//                binding.rvForecastTemp.smoothScrollToPosition(nearestTimePosition)
-//                binding.rvForecastTemp.scrollBy(-offset, 0)
-//            }
-
             val temperatureAdapter =
                 TemperatureAdapter(it.forecast.forecastday[0].hour, requireContext())
-//            binding.rvForecastTemp.adapter = adapter
 
             binding.rvForecastTemp.apply {
                 adapter = temperatureAdapter
@@ -374,8 +363,6 @@ class DashboardFragment : Fragment() {
                 scrollToPosition(nearestTimePosition)
             }
 
-//            binding.rvForecastTemp.smoothScrollToPosition(nearestTimePosition)
-
             val dailyForecastAdapter =
                 DailyForecastAdapter(it.forecast.forecastday, requireContext())
             binding.rvDailyForecast.adapter = dailyForecastAdapter
@@ -383,6 +370,42 @@ class DashboardFragment : Fragment() {
 
         dashboardViewModel.airQualityIndexLiveData.observe(viewLifecycleOwner) {
             binding.tvAirQuality.text = "Air Quality: $it"
+        }
+    }
+
+    fun updateApp() {
+        val appUpdateManager = AppUpdateManagerFactory.create(requireContext())
+        Log.d("TAG", "updateAppCalled: "+ UpdateAvailability.UPDATE_AVAILABLE)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        // Checks that the platform will allow the specified type of update.
+        appUpdateInfoTask.addOnSuccessListener { result: AppUpdateInfo ->
+            Log.d("TAG", "updateAppCalled: "+ result.updateAvailability())
+            if (result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle("Update the App!!!")
+                builder.setMessage("A mandatory update is ready for you! Please update the app to ensure a seamless experience.")
+                builder.setIcon(android.R.drawable.ic_dialog_alert)
+
+                builder.setPositiveButton("Update") { dialogInterface, which ->
+                    try {
+                        startActivity(
+                            Intent(
+                                "android.intent.action.VIEW",
+                                Uri.parse("https://play.google.com/store/apps/details?id=" + requireContext().packageName)
+                            )
+                        )
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(requireContext(), "Please update the app from play store!!!", Toast.LENGTH_LONG).show()
+                    }
+                }
+//                builder.setNegativeButton("NO") { dialogInterface, which ->
+//                    requireActivity().finish()
+//                }
+                val alertDialog: AlertDialog = builder.create()
+                alertDialog.setCancelable(false)
+                alertDialog.show()
+
+            }
         }
     }
 

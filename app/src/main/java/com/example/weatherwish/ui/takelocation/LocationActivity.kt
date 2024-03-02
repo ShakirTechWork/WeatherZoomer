@@ -8,7 +8,12 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.InputType
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
+import com.example.weatherwish.R
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -100,24 +105,33 @@ class LocationActivity : AppCompatActivity() {
         }
 
         binding.btnEnterLocation.setOnClickListener {
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder.setTitle("Type your location")
-            val edtLocation = EditText(this)
-            edtLocation.inputType = InputType.TYPE_CLASS_TEXT
-            builder.setView(edtLocation)
-            builder.setPositiveButton("OK"
-            ) { dialog, which ->
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
+            dialogView.setBackgroundResource(R.drawable.dialog_background)
+            val builder = AlertDialog.Builder(this)
+            val dialog = builder.setView(dialogView).create()
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            val textTitle = dialogView.findViewById<TextView>(R.id.tv_title)
+            val edtLocation = dialogView.findViewById<EditText>(R.id.edt_location)
+            val btnOK = dialogView.findViewById<Button>(R.id.btn_set_location)
+            val btnCancel = dialogView.findViewById<Button>(R.id.btn_cancel)
+            textTitle.text = "Type your location"
+            btnOK.setOnClickListener {
                 val location = edtLocation.text.toString()
                 if (location.isNotBlank()) {
                     storeLocationAndNavigate(location)
+                    dialog.dismiss()
                 } else {
-                    Utils.showLongToast(this@LocationActivity,"Please enter the location first.")
+                    Utils.showLongToast(this@LocationActivity, "Please enter the location first.")
                 }
             }
-            builder.setNegativeButton("Cancel"
-            ) { dialog, which -> dialog.cancel() }
-
-            builder.show()
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
         }
 
     }
