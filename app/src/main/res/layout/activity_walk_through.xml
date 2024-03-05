@@ -5,12 +5,12 @@
     android:layout_height="match_parent">
 
     <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPager"
+        android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
     <LinearLayout
-        android:id="@+id/indicatorLayout"
+        android:id="@+id/indicator_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -54,5 +54,20 @@
             android:letterSpacing="0.07"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_start"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/left_side_curve_bg"
+            android:gravity="center"
+            android:paddingVertical="14dp"
+            android:text="Start"
+            android:textColor="@color/dark_blue"
+            android:textStyle="bold"
+            android:letterSpacing="0.07"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

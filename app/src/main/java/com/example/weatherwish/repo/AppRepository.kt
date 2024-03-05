@@ -1,15 +1,14 @@
 package com.example.weatherwish.repo
 
 import android.content.Context
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.api.ApiResponse
 import com.example.weatherwish.api.NetworkEndpoints
 import com.example.weatherwish.api.result
 import com.example.weatherwish.datastore.AppDataStore
-import com.example.weatherwish.datastore.AppDataStore2
 import com.example.weatherwish.firebase.FirebaseManager
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.firebase.firebaseAwaitOperationCaller
-import com.example.weatherwish.firebase.firebaseOperationAwaitCaller
 import com.example.weatherwish.model.SelectedTimeModel
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.model.WeatherData
@@ -74,6 +73,14 @@ class AppRepository(
         return appDataStore.savePrimaryLocation(primaryLocation)
     }
 
+    suspend fun updateIsAppOpenedFirstTime(value: Boolean) {
+        return appDataStore.updateIsAppOpenedFirstTime(value)
+    }
+
+    fun isAppOpenedFirstTime(): Flow<Boolean> {
+        return appDataStore.isAppOpenedFirstTime
+    }
+
     fun getUserPrimaryLocation(): Flow<String> {
         return appDataStore.userPrimaryLocation
     }
@@ -86,7 +93,7 @@ class AppRepository(
         location: String,
         aqi: String
     ): Flow<ApiResponse<WeatherData?>> = result {
-        networkEndpoints.getCurrentWeather("5c0b18c8dd744e858aa142154230910", location, aqi)
+        networkEndpoints.getCurrentWeather(BuildConfig.WEATHER_API_KEY, location, aqi)
     }
 
     fun getForecastData(
@@ -96,7 +103,7 @@ class AppRepository(
         alerts: String
     ): Flow<ApiResponse<WeatherForecastModel?>> = result {
         networkEndpoints.forecastWeather(
-            "5c0b18c8dd744e858aa142154230910",
+            BuildConfig.WEATHER_API_KEY,
             location,
             days,
             aqi,

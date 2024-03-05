@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -20,8 +22,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherwish.Application
-import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.CenterScrollLayoutManager
 import com.example.weatherwish.adapter.DailyForecastAdapter
 import com.example.weatherwish.adapter.TemperatureAdapter
@@ -30,9 +32,13 @@ import com.example.weatherwish.utils.Utils
 import kotlin.math.abs
 import com.example.weatherwish.R
 import com.example.weatherwish.SharedViewModel
+import com.example.weatherwish.adapter.DateAdapter
 import com.example.weatherwish.api.ApiResponse
+import com.example.weatherwish.dataParsers.WeatherDataParser
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
 import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.model.UserModel
+import com.example.weatherwish.model.WeatherForecastModel
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
 import com.example.weatherwish.utils.ProgressDialog
@@ -43,6 +49,8 @@ import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment() {
 
+    private var weatherForecastData: WeatherForecastModel? = null
+    private lateinit var userDataResult: FirebaseResponse<UserModel?>
     private lateinit var navController: NavController
     private lateinit var layoutmanager: CenterScrollLayoutManager
     private var _binding: FragmentDashboardBinding? = null
@@ -106,6 +114,30 @@ class DashboardFragment : Fragment() {
             navController.navigate(R.id.action_dashboard_to_settings_fragment)
         }
 
+        binding.tvDateTime.setOnClickListener {
+            val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.custom_date_selection_dialog, null)
+            dialogView.setBackgroundResource(R.drawable.dialog_background)
+            val builder = AlertDialog.Builder(requireContext())
+            val dialog = builder.setView(dialogView).create()
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            val textTitle = dialogView.findViewById<TextView>(R.id.tv_title)
+            val rvDates = dialogView.findViewById<RecyclerView>(R.id.rv_dates)
+            textTitle.text = "See Weather from below list of dates."
+
+            val datesAdapter = DateAdapter(weatherForecastData!!.forecast.forecastday, object: DateAdapter.OnItemSelectedListener {
+                override fun onItemSelected(index: Int) {
+                    Utils.printDebugLog("selected_index: $index")
+                    dialog.dismiss()
+                }
+            })
+            rvDates.adapter = datesAdapter
+            dialog.show()
+        }
+
         /*binding.cvAirQuality.setOnClickListener {
             val bundle = Bundle()
             bundle.putString("location", location)
@@ -115,14 +147,13 @@ class DashboardFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun attachObserver() {
-//        CustomProgressDialog.showProgressDialog(requireContext(), "Loading weather updates")
         ProgressDialog.initialize(requireContext())
         ProgressDialog.show("Loading weather data")
         lifecycleScope.launch {
-            val userDataResult = dashboardViewModel.getUserData()
+            userDataResult = dashboardViewModel.getUserData()
             when (userDataResult) {
                 is FirebaseResponse.Success -> {
-                    val userData = userDataResult.data
+                    val userData = (userDataResult as FirebaseResponse.Success<UserModel?>).data
                     if (userData != null) {
                         Utils.printDebugLog("Fetching_User_Data :: Success")
                         sharedViewModel.userData = userData
@@ -134,44 +165,51 @@ class DashboardFragment : Fragment() {
                                 .observe(viewLifecycleOwner) {
                                     when (it) {
                                         is ApiResponse.Success -> {
-                                            val data = it.data
-                                            if (data != null) {
-//                                                CustomProgressDialog.dismissProgressDialog()
+                                            weatherForecastData = it.data
+                                            if (weatherForecastData != null) {
                                                 ProgressDialog.dismiss()
-                                                Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${data.location.region}")
+                                                Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
+                                                var weatherDataParser = WeatherDataParser(weatherForecastData!!)
+                                                binding.tvDateTime.text = weatherDataParser.getSelectedDate()
+                                            }
+                                            if (weatherForecastData != null) {
+                                                ProgressDialog.dismiss()
+                                                Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
                                                 binding.tvDateTime.text =
-                                                    Utils.convertUnixTimeToFormattedDayAndDate(data.current.last_updated_epoch.toLong())
+                                                    Utils.convertUnixTimeToFormattedDayAndDate(
+                                                        weatherForecastData!!.current.last_updated_epoch.toLong())
                                                 binding.imgCurrentTemp.setImageResource(
                                                     resources.getIdentifier(
                                                         Utils.generateStringFromUrl(
-                                                            data.current.condition.icon
+                                                            weatherForecastData!!.current.condition.icon
                                                         ), "drawable", requireActivity().packageName
                                                     )
                                                 )
-                                                location = data.location.name
+                                                location = weatherForecastData!!.location.name
                                                 binding.tvLocation.text =
-                                                    "${data.location.name}, ${data.location.country}"
+                                                    "${weatherForecastData!!.location.name}, ${weatherForecastData!!.location.country}"
                                                 binding.tvCurrentCondition.text =
-                                                    data.current.condition.text
+                                                    weatherForecastData!!.current.condition.text
                                                 binding.tvHumidityPercentage.text =
-                                                    "${data.current.humidity}%"
+                                                    "${weatherForecastData!!.current.humidity}%"
                                                 binding.tvCurrentTemperature.text =
-                                                    "${data.current.temp_c.toInt()}°C"
+                                                    "${weatherForecastData!!.current.temp_c.toInt()}°C"
                                                 binding.tvFeelsLike.text =
-                                                    "Feels like ${data.current.feelslike_c.toInt()}°C"
+                                                    "Feels like ${weatherForecastData!!.current.feelslike_c.toInt()}°C"
                                                 binding.tvWindSpeed.text =
-                                                    "${data.current.wind_kph} km/hr"
+                                                    "${weatherForecastData!!.current.wind_kph} km/hr"
                                                 binding.tvUvStatus.text =
-                                                    "${dashboardViewModel.getUVValue(data.current.uv.toInt())}"
+                                                    "${dashboardViewModel.getUVValue(
+                                                        weatherForecastData!!.current.uv.toInt())}"
 //            binding.tvVisibilityKm.text = "${it.current.vis_km} km"
-                                                binding.tvWindDirection.text = data.current.wind_dir
+                                                binding.tvWindDirection.text = weatherForecastData!!.current.wind_dir
 
                                                 binding.tvSunrise.text =
-                                                    data.forecast.forecastday[0].astro.sunrise
+                                                    weatherForecastData!!.forecast.forecastday[0].astro.sunrise
                                                 binding.tvSunset.text =
-                                                    data.forecast.forecastday[0].astro.sunset
+                                                    weatherForecastData!!.forecast.forecastday[0].astro.sunset
 
-                                                val alerts = data.alerts.alert
+                                                val alerts = weatherForecastData!!.alerts.alert
                                                 if (alerts.size > 0) {
                                                     val alert = alerts[0]
                                                     binding.cdAlertView.visibility = View.VISIBLE
@@ -181,11 +219,11 @@ class DashboardFragment : Fragment() {
 
 //            val currentTimeMillis = System.currentTimeMillis() / 1000
                                                 val currentTimeMillis =
-                                                    data.location.localtime_epoch.toLong() / 1000
+                                                    weatherForecastData!!.location.localtime_epoch.toLong() / 1000
                                                 var nearestTimeDifference = Long.MAX_VALUE
                                                 var nearestTimePosition = 0
 
-                                                for ((index, time) in data.forecast.forecastday[0].hour.withIndex()) {
+                                                for ((index, time) in weatherForecastData!!.forecast.forecastday[0].hour.withIndex()) {
                                                     val timeDifference =
                                                         abs(currentTimeMillis - time.time_epoch)
                                                     if (timeDifference < nearestTimeDifference) {
@@ -196,7 +234,7 @@ class DashboardFragment : Fragment() {
 
                                                 val temperatureAdapter =
                                                     TemperatureAdapter(
-                                                        data.forecast.forecastday[0].hour,
+                                                        weatherForecastData!!.forecast.forecastday[0].hour,
                                                         requireContext()
                                                     )
 
@@ -212,7 +250,7 @@ class DashboardFragment : Fragment() {
                                                 }
 
                                                 val airQuality =
-                                                    when (data.current.air_quality.`us-epa-index`) {
+                                                    when (weatherForecastData!!.current.air_quality.`us-epa-index`) {
                                                         1 -> "Good"
                                                         2 -> "Moderate"
                                                         3 -> "Unhealthy for sensitive group"
@@ -229,17 +267,15 @@ class DashboardFragment : Fragment() {
 
                                                 val dailyForecastAdapter =
                                                     DailyForecastAdapter(
-                                                        data.forecast.forecastday,
+                                                        weatherForecastData!!.forecast.forecastday,
                                                         requireContext()
                                                     )
                                                 binding.rvDailyForecast.adapter =
                                                     dailyForecastAdapter
                                             }
-
                                         }
 
                                         is ApiResponse.Failure -> {
-//                                            CustomProgressDialog.dismissProgressDialog()
                                             ProgressDialog.dismiss()
                                             Utils.printErrorLog("Fetch_Weather_forecast :: Failure ${it.exception}")
                                             ExceptionHandler.handleException(requireContext(),
@@ -285,9 +321,8 @@ class DashboardFragment : Fragment() {
                 }
 
                 is FirebaseResponse.Failure -> {
-//                    CustomProgressDialog.dismissProgressDialog()
                     ProgressDialog.dismiss()
-                    Utils.printErrorLog("Fetching_User_Data :: Failure: ${userDataResult.exception}")
+                    Utils.printErrorLog("Fetching_User_Data :: Failure: ${(userDataResult as FirebaseResponse.Failure).exception}")
                     Utils.singleOptionAlertDialog(
                         requireContext(),
                         "Soemthing went wrong",
@@ -358,10 +393,10 @@ class DashboardFragment : Fragment() {
 
             binding.rvForecastTemp.apply {
                 adapter = temperatureAdapter
-                layoutmanager =
-                    CenterScrollLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                scrollToPosition(nearestTimePosition)
+                layoutManager = CenterScrollLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                smoothScrollToPosition(nearestTimePosition)
             }
+
 
             val dailyForecastAdapter =
                 DailyForecastAdapter(it.forecast.forecastday, requireContext())
@@ -386,7 +421,7 @@ class DashboardFragment : Fragment() {
                 builder.setMessage("A mandatory update is ready for you! Please update the app to ensure a seamless experience.")
                 builder.setIcon(android.R.drawable.ic_dialog_alert)
 
-                builder.setPositiveButton("Update") { dialogInterface, which ->
+                builder.setPositiveButton("Update") { _, _ ->
                     try {
                         startActivity(
                             Intent(

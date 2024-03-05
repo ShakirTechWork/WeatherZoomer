@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.R
 import com.example.weatherwish.api.NetworkEndpoints
 import com.example.weatherwish.firebase.FirebaseManager
@@ -176,7 +177,7 @@ class WeatherUpdatesWorker(context: Context, params: WorkerParameters) :
 
     private suspend fun getCurrentWeather(location: String): Response<WeatherData> {
         return networkEndpoints.getCurrentWeather(
-            "5c0b18c8dd744e858aa142154230910",
+            BuildConfig.WEATHER_API_KEY,
             location,
             "yes"
         )

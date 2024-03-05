@@ -2,11 +2,13 @@ package com.example.weatherwish
 
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
+import androidx.recyclerview.widget.RecyclerView
 
 class CenterScrollLayoutManager(private val context: Context, orientation: Int, reverselayout: Boolean): LinearLayoutManager(context, orientation, reverselayout) {
 
 
-    override fun scrollToPosition(position: Int) {
+    /*override fun scrollToPosition(position: Int) {
         super.scrollToPosition(position)
         //this will place the top of the item at the center of the screen
         val width = context.resources.displayMetrics.widthPixels
@@ -30,5 +32,20 @@ class CenterScrollLayoutManager(private val context: Context, orientation: Int, 
 
         //call scrolltopositionwithoffset with the desired offset
         super.scrollToPositionWithOffset(position, offset)
+    }*/
+
+    override fun smoothScrollToPosition(
+        recyclerView: RecyclerView,
+        state: RecyclerView.State?,
+        position: Int
+    ) {
+        val smoothScroller = object : LinearSmoothScroller(recyclerView.context) {
+            override fun getHorizontalSnapPreference(): Int {
+                return SNAP_TO_START // You can adjust this based on your preference
+            }
+        }
+        smoothScroller.targetPosition = position
+        startSmoothScroll(smoothScroller)
     }
+
 }

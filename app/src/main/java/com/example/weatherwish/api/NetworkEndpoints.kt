@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface NetworkEndpoints {
 
-    //    http://api.weatherapi.com/v1/current.json?key=5c0b18c8dd744e858aa142154230910&q=Worli&aqi=yes
+    //    http://api.weatherapi.com/v1/current.json?key=api_key&q=Worli&aqi=yes
     @GET("v1/current.json")
     suspend fun getCurrentWeather(
         @Query("key") key: String,
@@ -17,7 +17,7 @@ interface NetworkEndpoints {
     ): Response<WeatherData>
 
 
-    //    http://api.weatherapi.com/v1/forecast.json?key=5c0b18c8dd744e858aa142154230910&q=Worli&days=3&aqi=yes&alerts=yes
+    //    http://api.weatherapi.com/v1/forecast.json?key=api_key&q=Worli&days=3&aqi=yes&alerts=yes
     @GET("v1/forecast.json")
     suspend fun forecastWeather(
         @Query("key") key: String,

@@ -2,6 +2,7 @@ package com.example.weatherwish.datastore
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -31,6 +32,7 @@ class AppDataStore(context: Context) {
             }
         }
 
+        val IS_APP_OPENED_FIRST_TIME = booleanPreferencesKey("IS_APP_OPENED_FIRST_TIME")
         val USER_EMAIL_KEY = stringPreferencesKey("USER_EMAIL")
         val USER_NAME_KEY =stringPreferencesKey("USER_NAME")
         val USER_TOKEN_KEY = stringPreferencesKey("USER_TOKEN")
@@ -52,11 +54,21 @@ class AppDataStore(context: Context) {
         }
     }
 
+    suspend fun updateIsAppOpenedFirstTime(value: Boolean) {
+        dataStore.edit {
+            it[IS_APP_OPENED_FIRST_TIME] = value
+        }
+    }
+
     suspend fun savePrimaryLocation(primaryLocation: String) {
         dataStore.edit {
             it[USER_PRIMARY_LOCATION] = primaryLocation
             Utils.printDebugLog("Stored primary location locally.")
         }
+    }
+
+    val isAppOpenedFirstTime: Flow<Boolean> = dataStore.data.map {
+        it[IS_APP_OPENED_FIRST_TIME] ?: false
     }
 
     // Create an age flow to retrieve age from the preferences

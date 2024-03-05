@@ -7,6 +7,10 @@ plugins {
     id "com.google.firebase.crashlytics"
 }
 
+// Load properties from local.properties file
+Properties properties = new Properties()
+properties.load(project.rootProject.file("local.properties").newDataInputStream())
+
 android {
     namespace 'com.example.weatherwish'
     compileSdk 34
@@ -23,16 +27,18 @@ android {
     }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+            buildConfigField "String", "BASE_URL", "\"https::dev\""
+            buildConfigField "String", "WEATHER_API_KEY", "\"${properties.getProperty("DEBUG_WEATHER_API_KEY")}\""
+        }
         release {
             minifyEnabled true
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "String", "BASE_URL", "\"https::release\""
-        }
-        debug {
-            minifyEnabled false
-            debuggable true
-            buildConfigField "String", "BASE_URL", "\"https::dev\""
+            buildConfigField "String", "WEATHER_API_KEY", "\"${properties.getProperty("RELEASE_WEATHER_API_KEY")}\""
         }
     }
     compileOptions {

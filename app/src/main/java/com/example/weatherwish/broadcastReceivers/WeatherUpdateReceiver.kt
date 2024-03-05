@@ -10,6 +10,7 @@ import android.os.Build
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.R
 import com.example.weatherwish.TextToSpeechManager
 import com.example.weatherwish.api.NetworkEndpoints
@@ -139,7 +140,7 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
 
     private suspend fun getCurrentWeather(location: String): Response<WeatherData> {
         return networkEndpoints.getCurrentWeather(
-            "5c0b18c8dd744e858aa142154230910",
+            BuildConfig.WEATHER_API_KEY,
             location,
             "yes"
         )

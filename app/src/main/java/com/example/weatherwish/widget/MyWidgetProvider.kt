@@ -10,6 +10,7 @@ import android.os.Build
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.R
 import com.example.weatherwish.api.NetworkEndpoints
 import com.example.weatherwish.firebase.FirebaseManager
@@ -277,7 +278,7 @@ class MyWidgetProvider : AppWidgetProvider() {
 
     private suspend fun getCurrentWeather(location: String): Response<WeatherForecastModel> {
         return networkEndpoints.forecastWeather(
-            "5c0b18c8dd744e858aa142154230910",
+            BuildConfig.WEATHER_API_KEY,
             location,
             1,
             "yes",

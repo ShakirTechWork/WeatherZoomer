@@ -47,4 +47,8 @@ class SplashViewModel(private val appRepository: AppRepository) : ViewModel() {
         }
     }
 
+    fun isAppOpenedFirstTime(): Flow<Boolean> {
+        return appRepository.isAppOpenedFirstTime()
+    }
+
 }
