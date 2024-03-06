@@ -36,12 +36,16 @@ class DateAdapter(private val dataList: List<Forecastday>,
             position: Int,
             onItemSelectedListener: OnItemSelectedListener
         ) {
-            val text = if (position == 0) {
-                "Today"
-            } else if (position == 1) {
-                "${Utils.convertUnixTimeToFormattedDayAndDate(data.date_epoch.toLong())} (Tommorrow)"
-            } else {
-                Utils.convertUnixTimeToFormattedDayAndDate(data.date_epoch.toLong())
+            val text = when (position) {
+                0 -> {
+                    "Today"
+                }
+                1 -> {
+                    "${Utils.convertUnixTimeToFormattedDayAndDate(data.date_epoch.toLong())} (Tommorrow)"
+                }
+                else -> {
+                    Utils.convertUnixTimeToFormattedDayAndDate(data.date_epoch.toLong())
+                }
             }
             tvDate.text = text
             tvDate.setOnClickListener {

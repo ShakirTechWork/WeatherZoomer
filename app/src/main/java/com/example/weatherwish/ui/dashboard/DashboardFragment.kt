@@ -169,33 +169,65 @@ class DashboardFragment : Fragment() {
                                             if (weatherForecastData != null) {
                                                 ProgressDialog.dismiss()
                                                 Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
-                                                var weatherDataParser = WeatherDataParser(weatherForecastData!!)
+                                                val weatherDataParser = WeatherDataParser(weatherForecastData!!, 0)
+
+                                                //setting location
+                                                binding.tvLocation.text = weatherDataParser.getSelectedLocation()
+
+                                                //setting current weather data
                                                 binding.tvDateTime.text = weatherDataParser.getSelectedDate()
+                                                binding.imgCurrentTemp.setImageResource(resources.getIdentifier(
+                                                    Utils.generateStringFromUrl(
+                                                        weatherForecastData!!.current.condition.icon
+                                                    ), "drawable", requireActivity().packageName
+                                                ))
+                                                binding.tvCurrentTemperature.text = weatherDataParser.getCurrentTemperature()
+                                                binding.tvFeelsLike.text = weatherDataParser.getFeelsLikeTemperature()
+                                                binding.tvCurrentCondition.text = weatherDataParser.getCurrentConditionText()
+                                                binding.imgCurrentTemp.setImageResource(resources.getIdentifier(Utils.generateStringFromUrl(weatherDataParser.getConditionImageUrl()), "drawable", requireActivity().packageName))
+
+                                                //setting hour wise horizontal list
+                                                val temperatureAdapter =
+                                                    TemperatureAdapter(weatherDataParser.getHourlyTemperatureData(), requireContext())
+                                                val currentTimeMillis =
+                                                    weatherForecastData!!.location.localtime_epoch.toLong() / 1000
+                                                var nearestTimeDifference = Long.MAX_VALUE
+                                                var nearestTimePosition = 0
+                                                for ((index, time) in weatherForecastData!!.forecast.forecastday[0].hour.withIndex()) {
+                                                    val timeDifference =
+                                                        abs(currentTimeMillis - time.time_epoch)
+                                                    if (timeDifference < nearestTimeDifference) {
+                                                        nearestTimeDifference = timeDifference
+                                                        nearestTimePosition = index
+                                                    }
+                                                }
+                                                binding.rvForecastTemp.apply {
+                                                    adapter = temperatureAdapter
+                                                    layoutmanager =
+                                                        CenterScrollLayoutManager(
+                                                            context,
+                                                            LinearLayoutManager.HORIZONTAL,
+                                                            false
+                                                        )
+                                                    scrollToPosition(nearestTimePosition)
+                                                }
+
+                                                //setting air quality data
+                                                val airQualityText = weatherDataParser.getAirQualityGrade()
+                                                if (airQualityText.isNotBlank()) {
+                                                    binding.cvAirQuality.visibility = View.VISIBLE
+                                                    binding.tvAirQuality.text = airQualityText
+                                                } else {
+                                                    binding.tvAirQuality.text = ""
+                                                    binding.cvAirQuality.visibility = View.GONE
+                                                }
+
+
                                             }
                                             if (weatherForecastData != null) {
-                                                ProgressDialog.dismiss()
-                                                Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
-                                                binding.tvDateTime.text =
-                                                    Utils.convertUnixTimeToFormattedDayAndDate(
-                                                        weatherForecastData!!.current.last_updated_epoch.toLong())
-                                                binding.imgCurrentTemp.setImageResource(
-                                                    resources.getIdentifier(
-                                                        Utils.generateStringFromUrl(
-                                                            weatherForecastData!!.current.condition.icon
-                                                        ), "drawable", requireActivity().packageName
-                                                    )
-                                                )
                                                 location = weatherForecastData!!.location.name
-                                                binding.tvLocation.text =
-                                                    "${weatherForecastData!!.location.name}, ${weatherForecastData!!.location.country}"
-                                                binding.tvCurrentCondition.text =
-                                                    weatherForecastData!!.current.condition.text
                                                 binding.tvHumidityPercentage.text =
                                                     "${weatherForecastData!!.current.humidity}%"
-                                                binding.tvCurrentTemperature.text =
-                                                    "${weatherForecastData!!.current.temp_c.toInt()}°C"
-                                                binding.tvFeelsLike.text =
-                                                    "Feels like ${weatherForecastData!!.current.feelslike_c.toInt()}°C"
                                                 binding.tvWindSpeed.text =
                                                     "${weatherForecastData!!.current.wind_kph} km/hr"
                                                 binding.tvUvStatus.text =
@@ -216,54 +248,6 @@ class DashboardFragment : Fragment() {
                                                     binding.tvHeadline.text = alert.headline
                                                     binding.tvInstruction.text = alert.instruction
                                                 }
-
-//            val currentTimeMillis = System.currentTimeMillis() / 1000
-                                                val currentTimeMillis =
-                                                    weatherForecastData!!.location.localtime_epoch.toLong() / 1000
-                                                var nearestTimeDifference = Long.MAX_VALUE
-                                                var nearestTimePosition = 0
-
-                                                for ((index, time) in weatherForecastData!!.forecast.forecastday[0].hour.withIndex()) {
-                                                    val timeDifference =
-                                                        abs(currentTimeMillis - time.time_epoch)
-                                                    if (timeDifference < nearestTimeDifference) {
-                                                        nearestTimeDifference = timeDifference
-                                                        nearestTimePosition = index
-                                                    }
-                                                }
-
-                                                val temperatureAdapter =
-                                                    TemperatureAdapter(
-                                                        weatherForecastData!!.forecast.forecastday[0].hour,
-                                                        requireContext()
-                                                    )
-
-                                                binding.rvForecastTemp.apply {
-                                                    adapter = temperatureAdapter
-                                                    layoutmanager =
-                                                        CenterScrollLayoutManager(
-                                                            context,
-                                                            LinearLayoutManager.HORIZONTAL,
-                                                            false
-                                                        )
-                                                    scrollToPosition(nearestTimePosition)
-                                                }
-
-                                                val airQuality =
-                                                    when (weatherForecastData!!.current.air_quality.`us-epa-index`) {
-                                                        1 -> "Good"
-                                                        2 -> "Moderate"
-                                                        3 -> "Unhealthy for sensitive group"
-                                                        4 -> "Unhealthy"
-                                                        5 -> "Very Unhealthy"
-                                                        6 -> "Hazardous"
-                                                        else -> {
-                                                            ""
-                                                        }
-                                                    }
-
-                                                binding.tvAirQuality.text =
-                                                    "Air Quality: $airQuality"
 
                                                 val dailyForecastAdapter =
                                                     DailyForecastAdapter(
