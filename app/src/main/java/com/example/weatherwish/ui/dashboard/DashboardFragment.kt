@@ -34,6 +34,7 @@ import com.example.weatherwish.R
 import com.example.weatherwish.SharedViewModel
 import com.example.weatherwish.adapter.DateAdapter
 import com.example.weatherwish.api.ApiResponse
+import com.example.weatherwish.constants.SystemOfMeasurement
 import com.example.weatherwish.dataParsers.WeatherDataParser
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
 import com.example.weatherwish.firebase.FirebaseResponse
@@ -169,7 +170,7 @@ class DashboardFragment : Fragment() {
                                             if (weatherForecastData != null) {
                                                 ProgressDialog.dismiss()
                                                 Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
-                                                val weatherDataParser = WeatherDataParser(weatherForecastData!!, 0)
+                                                val weatherDataParser = WeatherDataParser(weatherForecastData!!, 0, SystemOfMeasurement.METRIC)
 
                                                 //setting location
                                                 binding.tvLocation.text = weatherDataParser.getSelectedLocation()
@@ -221,8 +222,6 @@ class DashboardFragment : Fragment() {
                                                     binding.tvAirQuality.text = ""
                                                     binding.cvAirQuality.visibility = View.GONE
                                                 }
-
-
                                             }
                                             if (weatherForecastData != null) {
                                                 location = weatherForecastData!!.location.name
