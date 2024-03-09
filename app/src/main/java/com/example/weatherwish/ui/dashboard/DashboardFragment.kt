@@ -10,11 +10,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment() {
 
+    private var weatherDataParser: WeatherDataParser? = null
     private var weatherForecastData: WeatherForecastModel? = null
     private lateinit var userDataResult: FirebaseResponse<UserModel?>
     private lateinit var navController: NavController
@@ -133,6 +134,8 @@ class DashboardFragment : Fragment() {
                 override fun onItemSelected(index: Int) {
                     Utils.printDebugLog("selected_index: $index")
                     dialog.dismiss()
+                    weatherDataParser = null
+                    setData(weatherForecastData!!, index, SystemOfMeasurement.IMPERIAL)
                 }
             })
             rvDates.adapter = datesAdapter
@@ -170,91 +173,8 @@ class DashboardFragment : Fragment() {
                                             if (weatherForecastData != null) {
                                                 ProgressDialog.dismiss()
                                                 Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
-                                                val weatherDataParser = WeatherDataParser(weatherForecastData!!, 0, SystemOfMeasurement.METRIC)
-
-                                                //setting location
-                                                binding.tvLocation.text = weatherDataParser.getSelectedLocation()
-
-                                                //setting current weather data
-                                                binding.tvDateTime.text = weatherDataParser.getSelectedDate()
-                                                binding.imgCurrentTemp.setImageResource(resources.getIdentifier(
-                                                    Utils.generateStringFromUrl(
-                                                        weatherForecastData!!.current.condition.icon
-                                                    ), "drawable", requireActivity().packageName
-                                                ))
-                                                binding.tvCurrentTemperature.text = weatherDataParser.getCurrentTemperature()
-                                                binding.tvFeelsLike.text = weatherDataParser.getFeelsLikeTemperature()
-                                                binding.tvCurrentCondition.text = weatherDataParser.getCurrentConditionText()
-                                                binding.imgCurrentTemp.setImageResource(resources.getIdentifier(Utils.generateStringFromUrl(weatherDataParser.getConditionImageUrl()), "drawable", requireActivity().packageName))
-
-                                                //setting hour wise horizontal list
-                                                val temperatureAdapter =
-                                                    TemperatureAdapter(weatherDataParser.getHourlyTemperatureData(), requireContext())
-                                                val currentTimeMillis =
-                                                    weatherForecastData!!.location.localtime_epoch.toLong() / 1000
-                                                var nearestTimeDifference = Long.MAX_VALUE
-                                                var nearestTimePosition = 0
-                                                for ((index, time) in weatherForecastData!!.forecast.forecastday[0].hour.withIndex()) {
-                                                    val timeDifference =
-                                                        abs(currentTimeMillis - time.time_epoch)
-                                                    if (timeDifference < nearestTimeDifference) {
-                                                        nearestTimeDifference = timeDifference
-                                                        nearestTimePosition = index
-                                                    }
-                                                }
-                                                binding.rvForecastTemp.apply {
-                                                    adapter = temperatureAdapter
-                                                    layoutmanager =
-                                                        CenterScrollLayoutManager(
-                                                            context,
-                                                            LinearLayoutManager.HORIZONTAL,
-                                                            false
-                                                        )
-                                                    scrollToPosition(nearestTimePosition)
-                                                }
-
-                                                //setting air quality data
-                                                val airQualityText = weatherDataParser.getAirQualityGrade()
-                                                if (airQualityText.isNotBlank()) {
-                                                    binding.cvAirQuality.visibility = View.VISIBLE
-                                                    binding.tvAirQuality.text = airQualityText
-                                                } else {
-                                                    binding.tvAirQuality.text = ""
-                                                    binding.cvAirQuality.visibility = View.GONE
-                                                }
-                                            }
-                                            if (weatherForecastData != null) {
-                                                location = weatherForecastData!!.location.name
-                                                binding.tvHumidityPercentage.text =
-                                                    "${weatherForecastData!!.current.humidity}%"
-                                                binding.tvWindSpeed.text =
-                                                    "${weatherForecastData!!.current.wind_kph} km/hr"
-                                                binding.tvUvStatus.text =
-                                                    "${dashboardViewModel.getUVValue(
-                                                        weatherForecastData!!.current.uv.toInt())}"
-//            binding.tvVisibilityKm.text = "${it.current.vis_km} km"
-                                                binding.tvWindDirection.text = weatherForecastData!!.current.wind_dir
-
-                                                binding.tvSunrise.text =
-                                                    weatherForecastData!!.forecast.forecastday[0].astro.sunrise
-                                                binding.tvSunset.text =
-                                                    weatherForecastData!!.forecast.forecastday[0].astro.sunset
-
-                                                val alerts = weatherForecastData!!.alerts.alert
-                                                if (alerts.size > 0) {
-                                                    val alert = alerts[0]
-                                                    binding.cdAlertView.visibility = View.VISIBLE
-                                                    binding.tvHeadline.text = alert.headline
-                                                    binding.tvInstruction.text = alert.instruction
-                                                }
-
-                                                val dailyForecastAdapter =
-                                                    DailyForecastAdapter(
-                                                        weatherForecastData!!.forecast.forecastday,
-                                                        requireContext()
-                                                    )
-                                                binding.rvDailyForecast.adapter =
-                                                    dailyForecastAdapter
+                                                weatherDataParser = null
+                                                setData(weatherForecastData!!, 0, SystemOfMeasurement.METRIC)
                                             }
                                         }
 
@@ -389,6 +309,99 @@ class DashboardFragment : Fragment() {
         dashboardViewModel.airQualityIndexLiveData.observe(viewLifecycleOwner) {
             binding.tvAirQuality.text = "Air Quality: $it"
         }
+    }
+
+    private fun setData(weatherForecastData: WeatherForecastModel, index: Int, systemOfMeasurement: SystemOfMeasurement) {
+        weatherDataParser = WeatherDataParser(weatherForecastData, index, systemOfMeasurement)
+
+        //setting location
+        binding.tvLocation.text = weatherDataParser!!.getSelectedLocation()
+
+        //setting current weather data
+        binding.tvDateTime.text = weatherDataParser!!.getSelectedDate()
+        binding.imgCurrentTemp.setImageResource(resources.getIdentifier(
+            Utils.generateStringFromUrl(
+                weatherForecastData.current.condition.icon
+            ), "drawable", requireActivity().packageName
+        ))
+        binding.tvCurrentTemperature.text = weatherDataParser!!.getCurrentTemperature()
+        binding.tvFeelsLike.text = weatherDataParser!!.getFeelsLikeTemperature()
+        binding.tvCurrentCondition.text = weatherDataParser!!.getCurrentConditionText()
+        binding.imgCurrentTemp.setImageResource(resources.getIdentifier(Utils.generateStringFromUrl(
+            weatherDataParser!!.getConditionImageUrl()), "drawable", requireActivity().packageName))
+
+        //setting hour wise horizontal list
+        val temperatureAdapter =
+            TemperatureAdapter(weatherDataParser!!.getHourlyTemperatureData(), requireContext())
+        val currentTimeMillis =
+            weatherForecastData.location.localtime_epoch.toLong() / 1000
+        var nearestTimeDifference = Long.MAX_VALUE
+        var nearestTimePosition = 0
+        for ((index, time) in weatherForecastData.forecast.forecastday[0].hour.withIndex()) {
+            val timeDifference =
+                abs(currentTimeMillis - time.time_epoch)
+            if (timeDifference < nearestTimeDifference) {
+                nearestTimeDifference = timeDifference
+                nearestTimePosition = index
+            }
+        }
+        binding.rvForecastTemp.apply {
+            adapter = temperatureAdapter
+            layoutmanager =
+                CenterScrollLayoutManager(
+                    context,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
+            scrollToPosition(nearestTimePosition)
+        }
+
+        //setting air quality data
+        val airQualityText = weatherDataParser!!.getAirQualityGrade()
+        if (airQualityText.isNotBlank()) {
+            binding.cvAirQuality.visibility = View.VISIBLE
+            binding.tvAirQuality.text = airQualityText
+        } else {
+            binding.tvAirQuality.text = ""
+            binding.cvAirQuality.visibility = View.GONE
+        }
+
+        //setting humidity percentage
+        binding.tvHumidityPercentage.text = weatherDataParser!!.getHumidityPercentage()
+
+        //setting Wind Speed
+        binding.tvWindSpeed.text = weatherDataParser!!.getWindSpeed()
+
+        //setting UV Index
+        binding.tvUvStatus.text = weatherDataParser!!.getUVIndex()
+
+        //setting wind direction data
+        binding.tvWindDirection.text = weatherDataParser!!.getWindDirection()
+
+        //sunrise data
+        binding.tvSunrise.text = weatherDataParser!!.getSunriseTime()
+        binding.tvSunset.text = weatherDataParser!!.getSunsetTime()
+
+        //setting alerts if present
+        val alertPair = weatherDataParser!!.getAlerts()
+        if (alertPair != null) {
+            binding.cdAlertView.visibility = View.VISIBLE
+            binding.tvHeadline.text = alertPair.first
+            binding.tvInstruction.text = alertPair.second
+        } else {
+            if (binding.cdAlertView.isVisible) {
+                binding.cdAlertView.visibility = View.GONE
+            }
+        }
+
+        //future days weather data
+        val dailyForecastAdapter =
+            DailyForecastAdapter(
+                weatherForecastData.forecast.forecastday,
+                requireContext()
+            )
+        binding.rvDailyForecast.adapter =
+            dailyForecastAdapter
     }
 
     fun updateApp() {
