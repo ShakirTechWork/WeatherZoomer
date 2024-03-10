@@ -43,6 +43,7 @@ import com.example.weatherwish.model.WeatherForecastModel
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
 import com.example.weatherwish.utils.ProgressDialog
+import com.github.matteobattilana.weather.PrecipType
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.UpdateAvailability
@@ -292,7 +293,7 @@ class DashboardFragment : Fragment() {
             }
 
             val temperatureAdapter =
-                TemperatureAdapter(it.forecast.forecastday[0].hour, requireContext())
+                TemperatureAdapter(it.forecast.forecastday[0].hour, requireContext(), SystemOfMeasurement.METRIC)
 
             binding.rvForecastTemp.apply {
                 adapter = temperatureAdapter
@@ -332,7 +333,7 @@ class DashboardFragment : Fragment() {
 
         //setting hour wise horizontal list
         val temperatureAdapter =
-            TemperatureAdapter(weatherDataParser!!.getHourlyTemperatureData(), requireContext())
+            TemperatureAdapter(weatherDataParser!!.getHourlyTemperatureData(), requireContext(), systemOfMeasurement)
         val currentTimeMillis =
             weatherForecastData.location.localtime_epoch.toLong() / 1000
         var nearestTimeDifference = Long.MAX_VALUE
@@ -354,6 +355,31 @@ class DashboardFragment : Fragment() {
                     false
                 )
             scrollToPosition(nearestTimePosition)
+        }
+
+        //setting snow precipitation data if data is present
+        var isSnowDataDisplayed = false //this variable is used to show only one from snow and rain. because for some loctions it is showing both
+        val snowFallData = weatherDataParser!!.getSnowPrecipitaionData()
+        if (snowFallData != null) {
+            isSnowDataDisplayed = true
+            setSnowFallDataWithAnimation(snowFallData.first, snowFallData.second)
+        } else {
+            isSnowDataDisplayed = false
+            if (binding.cvSnowData.isVisible) {
+                binding.cvSnowData.visibility = View.GONE
+            }
+        }
+
+        //setting rain precipitation data if data is present
+        if (!isSnowDataDisplayed) {
+            val precipitation = weatherDataParser!!.getRainPrecipitationData()
+            if (precipitation != null) {
+                setRainFallDataWithAnimation(precipitation.first, precipitation.second)
+            } else {
+                if (binding.cvRainData.isVisible) {
+                    binding.cvRainData.visibility = View.GONE
+                }
+            }
         }
 
         //setting air quality data
@@ -382,6 +408,17 @@ class DashboardFragment : Fragment() {
         binding.tvSunrise.text = weatherDataParser!!.getSunriseTime()
         binding.tvSunset.text = weatherDataParser!!.getSunsetTime()
 
+        //setting moon data
+        val moonData = weatherDataParser!!.getMoonData()
+        Utils.printDebugLog("moonData: $moonData")
+        if (moonData.moon_phase_drawable != null) {
+            binding.imgMoonPhase.setImageResource(moonData.moon_phase_drawable!!)
+        }
+        binding.tvMoonPhase.text = moonData.moon_phase_text
+        binding.tvMoonriseTime.text = moonData.moon_rise_time
+        binding.tvMoonsetTime.text = moonData.moon_set_time
+        binding.tvMoonIlluminationPercentage.text = moonData.moon_illumination_percentage
+
         //setting alerts if present
         val alertPair = weatherDataParser!!.getAlerts()
         if (alertPair != null) {
@@ -402,6 +439,40 @@ class DashboardFragment : Fragment() {
             )
         binding.rvDailyForecast.adapter =
             dailyForecastAdapter
+    }
+
+    private fun setSnowFallDataWithAnimation(chanceOfSnowfall: String, snowPrecipitation: String) {
+        if (!binding.cvSnowData.isVisible) {
+            binding.cvSnowData.visibility = View.VISIBLE
+        }
+        binding.tvChanceOfSnowFall.text = chanceOfSnowfall
+        binding.tvSnowPreciitation.text = snowPrecipitation
+        val weather = PrecipType.SNOW
+        Utils.printDebugLog("Snow")
+        binding.snowView.apply {
+            setWeatherData(weather)
+            speed = 200 // How fast
+            emissionRate = 40f // How many particles
+            angle = 325 // The angle of the fall
+            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
+        }
+    }
+
+    private fun setRainFallDataWithAnimation(chanceOfRainfall: String, rainPrecipitation: String) {
+        if (!binding.cvRainData.isVisible) {
+            binding.cvRainData.visibility = View.VISIBLE
+        }
+        binding.tvChanceOfRainFall.text = chanceOfRainfall
+        binding.tvRainPrecipitation.text = rainPrecipitation
+        val weather = PrecipType.RAIN
+        Utils.printDebugLog("Rain")
+        binding.rainView.apply {
+            setWeatherData(weather)
+            speed = 600 // How fast
+            emissionRate = 90f // How many particles
+            angle = 325 // The angle of the fall
+            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
+        }
     }
 
     fun updateApp() {

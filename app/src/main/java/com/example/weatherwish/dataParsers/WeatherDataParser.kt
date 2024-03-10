@@ -1,12 +1,13 @@
 package com.example.weatherwish.dataParsers
 
-import android.view.View
+import com.example.weatherwish.R
 import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.ScaleOfMeasurement
 import com.example.weatherwish.constants.SystemOfMeasurement
 import com.example.weatherwish.model.Current
 import com.example.weatherwish.model.Hour
 import com.example.weatherwish.model.Location
+import com.example.weatherwish.model.MoonData
 import com.example.weatherwish.model.WeatherForecastModel
 import com.example.weatherwish.utils.Utils
 
@@ -189,15 +190,73 @@ class WeatherDataParser(
     fun getSunriseTime(): String {
         return weatherForecastData.forecast.forecastday[index].astro.sunrise
     }
+
     fun getSunsetTime(): String {
         return weatherForecastData.forecast.forecastday[index].astro.sunset
+    }
+
+    fun getRainPrecipitationData(): Pair<String, String>? {
+        val chanceOfRain = weatherForecastData.forecast.forecastday[index].day.daily_chance_of_rain
+        val text = StringBuilder("")
+        return if (chanceOfRain > 0) {
+            if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                Pair(
+                    "Chance of Rainfall: ${weatherForecastData.forecast.forecastday[index].day.daily_chance_of_rain}%",
+                    "Rain Precipitation: ${weatherForecastData.forecast.forecastday[index].day.totalprecip_mm} ${
+                        getUnit(ScaleOfMeasurement.PRECIPITATION)
+                    }"
+                )
+            } else {
+                Pair(
+                    "Chance of Rainfall: ${weatherForecastData.forecast.forecastday[index].day.daily_chance_of_rain}%",
+                    "Rain Precipitation: ${weatherForecastData.forecast.forecastday[index].day.totalprecip_in} ${
+                        getUnit(ScaleOfMeasurement.PRECIPITATION)
+                    }"
+                )
+            }
+        } else {
+            null
+        }
+    }
+
+    fun getSnowPrecipitaionData(): Pair<String, String>? {
+        val chanceOfSnowFall =
+            weatherForecastData.forecast.forecastday[index].day.daily_chance_of_snow
+        return if (chanceOfSnowFall > 0) {
+            Pair(
+                "Chance of Snowfall: ${weatherForecastData.forecast.forecastday[index].day.daily_chance_of_snow}%",
+                "Snow Precipitation: ${weatherForecastData.forecast.forecastday[index].day.totalsnow_cm} cm"
+            )
+        } else {
+            null
+        }
+    }
+
+    fun getMoonData(): MoonData {
+        val moonRiseTime = weatherForecastData.forecast.forecastday[index].astro.moonrise
+        val moonSetTime = weatherForecastData.forecast.forecastday[index].astro.moonset
+        val moonPhaseText = weatherForecastData.forecast.forecastday[index].astro.moon_phase
+        val moonPhase = weatherForecastData.forecast.forecastday[index].astro.moon_phase
+        val moonIlluminationPercentage = weatherForecastData.forecast.forecastday[index].astro.moon_illumination
+        val moonPhaseDrawable = when (moonPhase) {
+            AppConstants.MoonPhases.NEW_MOON -> R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.WAXING_CRESCENT -> R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.FIRST_QUARTER ->  R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.WAXING_GIBBOUS -> R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.FULL_MOON -> R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.WANING_GIBBOUS -> R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.LAST_QUARTER -> R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.WANING_CRESCENT -> R.drawable.moonphase_moonphase1
+            else -> null
+        }
+        return MoonData("Illumination Percentage: $moonIlluminationPercentage%", "Moon Phase: $moonPhaseText", moonPhaseDrawable, "Moonrise: $moonRiseTime", "Moonset: $moonSetTime")
     }
 
     fun getAlerts(): Pair<String, String>? {
         val alerts = weatherForecastData.alerts.alert
         return if (alerts.isNotEmpty()) {
             val alert = alerts[0]
-            Pair (alert.headline, alert.instruction)
+            Pair(alert.headline, alert.instruction)
         } else {
             null
         }

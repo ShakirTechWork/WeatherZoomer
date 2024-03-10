@@ -10,10 +10,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.weatherwish.R
+import com.example.weatherwish.constants.SystemOfMeasurement
 import com.example.weatherwish.model.Hour
 import com.example.weatherwish.utils.Utils
 
-class TemperatureAdapter(private val dataList: List<Hour>, private val context: Context) : RecyclerView.Adapter<TemperatureAdapter.ViewHolder>() {
+class TemperatureAdapter(private val dataList: List<Hour>, private val context: Context, private val systemOfMeasurement: SystemOfMeasurement) : RecyclerView.Adapter<TemperatureAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_temperature, parent, false)
@@ -23,7 +24,7 @@ class TemperatureAdapter(private val dataList: List<Hour>, private val context: 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = dataList[position]
-        holder.bind(data, context)
+        holder.bind(data, context, systemOfMeasurement)
     }
 
     override fun getItemCount(): Int {
@@ -36,9 +37,14 @@ class TemperatureAdapter(private val dataList: List<Hour>, private val context: 
         val tvTime: TextView = itemView.findViewById(R.id.tv_time)
         val tvHumidity: TextView = itemView.findViewById(R.id.tv_humidity)
 
-        fun bind(data: Hour, context: Context) {
+        fun bind(data: Hour, context: Context, systemOfMeasurement: SystemOfMeasurement) {
             tvTime.text = Utils.convertToHourTime(data.time_epoch.toLong())
-            tvTemperature.text = "${data.temp_c.toInt()}°C"
+            val temperature = if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                "${data.temp_c.toInt()}°C"
+            } else {
+               "${data.temp_f.toInt()}°F"
+            }
+            tvTemperature.text = temperature
             imgIcon.setImageResource(context.resources.getIdentifier(Utils.generateStringFromUrl(data.condition.icon), "drawable", context.packageName))
             tvHumidity.text = "${data.humidity}%"
         }

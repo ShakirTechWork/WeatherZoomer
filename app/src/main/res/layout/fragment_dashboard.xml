@@ -207,6 +207,109 @@
                 tools:listitem="@layout/item_temperature" />
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cv_snow_data"
+                style="@style/CardViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                app:cardCornerRadius="15dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#010933">
+                    <com.github.matteobattilana.weather.WeatherView
+                        android:id="@+id/snow_view"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"/>
+
+                    <TextView
+                        android:id="@+id/tv_chance_of_snow_fall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/tv_snow_preciitation"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginStart="12dp"
+                        tools:text="Chance of Snowfall: 50%"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
+
+                    <TextView
+                        android:id="@+id/tv_snow_preciitation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_chance_of_snow_fall"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginBottom="12dp"
+                        tools:text="Snow Precipitaion: 15.0 mm"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_rain_data"
+                style="@style/CardViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_margin="12dp"
+                app:cardCornerRadius="15dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#064C7A">
+                    <com.github.matteobattilana.weather.WeatherView
+                        android:id="@+id/rain_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tv_chance_of_rain_fall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_margin="12dp"
+                        tools:text="Chance of Rainfall: 50%"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
+
+
+                    <TextView
+                        android:id="@+id/tv_rain_precipitation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_margin="12dp"
+                        tools:text="Rain Precipitaion: 15.0 mm"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
                 android:id="@+id/cv_air_quality"
                 style="@style/CardViewStyle"
                 android:layout_width="match_parent"
@@ -315,19 +418,21 @@
                 android:id="@+id/cv_moon_data"
                 style="@style/CardViewStyle"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="120dp"
                 android:layout_margin="12dp"
                 app:cardCornerRadius="15dp">
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                     <ImageView
+                        android:id="@+id/img_moon_data_background"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="#020417"
                         android:src="@drawable/starry_cloudy_night_sky"
                         android:scaleType="centerCrop"/>
                     <ImageView
+                        android:id="@+id/img_moon_phase"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
                         app:layout_constraintTop_toTopOf="parent"
@@ -335,6 +440,56 @@
                         android:src="@drawable/moonphase_moonphase1"
                         android:layout_margin="8dp"
                         android:scaleType="centerCrop"/>
+
+                    <TextView
+                        android:id="@+id/tv_moon_phase"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_margin="12dp"
+                        tools:text="Moon Phase: Waxing Crescent"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
+
+                    <TextView
+                        android:id="@+id/tv_moon_illumination_percentage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintTop_toBottomOf="@id/tv_moon_phase"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/tv_moonset_time"
+                        android:layout_margin="12dp"
+                        tools:text="Illumination: 30%"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
+
+                    <TextView
+                        android:id="@+id/tv_moonrise_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/tv_moonset_time"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_margin="12dp"
+                        tools:text="Moonrise: 04:00 AM"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
+                    <TextView
+                        android:id="@+id/tv_moonset_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintStart_toEndOf="@id/tv_moonrise_time"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_margin="12dp"
+                        tools:text="Moonrise: 04:00 AM"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/quicksand_bold"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
