@@ -23,4 +23,9 @@ object AppConstants {
         const val WANING_CRESCENT = "Waning Crescent"
     }
 
+    object UserPreferredUnit {
+        const val METRIC = "metric"
+        const val IMPERIAL = "imperial"
     }
+
+}

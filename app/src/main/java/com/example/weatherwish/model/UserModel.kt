@@ -1,11 +1,12 @@
 package com.example.weatherwish.model
+import com.example.weatherwish.constants.AppConstants
 
 data class UserModel(
     val user_name: String,
     val user_email: String,
     val user_primary_location: String = "",
     val user_settings: UserSettingsModel = UserSettingsModel(
-        "metric",
+        AppConstants.UserPreferredUnit.METRIC,
         WeatherUpdatesModel("", 0, "","", arrayListOf())
     )
 ) {

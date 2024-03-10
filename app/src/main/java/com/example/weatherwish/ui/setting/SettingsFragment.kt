@@ -2,9 +2,12 @@ package com.example.weatherwish.ui.setting
 
 import android.content.Intent
 import android.os.Bundle
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -12,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.weatherwish.Application
 import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.R
+import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.databinding.FragmentSettingsBinding
 import com.example.weatherwish.ui.signIn.SignInActivity
@@ -58,10 +62,8 @@ class SettingsFragment : Fragment() {
     }
 
     private fun attachClickListener() {
-        /*binding.clTopUnitLayout.setOnClickListener {
+        binding.clTopUnitLayout.setOnClickListener {
             if (binding.llBottomTemperatureLayout.isVisible) {
-                // The transition of the hiddenView is carried out by the TransitionManager class.
-                // Here we use an object of the AutoTransition Class to create a default transition
                 binding.llBottomTemperatureLayout.visibility = View.GONE
                 TransitionManager.beginDelayedTransition(binding.cdUnitLayout, AutoTransition())
                 binding.imgTemperatureArrow.setImageResource(R.drawable.baseline_arrow_down_24)
@@ -75,14 +77,14 @@ class SettingsFragment : Fragment() {
         binding.clMetricLayout.setOnClickListener {
             binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
             binding.imgImperialTick.setImageResource(0)
-            settingsViewModel.updateUserUnitPreference("metric")
+            settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.METRIC)
         }
 
         binding.clImperialLayout.setOnClickListener {
             binding.imgImperialTick.setImageResource(R.drawable.tick_circle)
             binding.imgMetricTick.setImageResource(0)
-            settingsViewModel.updateUserUnitPreference("imperial")
-        }*/
+            settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.IMPERIAL)
+        }
 
         binding.cdThemeLayout.setOnClickListener {
             Utils.twoOptionAlertDialog(

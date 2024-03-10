@@ -34,6 +34,7 @@ import com.example.weatherwish.R
 import com.example.weatherwish.SharedViewModel
 import com.example.weatherwish.adapter.DateAdapter
 import com.example.weatherwish.api.ApiResponse
+import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.SystemOfMeasurement
 import com.example.weatherwish.dataParsers.WeatherDataParser
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
@@ -48,6 +49,11 @@ import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.UpdateAvailability
 import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class DashboardFragment : Fragment() {
 
@@ -63,7 +69,7 @@ class DashboardFragment : Fragment() {
     private lateinit var dashboardViewModel: DashboardViewModel
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
-    private var location = ""
+    private lateinit var systemOfMeasurement: SystemOfMeasurement
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -136,7 +142,7 @@ class DashboardFragment : Fragment() {
                     Utils.printDebugLog("selected_index: $index")
                     dialog.dismiss()
                     weatherDataParser = null
-                    setData(weatherForecastData!!, index, SystemOfMeasurement.IMPERIAL)
+                    setData(weatherForecastData!!, index)
                 }
             })
             rvDates.adapter = datesAdapter
@@ -165,6 +171,17 @@ class DashboardFragment : Fragment() {
                         if (userData.user_primary_location.isNotBlank()) {
                             Utils.printDebugLog("Got_primary_location :: ${userData.user_primary_location}")
                             val primaryLocation = userData.user_primary_location
+                            systemOfMeasurement = when (userData.user_settings.preferred_unit) {
+                                AppConstants.UserPreferredUnit.METRIC -> {
+                                    SystemOfMeasurement.METRIC
+                                }
+                                AppConstants.UserPreferredUnit.IMPERIAL -> {
+                                    SystemOfMeasurement.IMPERIAL
+                                }
+                                else -> {
+                                    SystemOfMeasurement.METRIC
+                                }
+                            }
                             dashboardViewModel.getForecastData(primaryLocation, 3, "yes", "yes")
                                 .asLiveData()
                                 .observe(viewLifecycleOwner) {
@@ -175,7 +192,7 @@ class DashboardFragment : Fragment() {
                                                 ProgressDialog.dismiss()
                                                 Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
                                                 weatherDataParser = null
-                                                setData(weatherForecastData!!, 0, SystemOfMeasurement.METRIC)
+                                                setData(weatherForecastData!!, 0)
                                             }
                                         }
 
@@ -257,14 +274,12 @@ class DashboardFragment : Fragment() {
                     ), "drawable", requireActivity().packageName
                 )
             )
-            location = it.location.name
             binding.tvLocation.text = "${it.location.name}, ${it.location.country}"
             binding.tvCurrentCondition.text = it.current.condition.text
             binding.tvHumidityPercentage.text = "${it.current.humidity}%"
             binding.tvCurrentTemperature.text = "${it.current.temp_c.toInt()}°C"
             binding.tvFeelsLike.text = "Feels like ${it.current.feelslike_c.toInt()}°C"
             binding.tvWindSpeed.text = "${it.current.wind_kph} km/hr"
-            binding.tvUvStatus.text = "${dashboardViewModel.getUVValue(it.current.uv.toInt())}"
 //            binding.tvVisibilityKm.text = "${it.current.vis_km} km"
             binding.tvWindDirection.text = it.current.wind_dir
 
@@ -293,7 +308,7 @@ class DashboardFragment : Fragment() {
             }
 
             val temperatureAdapter =
-                TemperatureAdapter(it.forecast.forecastday[0].hour, requireContext(), SystemOfMeasurement.METRIC)
+                TemperatureAdapter(it.forecast.forecastday[0].hour, requireContext(), systemOfMeasurement)
 
             binding.rvForecastTemp.apply {
                 adapter = temperatureAdapter
@@ -312,7 +327,7 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun setData(weatherForecastData: WeatherForecastModel, index: Int, systemOfMeasurement: SystemOfMeasurement) {
+    private fun setData(weatherForecastData: WeatherForecastModel, index: Int) {
         weatherDataParser = WeatherDataParser(weatherForecastData, index, systemOfMeasurement)
 
         //setting location
@@ -332,29 +347,19 @@ class DashboardFragment : Fragment() {
             weatherDataParser!!.getConditionImageUrl()), "drawable", requireActivity().packageName))
 
         //setting hour wise horizontal list
-        val temperatureAdapter =
-            TemperatureAdapter(weatherDataParser!!.getHourlyTemperatureData(), requireContext(), systemOfMeasurement)
-        val currentTimeMillis =
-            weatherForecastData.location.localtime_epoch.toLong() / 1000
-        var nearestTimeDifference = Long.MAX_VALUE
-        var nearestTimePosition = 0
-        for ((index, time) in weatherForecastData.forecast.forecastday[0].hour.withIndex()) {
-            val timeDifference =
-                abs(currentTimeMillis - time.time_epoch)
-            if (timeDifference < nearestTimeDifference) {
-                nearestTimeDifference = timeDifference
-                nearestTimePosition = index
+        val temperatureAdapter = TemperatureAdapter(weatherDataParser!!.getHourlyTemperatureData(), requireContext(), systemOfMeasurement)
+        val systemCurrentHour = SimpleDateFormat("HH", Locale.getDefault()).format(Date(System.currentTimeMillis())).toInt()
+        val position: Int
+        for ((indexNumber, hourlyDataItem) in weatherDataParser!!.getHourlyTemperatureData().withIndex()) {
+            val dataListItemTimeHour = SimpleDateFormat("HH", Locale.getDefault()).format(Date(hourlyDataItem.time_epoch.toLong() * 1000)).toInt()
+            Utils.printDebugLog("System_Current_Time: $systemCurrentHour || Data_List_Item_Time: $dataListItemTimeHour")
+            if (dataListItemTimeHour == systemCurrentHour) {
+                position = indexNumber
+                println("position: $position")
+                binding.rvForecastTemp.adapter = temperatureAdapter
+                binding.rvForecastTemp.scrollToPosition(position)
+                break
             }
-        }
-        binding.rvForecastTemp.apply {
-            adapter = temperatureAdapter
-            layoutmanager =
-                CenterScrollLayoutManager(
-                    context,
-                    LinearLayoutManager.HORIZONTAL,
-                    false
-                )
-            scrollToPosition(nearestTimePosition)
         }
 
         //setting snow precipitation data if data is present

@@ -134,15 +134,4 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
         return appRepository.getForecastData(location, numOfDays, aqi, alerts)
     }
 
-    fun getUVValue(index: Int): String {
-        return when (index) {
-            1, 2 -> "Low"
-            3, 4, 5 -> "Moderate"
-            6, 7 -> "High"
-            8, 9, 10 -> "Very High"
-            11 -> "Extreme"
-            else -> "Data not available"
-        }
-    }
-
 }
