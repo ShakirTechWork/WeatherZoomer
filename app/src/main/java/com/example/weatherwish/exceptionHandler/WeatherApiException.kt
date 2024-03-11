@@ -1,3 +1,7 @@
 package com.example.weatherwish.exceptionHandler
 
-class WeatherApiException(errorCode: String, message: String) : Exception(message)
+class WeatherApiException(
+    val statusCode: Int,
+    val errorCode: Int,
+    val errorMessage: String
+) : Exception("Weather API Error: HTTP $statusCode, Code $errorCode - $errorMessage")
