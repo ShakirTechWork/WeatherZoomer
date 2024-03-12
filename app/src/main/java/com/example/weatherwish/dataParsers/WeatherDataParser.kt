@@ -1,9 +1,11 @@
 package com.example.weatherwish.dataParsers
 
+import android.content.Context
 import com.example.weatherwish.R
 import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.ScaleOfMeasurement
 import com.example.weatherwish.constants.SystemOfMeasurement
+import com.example.weatherwish.model.AQIData
 import com.example.weatherwish.model.Current
 import com.example.weatherwish.model.Hour
 import com.example.weatherwish.model.Location
@@ -126,6 +128,45 @@ class WeatherDataParser(
             }
         } else {
             ""
+        }
+    }
+
+    fun getAirQualityData(context: Context): AQIData? {
+        val airText = StringBuilder("Air Quality: ")
+        return if (index == 0) {
+            if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                val aqiIndexType = "Based on UK AQI Index"
+                when (weatherForecastData.current.air_quality.`gb-defra-index`) {
+                    1 -> AQIData(aqiIndexType, 1, airText.append("Low").toString(), context.getString(R.string.uk_aqi_text_one))
+                    2 -> AQIData(aqiIndexType, 2, airText.append("Low").toString(), context.getString(R.string.uk_aqi_text_one))
+                    3 -> AQIData(aqiIndexType, 3, airText.append("Low").toString(), context.getString(R.string.uk_aqi_text_one))
+                    4 -> AQIData(aqiIndexType, 4, airText.append("Moderate").toString(), context.getString(R.string.uk_aqi_text_two))
+                    5 -> AQIData(aqiIndexType, 5, airText.append("Moderate").toString(), context.getString(R.string.uk_aqi_text_two))
+                    6 -> AQIData(aqiIndexType, 6, airText.append("Moderate").toString(), context.getString(R.string.uk_aqi_text_two))
+                    7 -> AQIData(aqiIndexType, 7, airText.append("High").toString(), context.getString(R.string.uk_aqi_text_three))
+                    8 -> AQIData(aqiIndexType, 8, airText.append("High").toString(), context.getString(R.string.uk_aqi_text_three))
+                    9 -> AQIData(aqiIndexType, 9, airText.append("High").toString(), context.getString(R.string.uk_aqi_text_three))
+                    10 -> AQIData(aqiIndexType, 10, airText.append("Very High").toString(), context.getString(R.string.uk_aqi_text_four))
+                    else -> {
+                        null
+                    }
+                }
+            } else {
+                val aqiIndexType = "Based on USA AQI Index"
+                when (weatherForecastData.current.air_quality.`us-epa-index`) {
+                    1 -> AQIData(aqiIndexType, 1, airText.append("Good").toString(), context.getString(R.string.usa_aqi_text_one))
+                    2 -> AQIData(aqiIndexType, 2, airText.append("Moderate").toString(), context.getString(R.string.usa_aqi_text_two))
+                    3 -> AQIData(aqiIndexType, 3, airText.append("Unhealthy for sensitive group").toString(), context.getString(R.string.usa_aqi_text_three))
+                    4 -> AQIData(aqiIndexType, 4, airText.append("Unhealthy").toString(), context.getString(R.string.usa_aqi_text_four))
+                    5 -> AQIData(aqiIndexType, 5, airText.append("Very Unhealthy").toString(), context.getString(R.string.usa_aqi_text_five))
+                    6 -> AQIData(aqiIndexType, 6, airText.append("Hazardous").toString(), context.getString(R.string.usa_aqi_text_six))
+                    else -> {
+                        null
+                    }
+                }
+            }
+        } else {
+            null
         }
     }
 

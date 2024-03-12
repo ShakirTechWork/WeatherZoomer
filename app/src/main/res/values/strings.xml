@@ -64,4 +64,24 @@
     <string name="change_location">Change location</string>
     <string name="cancel">Cancel</string>
     <string name="know_more">KNOW MORE</string>
+    <string name="one">1</string>
+    <string name="two">2</string>
+    <string name="three">3</string>
+    <string name="four">4</string>
+    <string name="five">5</string>
+    <string name="six">6</string>
+    <string name="seven">7</string>
+    <string name="eight">8</string>
+    <string name="nine">9</string>
+    <string name="ten">10</string>
+    <string name="usa_aqi_text_one">Air quality is satisfactory, and air pollution poses little or no risk.</string>
+    <string name="usa_aqi_text_two">Air quality is acceptable. However, there may be a risk for some people, particularly those who are unusually sensitive to air pollution.</string>
+    <string name="usa_aqi_text_three">Members of sensitive groups may experience health effects. The general public is less likely to be affected.</string>
+    <string name="usa_aqi_text_four">Some members of the general public may experience health effects; members of sensitive groups may experience more serious health effects.</string>
+    <string name="usa_aqi_text_five">Health alert: The risk of health effects is increased for everyone.</string>
+    <string name="usa_aqi_text_six">Health warning of emergency conditions: everyone is more likely to be affected.</string>
+    <string name="uk_aqi_text_one">Enjoy your usual outdoor activities.</string>
+    <string name="uk_aqi_text_two">Adults and children with lung problems, and adults with heart problems, who experience symptoms, should consider reducing strenuous physical activity, particularly outdoors.</string>
+    <string name="uk_aqi_text_three">Adults and children with lung problems, and adults with heart problems, should reduce strenuous physical exertion, particularly outdoors, and particularly if they experience symptoms. People with asthma may find they need to use their reliever inhaler more often. Older people should also reduce physical exertion.</string>
+    <string name="uk_aqi_text_four">Adults and children with lung problems, adults with heart problems, and older people, should avoid strenuous physical activity. People with asthma may find they need to use their reliever inhaler more often.</string>
 </resources>

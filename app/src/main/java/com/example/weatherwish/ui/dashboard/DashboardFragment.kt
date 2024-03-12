@@ -388,10 +388,10 @@ class DashboardFragment : Fragment() {
         }
 
         //setting air quality data
-        val airQualityText = weatherDataParser!!.getAirQualityGrade()
-        if (airQualityText.isNotBlank()) {
+        val airQualityText = weatherDataParser!!.getAirQualityData(requireContext())
+        if (airQualityText != null) {
             binding.cvAirQuality.visibility = View.VISIBLE
-            binding.tvAirQuality.text = airQualityText
+            binding.tvAirQuality.text = airQualityText.text
         } else {
             binding.tvAirQuality.text = ""
             binding.cvAirQuality.visibility = View.GONE

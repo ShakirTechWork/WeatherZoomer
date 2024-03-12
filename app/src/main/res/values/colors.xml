@@ -26,4 +26,10 @@
     <color name="tangerine_yellow">#FFCD00</color>
     <color name="red">#d0342c </color>
     <color name="faded_red">#fff1f1 </color>
+    <color name="air_quality_green">#00E300</color>
+    <color name="air_quality_yellow">#FEFE00</color>
+    <color name="air_quality_orange">#FF9800</color>
+    <color name="air_quality_red">#FE0000</color>
+    <color name="air_quality_purple">#8E3F96</color>
+    <color name="air_quality_maroon">#7E0023</color>
 </resources>
