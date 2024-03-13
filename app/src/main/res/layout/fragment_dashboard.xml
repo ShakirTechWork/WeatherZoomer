@@ -332,164 +332,32 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:text="AQI: Good" />
-                    <LinearLayout
-                        android:id="@+id/ll_usa_aqi_band"
-                        android:layout_width="match_parent"
+
+                    <TextView
+                        android:id="@+id/tv_aqi_message"
+                        style="@style/SmallRegularText"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_air_quality"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal"
-                        android:weightSum="6"
-                        android:visibility="gone">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:gravity="center">
-                            <ImageView
-                                android:id="@+id/img_usa_aqi_index_1"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/triangular_down_arrow"
-                                android:visibility="invisible"
-                                style="@style/ICON"/>
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="10dp"
-                                android:background="@color/air_quality_green"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/one"
-                                style="@style/SmallSemiBoldText"/>
-                        </LinearLayout>
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:gravity="center">
-                            <ImageView
-                                android:id="@+id/img_usa_aqi_index_2"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/triangular_down_arrow"
-                                android:visibility="invisible"
-                                style="@style/ICON"/>
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="10dp"
-                                android:background="@color/air_quality_yellow"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/two"
-                                style="@style/SmallSemiBoldText"/>
-                        </LinearLayout>
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:gravity="center">
-                            <ImageView
-                                android:id="@+id/img_usa_aqi_index_3"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/triangular_down_arrow"
-                                android:visibility="invisible"
-                                style="@style/ICON"/>
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="10dp"
-                                android:background="@color/air_quality_orange"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/three"
-                                style="@style/SmallSemiBoldText"/>
-                        </LinearLayout>
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:gravity="center">
-                            <ImageView
-                                android:id="@+id/img_usa_aqi_index_4"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/triangular_down_arrow"
-                                android:visibility="invisible"
-                                style="@style/ICON"/>
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="10dp"
-                                android:background="@color/air_quality_red"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/four"
-                                style="@style/SmallSemiBoldText"/>
-                        </LinearLayout>
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:gravity="center">
-                            <ImageView
-                                android:id="@+id/img_usa_aqi_index_5"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/triangular_down_arrow"
-                                android:visibility="invisible"
-                                style="@style/ICON"/>
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="10dp"
-                                android:background="@color/air_quality_purple"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/five"
-                                style="@style/SmallSemiBoldText"/>
-                        </LinearLayout>
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:gravity="center">
-                            <ImageView
-                                android:id="@+id/img_usa_aqi_index_6"
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@drawable/triangular_down_arrow"
-                                android:visibility="invisible"
-                                style="@style/ICON"/>
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="10dp"
-                                android:background="@color/air_quality_maroon"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/six"
-                                style="@style/SmallSemiBoldText"/>
-                        </LinearLayout>
-                    </LinearLayout>
+                        android:layout_marginTop="4dp"
+                        android:gravity="start"
+                        tools:text="Advice: Blah blah" />
+
                     <LinearLayout
                         android:id="@+id/ll_uk_aqi_band"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:layout_constraintTop_toBottomOf="@id/ll_usa_aqi_band"
+                        app:layout_constraintTop_toBottomOf="@id/tv_aqi_message"
+                        app:layout_constraintBottom_toTopOf="@id/tv_aqi_based_on"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
                         android:orientation="horizontal"
                         android:weightSum="10"
-                        android:visibility="gone">
+                        android:visibility="gone"
+                        tools:visibility="visible">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -571,7 +439,8 @@
                                 android:layout_height="16dp"
                                 android:src="@drawable/triangular_down_arrow"
                                 android:visibility="invisible"
-                                style="@style/ICON"/>
+                                style="@style/ICON"
+                                tools:visibility="visible"/>
                             <View
                                 android:layout_width="match_parent"
                                 android:layout_height="10dp"
@@ -721,6 +590,167 @@
                                 style="@style/SmallSemiBoldText"/>
                         </LinearLayout>
                     </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_usa_aqi_band"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintTop_toBottomOf="@id/tv_aqi_message"
+                        app:layout_constraintBottom_toTopOf="@id/tv_aqi_based_on"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:orientation="horizontal"
+                        android:weightSum="6"
+                        android:visibility="gone">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:gravity="center">
+                            <ImageView
+                                android:id="@+id/img_usa_aqi_index_1"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/triangular_down_arrow"
+                                android:visibility="invisible"
+                                style="@style/ICON"/>
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="10dp"
+                                android:background="@color/air_quality_green"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/one"
+                                style="@style/SmallSemiBoldText"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:gravity="center">
+                            <ImageView
+                                android:id="@+id/img_usa_aqi_index_2"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/triangular_down_arrow"
+                                android:visibility="invisible"
+                                style="@style/ICON"/>
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="10dp"
+                                android:background="@color/air_quality_yellow"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/two"
+                                style="@style/SmallSemiBoldText"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:gravity="center">
+                            <ImageView
+                                android:id="@+id/img_usa_aqi_index_3"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/triangular_down_arrow"
+                                android:visibility="invisible"
+                                style="@style/ICON"/>
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="10dp"
+                                android:background="@color/air_quality_orange"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/three"
+                                style="@style/SmallSemiBoldText"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:gravity="center">
+                            <ImageView
+                                android:id="@+id/img_usa_aqi_index_4"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/triangular_down_arrow"
+                                android:visibility="invisible"
+                                style="@style/ICON"/>
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="10dp"
+                                android:background="@color/air_quality_red"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/four"
+                                style="@style/SmallSemiBoldText"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:gravity="center">
+                            <ImageView
+                                android:id="@+id/img_usa_aqi_index_5"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/triangular_down_arrow"
+                                android:visibility="invisible"
+                                style="@style/ICON"/>
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="10dp"
+                                android:background="@color/air_quality_purple"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/five"
+                                style="@style/SmallSemiBoldText"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:gravity="center">
+                            <ImageView
+                                android:id="@+id/img_usa_aqi_index_6"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/triangular_down_arrow"
+                                android:visibility="invisible"
+                                style="@style/ICON"/>
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="10dp"
+                                android:background="@color/air_quality_maroon"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/six"
+                                style="@style/SmallSemiBoldText"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tv_aqi_based_on"
+                        style="@style/SmallRegularText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        tools:text="Based on UK Defra Index" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 

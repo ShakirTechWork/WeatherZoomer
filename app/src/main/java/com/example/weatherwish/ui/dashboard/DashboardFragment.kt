@@ -388,10 +388,72 @@ class DashboardFragment : Fragment() {
         }
 
         //setting air quality data
-        val airQualityText = weatherDataParser!!.getAirQualityData(requireContext())
-        if (airQualityText != null) {
+        val airQualityData = weatherDataParser!!.getAirQualityData(requireContext())
+        if (airQualityData != null) {
             binding.cvAirQuality.visibility = View.VISIBLE
-            binding.tvAirQuality.text = airQualityText.text
+            binding.tvAirQuality.text = airQualityData.text
+            val aqiIndexType = airQualityData.aqi_index_type
+            binding.tvAqiMessage.text = "${getString(R.string.advice)} ${airQualityData.message}"
+            binding.tvAqiBasedOn.text = airQualityData.aqi_index_type
+            val aqiIndex = airQualityData.index
+            if (aqiIndexType.contains("UK")) {
+                binding.llUkAqiBand.visibility = View.VISIBLE
+                when (aqiIndex) {
+                    1 -> {
+                        binding.imgUkAqiIndex1.visibility = View.VISIBLE
+                    }
+                    2 -> {
+                        binding.imgUkAqiIndex2.visibility = View.VISIBLE
+                    }
+                    3 -> {
+                        binding.imgUkAqiIndex3.visibility = View.VISIBLE
+                    }
+                    4 -> {
+                        binding.imgUkAqiIndex4.visibility = View.VISIBLE
+                    }
+                    5 -> {
+                        binding.imgUkAqiIndex5.visibility = View.VISIBLE
+                    }
+                    6 -> {
+                        binding.imgUkAqiIndex6.visibility = View.VISIBLE
+                    }
+                    7 -> {
+                        binding.imgUkAqiIndex7.visibility = View.VISIBLE
+                    }
+                    8 -> {
+                        binding.imgUkAqiIndex8.visibility = View.VISIBLE
+                    }
+                    9 -> {
+                        binding.imgUkAqiIndex9.visibility = View.VISIBLE
+                    }
+                    10 -> {
+                        binding.imgUkAqiIndex10.visibility = View.VISIBLE
+                    }
+                }
+            } else {
+                binding.llUsaAqiBand.visibility = View.VISIBLE
+                when (aqiIndex) {
+                    1 -> {
+                        binding.imgUsaAqiIndex1.visibility = View.VISIBLE
+                    }
+                    2 -> {
+                        binding.imgUsaAqiIndex2.visibility = View.VISIBLE
+                    }
+                    3 -> {
+                        binding.imgUsaAqiIndex3.visibility = View.VISIBLE
+                    }
+                    4 -> {
+                        binding.imgUsaAqiIndex4.visibility = View.VISIBLE
+                    }
+                    5 -> {
+                        binding.imgUsaAqiIndex5.visibility = View.VISIBLE
+                    }
+                    6 -> {
+                        binding.imgUsaAqiIndex6.visibility = View.VISIBLE
+                    }
+                }
+            }
+
         } else {
             binding.tvAirQuality.text = ""
             binding.cvAirQuality.visibility = View.GONE

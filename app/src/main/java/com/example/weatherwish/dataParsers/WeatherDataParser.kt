@@ -135,7 +135,7 @@ class WeatherDataParser(
         val airText = StringBuilder("Air Quality: ")
         return if (index == 0) {
             if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
-                val aqiIndexType = "Based on UK AQI Index"
+                val aqiIndexType = "Based on UK Defra Index"
                 when (weatherForecastData.current.air_quality.`gb-defra-index`) {
                     1 -> AQIData(aqiIndexType, 1, airText.append("Low").toString(), context.getString(R.string.uk_aqi_text_one))
                     2 -> AQIData(aqiIndexType, 2, airText.append("Low").toString(), context.getString(R.string.uk_aqi_text_one))
@@ -152,7 +152,7 @@ class WeatherDataParser(
                     }
                 }
             } else {
-                val aqiIndexType = "Based on USA AQI Index"
+                val aqiIndexType = "Based on US - EPA Standard"
                 when (weatherForecastData.current.air_quality.`us-epa-index`) {
                     1 -> AQIData(aqiIndexType, 1, airText.append("Good").toString(), context.getString(R.string.usa_aqi_text_one))
                     2 -> AQIData(aqiIndexType, 2, airText.append("Moderate").toString(), context.getString(R.string.usa_aqi_text_two))
