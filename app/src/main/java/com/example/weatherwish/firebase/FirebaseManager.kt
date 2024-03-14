@@ -306,6 +306,16 @@ class FirebaseManager {
         Utils.printDebugLog("Signing out user")
         auth.signOut()
 
+        /*val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        val mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
+            Utils.printDebugLog("mGoogleSignInClient: Signing out user")
+        }*/
+
 //        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
 //            // Optional: Update UI or show a message to the user
 //            val intent = Intent(this@MainActivity, LoginActivity::class.java)

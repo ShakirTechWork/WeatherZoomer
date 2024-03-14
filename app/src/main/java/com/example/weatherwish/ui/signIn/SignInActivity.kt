@@ -15,15 +15,19 @@ import com.example.weatherwish.exceptionHandler.CustomException
 import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
 import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.firebase.GoogleSignInCallback
+import com.example.weatherwish.firebase.GoogleSignInManager
 import com.example.weatherwish.ui.signUp.SignUpActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import kotlinx.coroutines.launch
 
-class SignInActivity : AppCompatActivity() {
+class SignInActivity : AppCompatActivity(), GoogleSignInCallback {
 
     private lateinit var binding: ActivitySignInBinding
     private lateinit var signInViewModel: SignInViewModel
+
+    private lateinit var googleSignInManager: GoogleSignInManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +38,9 @@ class SignInActivity : AppCompatActivity() {
             this,
             SignInViewModelFactory(repository)
         )[SignInViewModel::class.java]
+
+        val activityResultRegistry = this.activityResultRegistry
+        googleSignInManager = GoogleSignInManager(this, activityResultRegistry, this, this)
 
         attachObservers()
 
@@ -100,6 +107,10 @@ class SignInActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnSignUpWithGoogle.setOnClickListener {
+            googleSignInManager.signIn()
+        }
+
         binding.tvSignupText.setOnClickListener {
             startActivity(Intent(this@SignInActivity, SignUpActivity::class.java))
         }
@@ -139,6 +150,14 @@ class SignInActivity : AppCompatActivity() {
             }
 
         })
+    }
+
+    override fun onSuccess() {
+        Utils.printDebugLog("SignInWithGoogle: Success")
+    }
+
+    override fun onFailure(exception: Exception) {
+        Utils.printDebugLog("SignInWithGoogle: Exception: ${exception}")
     }
 
 }
