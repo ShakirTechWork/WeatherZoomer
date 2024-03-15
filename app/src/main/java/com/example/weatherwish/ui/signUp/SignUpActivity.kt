@@ -1,35 +1,26 @@
 package com.example.weatherwish.ui.signUp
 
-import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import com.example.weatherwish.Application
+import com.example.weatherwish.MainActivity
 import com.example.weatherwish.R
 import com.example.weatherwish.databinding.ActivitySignUpBinding
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
 import com.example.weatherwish.firebase.FirebaseResponse
-import com.example.weatherwish.model.UserModel
+import com.example.weatherwish.firebase.GoogleSignInCallback
+import com.example.weatherwish.firebase.GoogleSignInManager
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 private const val TAG = "SignUpActivity"
@@ -41,40 +32,7 @@ class SignUpActivity : AppCompatActivity() {
 
     private lateinit var signUpViewModel: SignUpViewModel
 
-    private val launcher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            try {
-                Utils.printDebugLog("btnSignUpWithGoogle: launcher_launched")
-                if (result.resultCode == Activity.RESULT_OK) {
-                    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                    if (task.isSuccessful) {
-                        val account: GoogleSignInAccount? = task.result
-                        val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
-                        val auth = FirebaseAuth.getInstance()
-                        auth.signInWithCredential(credential).addOnCompleteListener {
-                            if (it.isSuccessful) {
-                                Utils.printErrorLog("onCreate: btnSignUpWithGoogle successful")
-    //                            Firebase.database.reference.child("users")
-    //                                .child(FirebaseAuth.getInstance().currentUser?.uid.toString())
-    //                                .setValue(
-    //                                    UserModel(
-    //                                        user_name = account?.displayName ?: "",
-    //                                        user_email = account?.email ?: ""
-    //                                    )
-    //                                )
-                            } else {
-                                Utils.printErrorLog("onCreate: btnSignUpWithGoogle failed")
-                            }
-                        }
-                    }
-                } else {
-                    Utils.printErrorLog("btnSignUpWithGoogle: email_not_selected")
-                }
-            } catch (e: Exception) {
-                Utils.printErrorLog("btnSignUpWithGoogle: 2_exception: ${e}")
-            }
-        }
-
+    private lateinit var googleSignInManager: GoogleSignInManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +48,8 @@ class SignUpActivity : AppCompatActivity() {
             .requestEmail().build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
+        val activityResultRegistry = this.activityResultRegistry
+        googleSignInManager = GoogleSignInManager(activityResultRegistry, this, this, repository)
         attachObservers()
 
         attachTextChangeListeners()
@@ -164,13 +124,28 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         binding.btnSignUpWithGoogle.setOnClickListener {
-            try {
-                Utils.printDebugLog("btnSignUpWithGoogle: clicked")
-                val signInClient = googleSignInClient.signInIntent
-                launcher.launch(signInClient)
-            } catch (e: Exception) {
-                Utils.printErrorLog("btnSignUpWithGoogle: exception: ${e}")
-            }
+            googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
+                override fun onSuccess() {
+                    Utils.printDebugLog("signInWithGoogleAccount: Success")
+//                    ProgressDialog.dismiss()
+                    Utils.showLongToast(this@SignUpActivity, "Registration Successful")
+                    startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
+                    finish()
+                }
+
+
+                override fun onFailure(exception: Exception) {
+                    Utils.printDebugLog("signInWithGoogleAccount: Failed")
+//                    ProgressDialog.dismiss()
+                    ExceptionHandler.handleException(this@SignUpActivity, exception)
+                }
+
+                override fun onLoading() {
+                    Utils.printDebugLog("signInWithGoogleAccount: Loading")
+//                    ProgressDialog.initialize(this@SignUpActivity)
+//                    ProgressDialog.show("Creating your account")
+                }
+            })
         }
 
         binding.tvLoginText.setOnClickListener {

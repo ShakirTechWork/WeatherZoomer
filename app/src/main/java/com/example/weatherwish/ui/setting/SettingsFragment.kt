@@ -114,7 +114,7 @@ class SettingsFragment : Fragment() {
                 "Cancel",
                 true,
                 {
-                    settingsViewModel.signOutCurrentUser()
+                    settingsViewModel.signOutCurrentUser(requireActivity())
                     navController.popBackStack()
                     requireActivity().finish()
                     startActivity(Intent(requireActivity(), SignInActivity::class.java))

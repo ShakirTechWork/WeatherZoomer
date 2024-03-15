@@ -22,7 +22,7 @@ import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import kotlinx.coroutines.launch
 
-class SignInActivity : AppCompatActivity(), GoogleSignInCallback {
+class SignInActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignInBinding
     private lateinit var signInViewModel: SignInViewModel
@@ -40,7 +40,7 @@ class SignInActivity : AppCompatActivity(), GoogleSignInCallback {
         )[SignInViewModel::class.java]
 
         val activityResultRegistry = this.activityResultRegistry
-        googleSignInManager = GoogleSignInManager(this, activityResultRegistry, this, this)
+        googleSignInManager = GoogleSignInManager(activityResultRegistry, this, this, repository)
 
         attachObservers()
 
@@ -108,7 +108,28 @@ class SignInActivity : AppCompatActivity(), GoogleSignInCallback {
         }
 
         binding.btnSignUpWithGoogle.setOnClickListener {
-            googleSignInManager.signIn()
+            googleSignInManager.signInWithGoogleAccount(object : GoogleSignInCallback {
+                override fun onSuccess() {
+                    Utils.printDebugLog("signInWithGoogleAccount: Success")
+                    ProgressDialog.dismiss()
+                    Utils.showLongToast(this@SignInActivity, "Registration Successful")
+                    startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+                    finish()
+                }
+
+
+                override fun onFailure(exception: Exception) {
+                    Utils.printDebugLog("signInWithGoogleAccount: Failed")
+                    ProgressDialog.dismiss()
+                    ExceptionHandler.handleException(this@SignInActivity, exception)
+                }
+
+                override fun onLoading() {
+                    Utils.printDebugLog("signInWithGoogleAccount: Loading")
+                    ProgressDialog.initialize(this@SignInActivity)
+                    ProgressDialog.show("Creating your account")
+                }
+            })
         }
 
         binding.tvSignupText.setOnClickListener {
@@ -150,14 +171,6 @@ class SignInActivity : AppCompatActivity(), GoogleSignInCallback {
             }
 
         })
-    }
-
-    override fun onSuccess() {
-        Utils.printDebugLog("SignInWithGoogle: Success")
-    }
-
-    override fun onFailure(exception: Exception) {
-        Utils.printDebugLog("SignInWithGoogle: Exception: ${exception}")
     }
 
 }

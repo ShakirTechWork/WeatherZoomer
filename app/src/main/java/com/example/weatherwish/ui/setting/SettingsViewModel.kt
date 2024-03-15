@@ -1,5 +1,6 @@
 package com.example.weatherwish.ui.setting
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherwish.firebase.FirebaseResponse
@@ -19,10 +20,10 @@ class SettingsViewModel(private val appRepository: AppRepository) : ViewModel() 
         }
     }
 
-    fun signOutCurrentUser() {
+    fun signOutCurrentUser(activity: Activity) {
         viewModelScope.launch {
 //            appRepository.deleteAllUserDataFromDatastore()
-            appRepository.signOutCurrentUser()
+            appRepository.signOutCurrentUser(activity)
         }
     }
 

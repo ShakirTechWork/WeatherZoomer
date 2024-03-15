@@ -1,11 +1,17 @@
 package com.example.weatherwish.firebase
 
+import android.app.Activity
+import android.provider.Settings.Global.getString
+import com.example.weatherwish.R
 import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
 import com.example.weatherwish.exceptionHandler.ExceptionErrorMessages
 import com.example.weatherwish.model.SelectedTimeModel
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.utils.Utils
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -62,6 +68,10 @@ class FirebaseManager {
         password: String
     ): Task<AuthResult> {
         return auth.createUserWithEmailAndPassword(email, password)
+    }
+
+    fun signInWithGoogleAccount(authCredential: AuthCredential) :Task<AuthResult> {
+        return auth.signInWithCredential(authCredential)
     }
 
     fun addUserIntoDatabase(name: String, email: String): FirebaseResponse<Boolean> {
@@ -302,19 +312,19 @@ class FirebaseManager {
         }
     }
 
-    fun signOutCurrentUser() {
+    suspend fun signOutCurrentUser(activity: Activity) {
         Utils.printDebugLog("Signing out user")
         auth.signOut()
 
-        /*val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("806589059954-hl0bgnug2g90qdjqstvd0jvsapdk8f35.apps.googleusercontent.com")
             .requestEmail()
             .build()
-
-        val mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
-            Utils.printDebugLog("mGoogleSignInClient: Signing out user")
-        }*/
+        GoogleSignIn.getClient(activity, gso).signOut().await()
+//        val mGoogleSignInClient =
+//        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
+//            Utils.printDebugLog("mGoogleSignInClient: Signing out user")
+//        }
 
 //        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
 //            // Optional: Update UI or show a message to the user

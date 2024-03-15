@@ -1,5 +1,6 @@
 package com.example.weatherwish.repo
 
+import android.app.Activity
 import android.content.Context
 import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.api.ApiResponse
@@ -13,6 +14,7 @@ import com.example.weatherwish.model.SelectedTimeModel
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.model.WeatherData
 import com.example.weatherwish.model.WeatherForecastModel
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.Flow
 
@@ -26,6 +28,11 @@ class AppRepository(
     suspend fun createUserWithEmailAndPassword(email: String, password: String) =
         firebaseAwaitOperationCaller {
             firebaseManager.createUserWithEmailAndPassword(email, password)
+        }
+
+    suspend fun signInWithGoogleAccount(authCredential: AuthCredential) =
+        firebaseAwaitOperationCaller {
+            firebaseManager.signInWithGoogleAccount(authCredential)
         }
 
     suspend fun signInWithEmailAndPassword(email: String, password: String) =
@@ -45,8 +52,8 @@ class AppRepository(
         return firebaseManager.getUserData(userId)
     }
 
-    fun signOutCurrentUser() {
-        firebaseManager.signOutCurrentUser()
+    suspend fun signOutCurrentUser(activity: Activity) {
+        firebaseManager.signOutCurrentUser(activity)
     }
 
     fun updateUserPrimaryLocation(userId: String, primaryLocation: String): FirebaseResponse<Boolean> {
