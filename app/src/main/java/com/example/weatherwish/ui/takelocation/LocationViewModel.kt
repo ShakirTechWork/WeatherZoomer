@@ -56,8 +56,6 @@ class LocationViewModel(private val appRepository: AppRepository) : ViewModel() 
                 } else if (result is FirebaseResponse.Failure) {
                     _isPrimaryLocationUpdatedMLiveData.postValue(
                         FirebaseResponse.Failure(
-                            ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                            ExceptionErrorMessages.FIREBASE_EXCEPTION,
                             result.exception
                         )
                     )
@@ -65,8 +63,6 @@ class LocationViewModel(private val appRepository: AppRepository) : ViewModel() 
             } else if (currentlySignedInUser is FirebaseResponse.Failure) {
                 _isPrimaryLocationUpdatedMLiveData.postValue(
                     FirebaseResponse.Failure(
-                        ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                        ExceptionErrorMessages.FIREBASE_EXCEPTION,
                         currentlySignedInUser.exception
                     )
                 )

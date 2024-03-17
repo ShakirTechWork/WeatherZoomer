@@ -13,9 +13,7 @@ suspend fun <T> firebaseAwaitOperationCaller(firebaseCall: suspend () -> Task<T>
         }
 
         FirebaseResponse.Success(result)
-    } catch (e: FirebaseAuthException) {
-        FirebaseResponse.Failure("Firebase authentication error", e.message ?: "Unknown authentication error", e)
     } catch (e: Exception) {
-        FirebaseResponse.Failure("Unknown Error", e.message ?: "Unknown error", e)
+        FirebaseResponse.Failure(e)
     }
 }

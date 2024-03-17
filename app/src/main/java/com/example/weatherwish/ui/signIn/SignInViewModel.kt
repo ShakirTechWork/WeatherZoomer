@@ -23,6 +23,11 @@ class SignInViewModel(private val appRepository: AppRepository) : ViewModel() {
     val resultMutableLiveData: MutableLiveData<FirebaseResponse<FirebaseUser>>
         get() = _resultMutableLiveData
 
+    private val _errorLiveMutableLiveData = MutableLiveData<FirebaseResponse<FirebaseUser>>()
+
+    val errorLiveMutableLiveData: MutableLiveData<FirebaseResponse<FirebaseUser>>
+        get() = _errorLiveMutableLiveData
+
     suspend fun signInWithEmailAndPassword(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _resultMutableLiveData.postValue(FirebaseResponse.Loading)
@@ -33,20 +38,12 @@ class SignInViewModel(private val appRepository: AppRepository) : ViewModel() {
                     _resultMutableLiveData.postValue(FirebaseResponse.Success(user))
                 } else {
                     _resultMutableLiveData.postValue(
-                        FirebaseResponse.Failure(
-                            "300",
-                            "Soemthing went wrong",
-                            null
-                        )
+                        FirebaseResponse.Failure(null)
                     )
                 }
             } else if (result is FirebaseResponse.Failure) {
                 _resultMutableLiveData.postValue(
-                    FirebaseResponse.Failure(
-                        "300",
-                        "Soemthing went wrong",
-                       result.exception
-                    )
+                    FirebaseResponse.Failure(result.exception)
                 )
             }
         }

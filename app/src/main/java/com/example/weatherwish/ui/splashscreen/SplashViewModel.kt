@@ -38,8 +38,6 @@ class SplashViewModel(private val appRepository: AppRepository) : ViewModel() {
             } else if (currentlySignedInUser is FirebaseResponse.Failure) {
                 _currentLoggedInUserMutableLiveData.postValue(
                     FirebaseResponse.Failure(
-                        ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                        ExceptionErrorMessages.FIREBASE_EXCEPTION,
                         currentlySignedInUser.exception
                     )
                 )

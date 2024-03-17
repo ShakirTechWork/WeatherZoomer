@@ -74,7 +74,7 @@ class AirQualityFragment : Fragment() {
                         Log.d(TAG, "getServerData: Success: ${it.data!!.location.region}")
                     }
                     is ApiResponse.Failure -> {
-                        Log.d(TAG, "getServerData: Failure: ${it.message}   ${it.code}")
+                        Log.d(TAG, "getServerData: Failure: ${it.exception?.message}")
                     }
                     ApiResponse.Loading -> {
                         Log.d(TAG, "getServerData: Loading")

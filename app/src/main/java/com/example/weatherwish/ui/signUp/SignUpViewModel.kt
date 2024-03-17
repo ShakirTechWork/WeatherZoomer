@@ -34,31 +34,13 @@ class SignUpViewModel(private val appRepository: AppRepository) : ViewModel() {
                         _resultMutableLiveData.postValue(FirebaseResponse.Success(true))
                     } else if (response is FirebaseResponse.Failure) {
                         Utils.printDebugLog("Adding_User_In_DB :: Failure")
-                        _resultMutableLiveData.postValue(
-                            FirebaseResponse.Failure(
-                                "300",
-                                "Soemthing went wrong",
-                                response.exception
-                            )
-                        )
+                        _resultMutableLiveData.postValue(FirebaseResponse.Failure(response.exception))
                     }
                 } else {
-                    _resultMutableLiveData.postValue(
-                        FirebaseResponse.Failure(
-                            "300",
-                            "Soemthing went wrong",
-                            Exception()
-                        )
-                    )
+                    _resultMutableLiveData.postValue(FirebaseResponse.Failure(Exception()))
                 }
             } else if (result is FirebaseResponse.Failure) {
-                _resultMutableLiveData.postValue(
-                    FirebaseResponse.Failure(
-                        ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                        ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                        result.exception
-                    )
-                )
+                _resultMutableLiveData.postValue(FirebaseResponse.Failure(result.exception))
             }
         }
     }

@@ -60,12 +60,9 @@ suspend fun <T> firebaseOperationAwaitCaller(firebaseCall: suspend () -> Task<T>
 
         // Emit success with result (even if it's Unit)
         emit(FirebaseResponse.Success(result))
-    } catch (e: FirebaseAuthException) {
-        // Handle FirebaseAuthException
-        emit(FirebaseResponse.Failure("Firebase authentication error", e.message ?: "Unknown authentication error", e))
     } catch (e: Exception) {
         // Handle other exceptions
-        emit(FirebaseResponse.Failure("Unknown Error", e.message ?: "Unknown error", e))
+        emit(FirebaseResponse.Failure(e))
     }
 }
 

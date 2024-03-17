@@ -24,49 +24,6 @@ import kotlinx.coroutines.launch
 
 class DashboardViewModel(private val appRepository: AppRepository) : ViewModel() {
 
-    private val _userDataMLiveData = MutableLiveData<UserModel?>()
-
-    val userDataLiveData: LiveData<UserModel?>
-        get() = _userDataMLiveData
-
-    private val forecastWeatherMutableLiveData = MutableLiveData<WeatherForecastModel>()
-
-    val forecastWeatherLiveData: LiveData<WeatherForecastModel>
-        get() = forecastWeatherMutableLiveData
-
-    private val airQualityIndexMLiveData = MutableLiveData<String>()
-
-    val airQualityIndexLiveData: LiveData<String>
-        get() = airQualityIndexMLiveData
-
-//    fun getForecastData(location: String, numOfDays: Int, aqi: String, alerts: String) {
-//        val coroutineExceptionHandler = CoroutineExceptionHandler{_, throwable ->
-//            throwable.printStackTrace()
-//        }
-//        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-//            Log.d("TAG", "calling_api: ")
-//            val result = appRepository.getForecastData(location, numOfDays, aqi, alerts)
-//            val resultBody = result.body()!!
-//            forecastWeatherMutableLiveData.postValue(result.body())
-//            val airQuality = when (resultBody.current.air_quality.`us-epa-index`) {
-//                1 -> "Good"
-//                2 -> "Moderate"
-//                3 -> "Unhealthy for sensitive group"
-//                4 -> "Unhealthy"
-//                5 -> "Very Unhealthy"
-//                6 -> "Hazardous"
-//                else -> {
-//                    ""
-//                }
-//            }
-//            airQualityIndexMLiveData.postValue(airQuality)
-//        }
-//    }
-
-    fun getUserPrimaryLocation(): Flow<String> {
-        return appRepository.getUserPrimaryLocation()
-    }
-
     suspend fun getUserData(): FirebaseResponse<UserModel?> {
         val currentlySignedInUser = appRepository.getCurrentLoggedInUser()
         return if (currentlySignedInUser is FirebaseResponse.Success) {
@@ -78,19 +35,10 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
                     FirebaseResponse.Success(result.data)
                 } else if (result is FirebaseResponse.Failure) {
                     Utils.printErrorLog("Fetching_User_Data :: Failure: ${result.exception}")
-                    FirebaseResponse.Failure(
-                        ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                        ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                        CustomException(
-                            ExceptionErrorCodes.UNKNOWN_EXCEPTION,
-                            "Something went wrong!"
-                        )
-                    )
+                    FirebaseResponse.Failure(result.exception)
                 } else {
                     Utils.printErrorLog("Fetching_User_Data :: Failure:")
                     FirebaseResponse.Failure(
-                        ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                        ExceptionErrorMessages.FIREBASE_EXCEPTION,
                         CustomException(
                             ExceptionErrorCodes.UNKNOWN_EXCEPTION,
                             "Something went wrong!"
@@ -99,8 +47,6 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
                 }
             } else {
                 FirebaseResponse.Failure(
-                    ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                    ExceptionErrorMessages.FIREBASE_EXCEPTION,
                     CustomException(
                         ExceptionErrorCodes.UNKNOWN_EXCEPTION,
                         "Something went wrong!"
@@ -109,14 +55,10 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
             }
         } else if (currentlySignedInUser is FirebaseResponse.Failure) {
             FirebaseResponse.Failure(
-                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                ExceptionErrorMessages.FIREBASE_EXCEPTION,
                 currentlySignedInUser.exception
             )
         } else {
             FirebaseResponse.Failure(
-                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                ExceptionErrorMessages.FIREBASE_EXCEPTION,
                 CustomException(
                     ExceptionErrorCodes.UNKNOWN_EXCEPTION,
                     "Something went wrong!"

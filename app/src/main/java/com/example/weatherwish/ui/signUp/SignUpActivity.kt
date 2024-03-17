@@ -3,6 +3,8 @@ package com.example.weatherwish.ui.signUp
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.DeadObjectException
+import android.os.TransactionTooLargeException
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.lifecycle.ViewModelProvider
@@ -12,6 +14,7 @@ import com.example.weatherwish.MainActivity
 import com.example.weatherwish.R
 import com.example.weatherwish.databinding.ActivitySignUpBinding
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
+import com.example.weatherwish.exceptionHandler.WeatherApiException
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.firebase.GoogleSignInCallback
 import com.example.weatherwish.firebase.GoogleSignInManager
@@ -21,7 +24,28 @@ import com.example.weatherwish.utils.Utils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.FirebaseApiNotAvailableException
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthActionCodeException
+import com.google.firebase.auth.FirebaseAuthEmailException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.FirebaseAuthWebException
+import com.google.firebase.database.DatabaseException
 import kotlinx.coroutines.launch
+import java.io.EOFException
+import java.net.ConnectException
+import java.net.MalformedURLException
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.net.UnknownServiceException
+import javax.net.ssl.SSLException
+import javax.net.ssl.SSLHandshakeException
 
 private const val TAG = "SignUpActivity"
 
@@ -70,7 +94,8 @@ class SignUpActivity : AppCompatActivity() {
                 is FirebaseResponse.Failure -> {
                     Utils.printErrorLog("Signup_User :: ${it.exception}")
                     ProgressDialog.dismiss()
-                    ExceptionHandler.handleException(this@SignUpActivity, it.exception!!)
+//                    ExceptionHandler.handleException(this@SignUpActivity, it.exception!!)
+                    handleExceptions(it.exception)
                 }
                 is FirebaseResponse.Loading -> {
                     Utils.printDebugLog("Signup_User :: Loading")
@@ -81,6 +106,51 @@ class SignUpActivity : AppCompatActivity() {
                     Utils.printErrorLog("Signup_User :: No Status Found")
                 }
             }
+        }
+    }
+
+    private fun showSimpleMessage(message: String) {
+        val dialogBuilder = MaterialAlertDialogBuilder(this@SignUpActivity)
+            .setMessage(message)
+            .setCancelable(true)
+            .setPositiveButton("Ok") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+//        if (enableRetry) {
+//            dialogBuilder.setNegativeButton("Retry") { dialog, _ ->
+//                dialog.dismiss()
+//                // Handle retry action if needed
+//            }
+//        }
+
+        dialogBuilder.show()
+    }
+
+    private fun handleExceptions(exception: Exception?) {
+        when (exception) {
+            is FirebaseAuthInvalidUserException -> showSimpleMessage("Something went wrong. Sign up again.")
+            is FirebaseAuthActionCodeException -> showSimpleMessage("Something went wrong. Sign up again.")
+            is FirebaseAuthUserCollisionException -> showSimpleMessage("Account with this Email Id is already created.")
+            is FirebaseAuthWeakPasswordException -> showSimpleMessage("Enter a more strong password.")
+            is FirebaseAuthRecentLoginRequiredException -> showSimpleMessage("Something went wrong. Sign up again.")
+            is FirebaseAuthEmailException -> showSimpleMessage("Something went wrong. Please check your Email Id.")
+            is FirebaseNetworkException -> showSimpleMessage("Internet connection is not available. Please check your internet connection.")
+            is FirebaseAuthWebException -> showSimpleMessage("Something went wrong. Please try again.")
+            is FirebaseApiNotAvailableException -> showSimpleMessage("Something went wrong. Please try again.")
+            is FirebaseAuthInvalidCredentialsException -> showSimpleMessage("Incorrect Password or Email Id.")
+            is DeadObjectException -> showSimpleMessage("Something went wrong. Please kill and reopen the app.")
+            is TransactionTooLargeException -> showSimpleMessage("Something went wrong. Please try again.")
+            is DatabaseException -> showSimpleMessage("Something went wrong. Please try again.")
+            is ConnectException -> showSimpleMessage("Something went wrong. May be an internet problem")
+            is SocketException -> showSimpleMessage("Something went wrong. May be an internet problem")
+            is SocketTimeoutException -> showSimpleMessage("Something went wrong. May be an internet problem")
+            is MalformedURLException -> showSimpleMessage("Something went wrong.")
+            is UnknownHostException -> showSimpleMessage("Internet connection is not available. Please check your internet connection.")
+            is UnknownServiceException -> showSimpleMessage("Something went wrong.")
+            is SSLHandshakeException -> showSimpleMessage("Something went wrong.")
+            is SSLException -> showSimpleMessage("Something went wrong.")
+            is EOFException -> showSimpleMessage("Something went wrong.")
         }
     }
 

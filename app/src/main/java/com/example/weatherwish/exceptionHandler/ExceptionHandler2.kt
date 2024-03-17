@@ -3,6 +3,7 @@ package com.example.weatherwish.exceptionHandler
 import android.content.Context
 import android.os.DeadObjectException
 import android.os.TransactionTooLargeException
+import com.example.weatherwish.utils.Utils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.FirebaseApiNotAvailableException
 import com.google.firebase.FirebaseException
@@ -53,20 +54,20 @@ class ExceptionHandler2 {
             is SSLException -> //KJVKV
             is EOFException -> //KJVKV
         }
-    }*/
+    }
 
-    /*fun handleError(exception: Exception, context: Context) {
+    fun handleError(exception: Exception, context: Context) {
         when (exception) {
             is FirebaseAuthInvalidUserException -> suggestSignInAgain()
             is FirebaseAuthActionCodeException -> suggestSignInAgain()
-            is FirebaseAuthUserCollisionException -> //show simple message that account with this email id os already created
+            is FirebaseAuthUserCollisionException -> showSimpleMessage(context,"Account with this Email Id is already created.")
             is FirebaseAuthWeakPasswordException -> parseFirebaseExceptionMessage(throwable)
             is FirebaseAuthRecentLoginRequiredException -> parseFirebaseExceptionMessage(throwable)
             is FirebaseAuthEmailException -> parseFirebaseExceptionMessage(throwable)
-            is FirebaseNetworkException -> parseFirebaseExceptionMessage(throwable)
+            is FirebaseNetworkException -> showSimpleMessage(context,"Internet connection is not available. Please check your internet connection.")
             is FirebaseAuthWebException -> parseFirebaseExceptionMessage(throwable)
             is FirebaseApiNotAvailableException -> parseFirebaseExceptionMessage(throwable)
-            is FirebaseAuthInvalidCredentialsException -> parseFirebaseExceptionMessage(throwable)
+            is FirebaseAuthInvalidCredentialsException -> showSimpleMessage(context,"Incorrect Password or Email Id.")
             is DeadObjectException ->
             is TransactionTooLargeException -> getErrorMessage(throwable)
             is DatabaseException -> getErrorMessage(throwable)
@@ -81,7 +82,7 @@ class ExceptionHandler2 {
             is SSLException -> //KJVKV
             is EOFException -> //KJVKV
         }
-    }*/
+    }
 
     private fun parseFirebaseExceptionMessage(firebaseException: FirebaseException) {
         val message = firebaseException.localizedMessage
@@ -91,7 +92,7 @@ class ExceptionHandler2 {
             ?: "Something went wrong."
     }
 
-    private fun suggestSignInAgain() {
+    private fun showSimpleMessage(context: Context, message: String) {
 
     }
 
@@ -111,6 +112,6 @@ class ExceptionHandler2 {
         val alert = dialogBuilder.create()
         alert.setTitle("Alert")
         alert.show()
-    }
+    }*/
 
 }

@@ -1,10 +1,6 @@
 package com.example.weatherwish.firebase
 
 import android.app.Activity
-import android.provider.Settings.Global.getString
-import com.example.weatherwish.R
-import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
-import com.example.weatherwish.exceptionHandler.ExceptionErrorMessages
 import com.example.weatherwish.model.SelectedTimeModel
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.utils.Utils
@@ -20,12 +16,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CompletableFuture
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class FirebaseManager {
 
@@ -42,8 +35,6 @@ class FirebaseManager {
                 FirebaseResponse.Success(result)
             } else {
                 FirebaseResponse.Failure(
-                    ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                    ExceptionErrorMessages.FIREBASE_EXCEPTION,
                     null
                 )
             }
@@ -55,11 +46,7 @@ class FirebaseManager {
 //                }
 //            }
         } catch (e: Exception) {
-            FirebaseResponse.Failure(
-                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                e
-            )
+            FirebaseResponse.Failure(e)
         }
     }
 
@@ -86,11 +73,7 @@ class FirebaseManager {
                 )
             FirebaseResponse.Success(true)
         } catch (e: Exception) {
-            FirebaseResponse.Failure(
-                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                e
-            )
+            FirebaseResponse.Failure(e)
         }
     }
 
@@ -104,11 +87,7 @@ class FirebaseManager {
                 FirebaseResponse.Success(null)
             }
         } catch (e: Exception) {
-            FirebaseResponse.Failure(
-                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                e
-            )
+            FirebaseResponse.Failure(e)
         }
 
     }
@@ -129,22 +108,14 @@ class FirebaseManager {
                         future.complete(FirebaseResponse.Success(true))
                     } else {
                         future.complete(
-                            FirebaseResponse.Failure(
-                                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                                task.exception
-                            )
+                            FirebaseResponse.Failure(task.exception)
                         )
                     }
                 }
 
         } catch (e: Exception) {
             future.complete(
-                FirebaseResponse.Failure(
-                    ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                    ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                    e
-                )
+                FirebaseResponse.Failure(e)
             )
         }
 
@@ -171,24 +142,14 @@ class FirebaseManager {
                     } else {
                         Utils.printDebugLog("hourly_interval: unsuccessful")
                         future.complete(
-                            FirebaseResponse.Failure(
-                                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                                task.exception
-                            )
+                            FirebaseResponse.Failure(task.exception)
                         )
                     }
                 }
             Utils.printDebugLog("hourly_interval: $userReference")
 
         } catch (e: Exception) {
-            future.complete(
-                FirebaseResponse.Failure(
-                    ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                    ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                    e
-                )
-            )
+            future.complete(FirebaseResponse.Failure(e))
         }
 
         return future.join()
@@ -216,11 +177,7 @@ class FirebaseManager {
                 FirebaseResponse.Success(true)
             }
         } catch (e: Exception) {
-            FirebaseResponse.Failure(
-                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                e
-            )
+            FirebaseResponse.Failure(e)
         }
     }
 
@@ -242,11 +199,7 @@ class FirebaseManager {
                 FirebaseResponse.Success(true)
             }
         } catch (e: Exception) {
-            FirebaseResponse.Failure(
-                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                e
-            )
+            FirebaseResponse.Failure(e)
         }
     }
 
@@ -266,22 +219,14 @@ class FirebaseManager {
                         future.complete(FirebaseResponse.Success(true))
                     } else {
                         future.complete(
-                            FirebaseResponse.Failure(
-                                ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                                ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                                task.exception
-                            )
+                            FirebaseResponse.Failure(task.exception)
                         )
                     }
                 }
 
         } catch (e: Exception) {
             future.complete(
-                FirebaseResponse.Failure(
-                    ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                    ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                    e
-                )
+                FirebaseResponse.Failure(e)
             )
         }
 
@@ -303,11 +248,7 @@ class FirebaseManager {
             return@withContext try {
                 FirebaseResponse.Success(auth.currentUser)
             } catch (e: Exception) {
-                FirebaseResponse.Failure(
-                    ExceptionErrorCodes.FIREBASE_EXCEPTION,
-                    ExceptionErrorMessages.FIREBASE_EXCEPTION,
-                    e
-                )
+                FirebaseResponse.Failure(e)
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.weatherwish.api
 import android.util.Log
 import com.example.weatherwish.exceptionHandler.CustomException
 import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
+import com.example.weatherwish.exceptionHandler.WeatherApiException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -44,11 +45,7 @@ fun <T> result(call: suspend () -> Response<T>): Flow<ApiResponse<T?>> = flow {
                     val jsonObject = JSONObject(errorJsonString)
                     val errorCode = jsonObject.getJSONObject("error").getInt("code")
                     val errorMessage = jsonObject.getJSONObject("error").getString("message")
-                    emit(ApiResponse.Failure(errorCode.toString(), errorMessage, CustomException(
-                        ExceptionErrorCodes.UNKNOWN_EXCEPTION,
-                        "Something went wrong!"
-                    )
-                    ))
+                    emit(ApiResponse.Failure(WeatherApiException(201, errorCode, errorMessage)))
 
                 }
             }
@@ -56,10 +53,7 @@ fun <T> result(call: suspend () -> Response<T>): Flow<ApiResponse<T?>> = flow {
 
     } catch (t: Throwable) {
         Log.e(TAG, "API_Error: ${t.printStackTrace()}" )
-        emit(ApiResponse.Failure(t.message.toString(), "", CustomException(
-            ExceptionErrorCodes.UNKNOWN_EXCEPTION,
-            "Something went wrong!"
-        )))
+        emit(ApiResponse.Failure(WeatherApiException(201, 1000, "unknown message")))
     }
 
 }

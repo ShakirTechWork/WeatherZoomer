@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.DeadObjectException
+import android.os.TransactionTooLargeException
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -21,15 +23,12 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherwish.Application
-import com.example.weatherwish.CenterScrollLayoutManager
 import com.example.weatherwish.adapter.DailyForecastAdapter
 import com.example.weatherwish.adapter.TemperatureAdapter
 import com.example.weatherwish.databinding.FragmentDashboardBinding
 import com.example.weatherwish.utils.Utils
-import kotlin.math.abs
 import com.example.weatherwish.R
 import com.example.weatherwish.SharedViewModel
 import com.example.weatherwish.adapter.DateAdapter
@@ -37,7 +36,18 @@ import com.example.weatherwish.api.ApiResponse
 import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.SystemOfMeasurement
 import com.example.weatherwish.dataParsers.WeatherDataParser
-import com.example.weatherwish.exceptionHandler.ExceptionHandler
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_IS_DISABLED
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_HAVE_ACCESS
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_PROVIDED
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.EXCEEDED_CALLS_PER_MONTH_QUOTA
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.INTERNAL_APPLICATION_ERROR
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_KEY
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_REQUEST_URL
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_JSON_BODY_IN_BULK_REQUEST
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.NO_LOCATION_FOUND
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.PARAMETER_Q_NOT_PROVIDED
+import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.TOO_MANY_LOCATIONS_IN_BULK_REQUEST
+import com.example.weatherwish.exceptionHandler.WeatherApiException
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.model.WeatherForecastModel
@@ -45,15 +55,30 @@ import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.github.matteobattilana.weather.PrecipType
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthActionCodeException
+import com.google.firebase.auth.FirebaseAuthEmailException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.database.DatabaseException
 import kotlinx.coroutines.launch
-import java.text.DateFormat
+import java.io.EOFException
+import java.net.ConnectException
+import java.net.MalformedURLException
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.net.UnknownServiceException
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.net.ssl.SSLException
+import javax.net.ssl.SSLHandshakeException
 
 class DashboardFragment : Fragment() {
 
@@ -61,7 +86,6 @@ class DashboardFragment : Fragment() {
     private var weatherForecastData: WeatherForecastModel? = null
     private lateinit var userDataResult: FirebaseResponse<UserModel?>
     private lateinit var navController: NavController
-    private lateinit var layoutmanager: CenterScrollLayoutManager
     private var _binding: FragmentDashboardBinding? = null
 
     private val binding get() = _binding!!
@@ -158,6 +182,11 @@ class DashboardFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun attachObserver() {
+        fetchUserAndWeatherData()
+    }
+
+    private fun fetchUserAndWeatherData() {
+        resetViews()
         ProgressDialog.initialize(requireContext())
         ProgressDialog.show("Loading weather data")
         lifecycleScope.launch {
@@ -199,9 +228,7 @@ class DashboardFragment : Fragment() {
                                         is ApiResponse.Failure -> {
                                             ProgressDialog.dismiss()
                                             Utils.printErrorLog("Fetch_Weather_forecast :: Failure ${it.exception}")
-                                            ExceptionHandler.handleException(requireContext(),
-                                                it.exception!!
-                                            )
+                                            handleExceptions(it.exception)
                                         }
 
                                         is ApiResponse.Loading -> {
@@ -246,7 +273,7 @@ class DashboardFragment : Fragment() {
                     Utils.printErrorLog("Fetching_User_Data :: Failure: ${(userDataResult as FirebaseResponse.Failure).exception}")
                     Utils.singleOptionAlertDialog(
                         requireContext(),
-                        "Soemthing went wrong",
+                        "Something went wrong",
                         "Please login again.",
                         "OKAY",
                         false
@@ -262,78 +289,18 @@ class DashboardFragment : Fragment() {
                 }
             }
         }
-
-        dashboardViewModel.forecastWeatherLiveData.observe(viewLifecycleOwner) {
-            Log.d("TAG", "onViewCreateddata: http:${it.current.condition.icon}")
-            binding.tvDateTime.text =
-                Utils.convertUnixTimeToFormattedDayAndDate(it.current.last_updated_epoch.toLong())
-            binding.imgCurrentTemp.setImageResource(
-                resources.getIdentifier(
-                    Utils.generateStringFromUrl(
-                        it.current.condition.icon
-                    ), "drawable", requireActivity().packageName
-                )
-            )
-            binding.tvLocation.text = "${it.location.name}, ${it.location.country}"
-            binding.tvCurrentCondition.text = it.current.condition.text
-            binding.tvHumidityPercentage.text = "${it.current.humidity}%"
-            binding.tvCurrentTemperature.text = "${it.current.temp_c.toInt()}°C"
-            binding.tvFeelsLike.text = "Feels like ${it.current.feelslike_c.toInt()}°C"
-            binding.tvWindSpeed.text = "${it.current.wind_kph} km/hr"
-//            binding.tvVisibilityKm.text = "${it.current.vis_km} km"
-            binding.tvWindDirection.text = it.current.wind_dir
-
-            binding.tvSunrise.text = it.forecast.forecastday[0].astro.sunrise
-            binding.tvSunset.text = it.forecast.forecastday[0].astro.sunset
-
-            val alerts = it.alerts.alert
-            if (alerts.size > 0) {
-                val alert = alerts[0]
-                binding.cdAlertView.visibility = View.VISIBLE
-                binding.tvHeadline.text = alert.headline
-                binding.tvInstruction.text = alert.instruction
-            }
-
-//            val currentTimeMillis = System.currentTimeMillis() / 1000
-            val currentTimeMillis = it.location.localtime_epoch.toLong() / 1000
-            var nearestTimeDifference = Long.MAX_VALUE
-            var nearestTimePosition = 0
-
-            for ((index, time) in it.forecast.forecastday[0].hour.withIndex()) {
-                val timeDifference = abs(currentTimeMillis - time.time_epoch)
-                if (timeDifference < nearestTimeDifference) {
-                    nearestTimeDifference = timeDifference
-                    nearestTimePosition = index
-                }
-            }
-
-            val temperatureAdapter =
-                TemperatureAdapter(it.forecast.forecastday[0].hour, requireContext(), systemOfMeasurement)
-
-            binding.rvForecastTemp.apply {
-                adapter = temperatureAdapter
-                layoutManager = CenterScrollLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                smoothScrollToPosition(nearestTimePosition)
-            }
-
-
-            val dailyForecastAdapter =
-                DailyForecastAdapter(it.forecast.forecastday, requireContext())
-            binding.rvDailyForecast.adapter = dailyForecastAdapter
-        }
-
-        dashboardViewModel.airQualityIndexLiveData.observe(viewLifecycleOwner) {
-            binding.tvAirQuality.text = "Air Quality: $it"
-        }
     }
 
     private fun setData(weatherForecastData: WeatherForecastModel, index: Int) {
+
         weatherDataParser = WeatherDataParser(weatherForecastData, index, systemOfMeasurement)
 
         //setting location
+        binding.clTopHeaderLayout.visibility = View.VISIBLE
         binding.tvLocation.text = weatherDataParser!!.getSelectedLocation()
 
         //setting current weather data
+        binding.cvCurrentDataCard.visibility = View.VISIBLE
         binding.tvDateTime.text = weatherDataParser!!.getSelectedDate()
         binding.imgCurrentTemp.setImageResource(resources.getIdentifier(
             Utils.generateStringFromUrl(
@@ -352,10 +319,9 @@ class DashboardFragment : Fragment() {
         val position: Int
         for ((indexNumber, hourlyDataItem) in weatherDataParser!!.getHourlyTemperatureData().withIndex()) {
             val dataListItemTimeHour = SimpleDateFormat("HH", Locale.getDefault()).format(Date(hourlyDataItem.time_epoch.toLong() * 1000)).toInt()
-            Utils.printDebugLog("System_Current_Time: $systemCurrentHour || Data_List_Item_Time: $dataListItemTimeHour")
             if (dataListItemTimeHour == systemCurrentHour) {
                 position = indexNumber
-                println("position: $position")
+                binding.rvForecastTemp.visibility = View.VISIBLE
                 binding.rvForecastTemp.adapter = temperatureAdapter
                 binding.rvForecastTemp.scrollToPosition(position)
                 break
@@ -370,9 +336,6 @@ class DashboardFragment : Fragment() {
             setSnowFallDataWithAnimation(snowFallData.first, snowFallData.second)
         } else {
             isSnowDataDisplayed = false
-            if (binding.cvSnowData.isVisible) {
-                binding.cvSnowData.visibility = View.GONE
-            }
         }
 
         //setting rain precipitation data if data is present
@@ -380,10 +343,6 @@ class DashboardFragment : Fragment() {
             val precipitation = weatherDataParser!!.getRainPrecipitationData()
             if (precipitation != null) {
                 setRainFallDataWithAnimation(precipitation.first, precipitation.second)
-            } else {
-                if (binding.cvRainData.isVisible) {
-                    binding.cvRainData.visibility = View.GONE
-                }
             }
         }
 
@@ -454,9 +413,6 @@ class DashboardFragment : Fragment() {
                 }
             }
 
-        } else {
-            binding.tvAirQuality.text = ""
-            binding.cvAirQuality.visibility = View.GONE
         }
 
         //setting humidity percentage
@@ -470,12 +426,15 @@ class DashboardFragment : Fragment() {
 
         //setting wind direction data
         binding.tvWindDirection.text = weatherDataParser!!.getWindDirection()
+        binding.cvOtherData.visibility = View.VISIBLE
 
         //sunrise data
+        binding.cvSunData.visibility = View.VISIBLE
         binding.tvSunrise.text = weatherDataParser!!.getSunriseTime()
         binding.tvSunset.text = weatherDataParser!!.getSunsetTime()
 
         //setting moon data
+        binding.cvMoonData.visibility = View.VISIBLE
         val moonData = weatherDataParser!!.getMoonData()
         Utils.printDebugLog("moonData: $moonData")
         if (moonData.moon_phase_drawable != null) {
@@ -489,16 +448,13 @@ class DashboardFragment : Fragment() {
         //setting alerts if present
         val alertPair = weatherDataParser!!.getAlerts()
         if (alertPair != null) {
-            binding.cdAlertView.visibility = View.VISIBLE
+            binding.cvAlertCard.visibility = View.VISIBLE
             binding.tvHeadline.text = alertPair.first
             binding.tvInstruction.text = alertPair.second
-        } else {
-            if (binding.cdAlertView.isVisible) {
-                binding.cdAlertView.visibility = View.GONE
-            }
         }
 
         //future days weather data
+        binding.cvFutureData.visibility = View.VISIBLE
         val dailyForecastAdapter =
             DailyForecastAdapter(
                 weatherForecastData.forecast.forecastday,
@@ -509,9 +465,7 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setSnowFallDataWithAnimation(chanceOfSnowfall: String, snowPrecipitation: String) {
-        if (!binding.cvSnowData.isVisible) {
-            binding.cvSnowData.visibility = View.VISIBLE
-        }
+        binding.cvSnowData.visibility = View.VISIBLE
         binding.tvChanceOfSnowFall.text = chanceOfSnowfall
         binding.tvSnowPreciitation.text = snowPrecipitation
         val weather = PrecipType.SNOW
@@ -526,9 +480,7 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setRainFallDataWithAnimation(chanceOfRainfall: String, rainPrecipitation: String) {
-        if (!binding.cvRainData.isVisible) {
-            binding.cvRainData.visibility = View.VISIBLE
-        }
+        binding.cvRainData.visibility = View.VISIBLE
         binding.tvChanceOfRainFall.text = chanceOfRainfall
         binding.tvRainPrecipitation.text = rainPrecipitation
         val weather = PrecipType.RAIN
@@ -540,6 +492,160 @@ class DashboardFragment : Fragment() {
             angle = 325 // The angle of the fall
             fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
         }
+    }
+
+    private fun resetViews() {
+        binding.clTopHeaderLayout.visibility = View.GONE
+        binding.cvCurrentDataCard.visibility = View.GONE
+        binding.cvAlertCard.visibility = View.GONE
+        binding.rvForecastTemp.visibility = View.GONE
+        binding.cvSnowData.visibility = View.GONE
+        binding.cvRainData.visibility = View.GONE
+        binding.cvAirQuality.visibility = View.GONE
+        binding.cvSunData.visibility = View.GONE
+        binding.cvMoonData.visibility = View.GONE
+        binding.cvOtherData.visibility = View.GONE
+        binding.cvFutureData.visibility = View.GONE
+    }
+
+    private fun handleExceptions(exception: Exception?) {
+        when (exception) {
+            is FirebaseAuthInvalidUserException -> makeUserSignInAgain("Something went wrong. Sign in again.")
+            is FirebaseAuthActionCodeException -> makeUserSignInAgain("Something went wrong. Sign in again.")
+            is FirebaseAuthUserCollisionException -> makeUserSignInAgain("Something went wrong. Sign in again.")
+            is FirebaseAuthRecentLoginRequiredException -> makeUserSignInAgain("Something went wrong. Sign in again.")
+            is FirebaseAuthEmailException -> makeUserSignInAgain("Something went wrong. Sign in again.")
+            is FirebaseNetworkException -> {
+                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is WeatherApiException -> handleWeatherApiException(exception)
+            is DeadObjectException -> showSimpleMessage("Something went wrong. Please kill and reopen the app.")
+            is TransactionTooLargeException -> {
+                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is DatabaseException -> {
+                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is ConnectException -> {
+                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is SocketException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is SocketTimeoutException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is MalformedURLException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is UnknownHostException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is UnknownServiceException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is SSLHandshakeException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is SSLException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is EOFException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+        }
+    }
+
+    private fun handleWeatherApiException(weatherApiException: WeatherApiException) {
+        val errorCode = weatherApiException.errorCode
+        if (errorCode == API_KEY_NOT_PROVIDED ||
+            errorCode == INVALID_API_REQUEST_URL ||
+            errorCode == INVALID_API_KEY ||
+            errorCode == EXCEEDED_CALLS_PER_MONTH_QUOTA ||
+            errorCode == API_KEY_IS_DISABLED ||
+            errorCode == API_KEY_NOT_HAVE_ACCESS ||
+            errorCode == INVALID_JSON_BODY_IN_BULK_REQUEST ||
+            errorCode == TOO_MANY_LOCATIONS_IN_BULK_REQUEST ||
+            errorCode == INTERNAL_APPLICATION_ERROR) {
+            makeUserRetryAgain("Something went wrong") {
+                fetchUserAndWeatherData()
+            }
+        } else if (errorCode == PARAMETER_Q_NOT_PROVIDED || errorCode == NO_LOCATION_FOUND) {
+            makeUserEnterTheLocationAgain("Location Not found. Please enter the location again.")
+        }
+    }
+
+    private fun showSimpleMessage(message: String) {
+        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("Ok") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        dialogBuilder.show()
+    }
+
+    private fun makeUserRetryAgain(message: String, retryAction: () -> Unit = {}) {
+        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("Retry") { dialog, _ ->
+                dialog.dismiss()
+                retryAction()
+            }
+
+        dialogBuilder.show()
+    }
+
+    private fun makeUserEnterTheLocationAgain(message: String) {
+        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("Ok") { dialog, _ ->
+                dialog.dismiss()
+                val intent = Intent(requireContext(), LocationActivity::class.java)
+                startActivity(intent)
+                requireActivity().finish()
+            }
+        dialogBuilder.show()
+    }
+
+    private fun makeUserSignInAgain(message: String) {
+        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
+            .setMessage(message)
+            .setCancelable(true)
+            .setPositiveButton("Ok") { dialog, _ ->
+                dialog.dismiss()
+                val intent = Intent(requireContext(), SignInActivity::class.java)
+                startActivity(intent)
+                requireActivity().finish()
+            }
+        dialogBuilder.show()
     }
 
     fun updateApp() {
