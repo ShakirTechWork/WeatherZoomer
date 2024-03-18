@@ -581,6 +581,11 @@ class DashboardFragment : Fragment() {
                     fetchUserAndWeatherData()
                 }
             }
+            else -> {
+                makeUserRetryAgain("Something went wrong. Try again.") {
+                    fetchUserAndWeatherData()
+                }
+            }
         }
     }
 

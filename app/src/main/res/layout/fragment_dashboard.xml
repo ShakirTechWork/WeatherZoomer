@@ -769,14 +769,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="16dp">
                 <LinearLayout
                     android:id="@+id/ll_top_gemini_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toTopOf="parent"
                     android:orientation="horizontal"
-                    android:weightSum="5">
+                    android:weightSum="6">
                     <ImageView
                         android:id="@+id/img_magic_icon_1"
                         android:layout_width="0dp"
@@ -793,8 +793,9 @@
                         app:layout_constraintStart_toEndOf="@id/img_magic_icon_1"
                         app:layout_constraintEnd_toEndOf="parent"
                         style="@style/MediumSemiBoldText"
-                        tools:text="Tap to plan your day"
-                        android:layout_weight="3"/>
+                        android:text="Tap to plan your day"
+                        android:textSize="16sp"
+                        android:layout_weight="4"/>
 
                     <ImageView
                         android:id="@+id/img_magic_icon_2"
