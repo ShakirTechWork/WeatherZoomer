@@ -756,6 +756,72 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_ai_day_planner"
+                style="@style/CardViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="20dp">
+                <LinearLayout
+                    android:id="@+id/ll_top_gemini_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:orientation="horizontal"
+                    android:weightSum="5">
+                    <ImageView
+                        android:id="@+id/img_magic_icon_1"
+                        android:layout_width="0dp"
+                        android:layout_height="30dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:src="@drawable/magic_icon"
+                        android:layout_weight="1"/>
+                    <TextView
+                        android:id="@+id/tv_temperature"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/img_magic_icon_1"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        style="@style/MediumSemiBoldText"
+                        tools:text="Tap to plan your day"
+                        android:layout_weight="3"/>
+
+                    <ImageView
+                        android:id="@+id/img_magic_icon_2"
+                        android:layout_width="0dp"
+                        android:layout_height="30dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:src="@drawable/magic_icon"
+                        android:layout_weight="1"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_gemini_response"
+                    style="@style/MediumSemiBoldText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/ll_top_gemini_layout"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="14dp"
+                    android:gravity="start"
+                    tools:text="Gemini AI answer will appear here"
+                    android:visibility="gone"
+                    tools:visibility="visible"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cv_sun_data"

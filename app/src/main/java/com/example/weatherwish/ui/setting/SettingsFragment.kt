@@ -9,12 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.weatherwish.Application
 import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.R
+import com.example.weatherwish.SharedViewModel
 import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.databinding.FragmentSettingsBinding

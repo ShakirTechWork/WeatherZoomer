@@ -11,6 +11,7 @@
     <string name="enter_location_of_ur_choice">Enter location of your choice.</string>
     <string name="type_ur_location">Type your location.</string>
     <string name="set_location">Set location</string>
+    <string name="please_wait_taking_ur_location">Please wait.\nTaking your current location.</string>
     <string name="user_name">User Name</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="password">Password</string>

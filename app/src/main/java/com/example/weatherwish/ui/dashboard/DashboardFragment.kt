@@ -415,6 +415,9 @@ class DashboardFragment : Fragment() {
 
         }
 
+        //making the ai day planner visible to the user
+        binding.cvAiDayPlanner.visibility = View.VISIBLE
+
         //setting humidity percentage
         binding.tvHumidityPercentage.text = weatherDataParser!!.getHumidityPercentage()
 
@@ -502,6 +505,7 @@ class DashboardFragment : Fragment() {
         binding.cvSnowData.visibility = View.GONE
         binding.cvRainData.visibility = View.GONE
         binding.cvAirQuality.visibility = View.GONE
+        binding.cvAiDayPlanner.visibility = View.GONE
         binding.cvSunData.visibility = View.GONE
         binding.cvMoonData.visibility = View.GONE
         binding.cvOtherData.visibility = View.GONE

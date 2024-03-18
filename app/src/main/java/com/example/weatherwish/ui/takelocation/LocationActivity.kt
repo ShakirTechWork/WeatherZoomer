@@ -24,6 +24,7 @@ import com.example.weatherwish.MainActivity
 import com.example.weatherwish.TurnOnGps
 import com.example.weatherwish.broadcastReceivers.GpsStatusListener
 import com.example.weatherwish.databinding.ActivityLocationBinding
+import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import com.google.android.gms.location.*
 
@@ -182,7 +183,8 @@ class LocationActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun requestLocationUpdates() {
-        Utils.showLongToast(this@LocationActivity,"Please wait while we take your current location")
+        ProgressDialog.initialize(this@LocationActivity)
+        ProgressDialog.show(getString(R.string.please_wait_taking_ur_location))
         val locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(10000)
@@ -206,6 +208,7 @@ class LocationActivity : AppCompatActivity() {
 
     private fun storeLocationAndNavigate(location: String) {
         locationViewModel.updateUserPrimaryLocation(location)
+        ProgressDialog.dismiss()
         val intent = Intent(this@LocationActivity, MainActivity::class.java)
         startActivity(intent)
         finish()
