@@ -6,6 +6,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.DeadObjectException
+import android.os.Handler
+import android.os.Looper
 import android.os.TransactionTooLargeException
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -55,6 +57,7 @@ import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.github.matteobattilana.weather.PrecipType
+import com.google.ai.client.generativeai.GenerativeModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -66,6 +69,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.DatabaseException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.io.EOFException
 import java.net.ConnectException
@@ -94,6 +99,9 @@ class DashboardFragment : Fragment() {
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
     private lateinit var systemOfMeasurement: SystemOfMeasurement
+
+    private var currentIndex = 0
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -171,6 +179,10 @@ class DashboardFragment : Fragment() {
             })
             rvDates.adapter = datesAdapter
             dialog.show()
+        }
+
+        binding.cvAiDayPlanner.setOnClickListener {
+            generateGeminiAnswer()
         }
 
         /*binding.cvAirQuality.setOnClickListener {
@@ -255,7 +267,7 @@ class DashboardFragment : Fragment() {
                         Utils.printErrorLog("User_Data_Not_Found")
                         Utils.singleOptionAlertDialog(
                             requireContext(),
-                            "Soemthing went wrong",
+                            "Something went wrong",
                             "Please login again.",
                             "OKAY",
                             false
@@ -505,6 +517,8 @@ class DashboardFragment : Fragment() {
         binding.cvSnowData.visibility = View.GONE
         binding.cvRainData.visibility = View.GONE
         binding.cvAirQuality.visibility = View.GONE
+        binding.progressBarGeminiResponse.visibility = View.GONE
+        binding.tvGeminiResponse.visibility = View.GONE
         binding.cvAiDayPlanner.visibility = View.GONE
         binding.cvSunData.visibility = View.GONE
         binding.cvMoonData.visibility = View.GONE
@@ -655,6 +669,62 @@ class DashboardFragment : Fragment() {
                 requireActivity().finish()
             }
         dialogBuilder.show()
+    }
+
+    private fun generateGeminiAnswer() {
+        try {
+            val generativeModel = GenerativeModel(
+                modelName = "gemini-pro",
+                apiKey = "AIzaSyBm2GDZdhCshSNJ4jJvcw-n6HhcFFBaE_o"
+            )
+            val prompt = "Average temperature is  25 degree celcius. " +
+                    "Average humidity is 50%. " +
+                    "Chance of rainfall is 100%. " +
+                    "Chance of snowfall is 0%. " +
+                    "UV Index is 4 out of 10. " +
+                    "Max wind speed is 50 kilometer per hour. " +
+                    "Considering all these factors what are the things that should be taken care of like below asked questions:" +
+                    "What should be worn, specifically cloth fabric, texture, material?" +
+                    "What should be eaten?" +
+                    "What should be done for skin care?." +
+                    "What should be done for hair care?." +
+                    "Give your response in as less words as possible."
+            lifecycleScope.launch (Dispatchers.Main) {
+                try {
+                    binding.tvGeminiTitle.text = "Please Wait, planning your day"
+                    binding.tvGeminiResponse.visibility = View.GONE
+                    binding.tvGeminiResponse.text = ""
+                    binding.progressBarGeminiResponse.visibility = View.VISIBLE
+                    val response = generativeModel.generateContent(prompt)
+                    Utils.printDebugLog("generatedResponse: ${response.text}")
+                    displayTextCharacterByCharacter(response.text!!)
+                } catch (e: Exception) {
+                    Log.d("Gemini_Internal_Exception", "$e")
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("Gemini_Exception", "$e")
+        }
+    }
+
+    private fun displayTextCharacterByCharacter(textToDisplay: String) {
+        binding.progressBarGeminiResponse.visibility = View.GONE
+        binding.tvGeminiResponse.visibility = View.VISIBLE
+        val runnable = object : Runnable {
+            override fun run() {
+                if (currentIndex < textToDisplay.length) {
+                    val currentText = binding.tvGeminiResponse.text.toString()
+                    val newText = currentText + textToDisplay[currentIndex]
+                    binding.tvGeminiResponse.text = newText
+                    currentIndex++
+                    // Adjust the delay time according to your preference
+                    handler.postDelayed(this, 25) // Delay in milliseconds
+                } else {
+                    binding.tvGeminiTitle.text = "Tap to plan your day"
+                }
+            }
+        }
+        handler.post(runnable)
     }
 
     fun updateApp() {

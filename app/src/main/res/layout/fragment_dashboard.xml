@@ -775,8 +775,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:orientation="horizontal"
-                    android:weightSum="6">
+                    android:weightSum="6"
+                    android:gravity="center">
                     <ImageView
                         android:id="@+id/img_magic_icon_1"
                         android:layout_width="0dp"
@@ -786,7 +789,7 @@
                         android:src="@drawable/magic_icon"
                         android:layout_weight="1"/>
                     <TextView
-                        android:id="@+id/tv_temperature"
+                        android:id="@+id/tv_gemini_title"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         app:layout_constraintTop_toTopOf="parent"
@@ -806,6 +809,18 @@
                         android:src="@drawable/magic_icon"
                         android:layout_weight="1"/>
                 </LinearLayout>
+
+                <ProgressBar
+                    android:id="@+id/progress_bar_gemini_response"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminateOnly="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/ll_top_gemini_layout"
+                    android:layout_marginTop="2dp"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/tv_gemini_response"

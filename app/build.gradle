@@ -124,4 +124,7 @@ dependencies {
 
     //rain and snow effect
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
+
+    //gemini ai
+    implementation("com.google.ai.client.generativeai:generativeai:0.2.2")
 }
