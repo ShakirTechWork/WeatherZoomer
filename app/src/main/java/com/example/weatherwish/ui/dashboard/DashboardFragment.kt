@@ -18,7 +18,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
@@ -58,6 +57,7 @@ import com.example.weatherwish.ui.takelocation.LocationActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.github.matteobattilana.weather.PrecipType
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.ServerException
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -70,7 +70,6 @@ import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.DatabaseException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.io.EOFException
 import java.net.ConnectException
@@ -131,12 +130,6 @@ class DashboardFragment : Fragment() {
 
     private fun attachClickListener() {
 
-        /*binding.imgHamBurgerMenu.setOnClickListener {
-            val intent = Intent(requireContext(), WalkThroughActivity::class.java)
-            startActivity(intent)
-            requireActivity().finish()
-        }*/
-
         binding.tvChangeLocation.setOnClickListener {
             Utils.singleOptionAlertDialog(
                 requireContext(),
@@ -173,6 +166,11 @@ class DashboardFragment : Fragment() {
                 override fun onItemSelected(index: Int) {
                     Utils.printDebugLog("selected_index: $index")
                     dialog.dismiss()
+                    binding.tvGeminiTitle.text = "Tap to plan your day"
+                    binding.llTopGeminiLayout.isClickable = true
+                    binding.progressBarGeminiResponse.visibility = View.GONE
+                    binding.tvGeminiResponse.text = ""
+                    binding.tvGeminiResponse.visibility = View.GONE
                     weatherDataParser = null
                     setData(weatherForecastData!!, index)
                 }
@@ -181,7 +179,7 @@ class DashboardFragment : Fragment() {
             dialog.show()
         }
 
-        binding.cvAiDayPlanner.setOnClickListener {
+        binding.llTopGeminiLayout.setOnClickListener {
             generateGeminiAnswer()
         }
 
@@ -672,42 +670,42 @@ class DashboardFragment : Fragment() {
     }
 
     private fun generateGeminiAnswer() {
-        try {
-            val generativeModel = GenerativeModel(
-                modelName = "gemini-pro",
-                apiKey = "AIzaSyBm2GDZdhCshSNJ4jJvcw-n6HhcFFBaE_o"
-            )
-            val prompt = "Average temperature is  25 degree celcius. " +
-                    "Average humidity is 50%. " +
-                    "Chance of rainfall is 100%. " +
-                    "Chance of snowfall is 0%. " +
-                    "UV Index is 4 out of 10. " +
-                    "Max wind speed is 50 kilometer per hour. " +
-                    "Considering all these factors what are the things that should be taken care of like below asked questions:" +
-                    "What should be worn, specifically cloth fabric, texture, material?" +
-                    "What should be eaten?" +
-                    "What should be done for skin care?." +
-                    "What should be done for hair care?." +
-                    "Give your response in as less words as possible."
-            lifecycleScope.launch (Dispatchers.Main) {
-                try {
-                    binding.tvGeminiTitle.text = "Please Wait, planning your day"
-                    binding.tvGeminiResponse.visibility = View.GONE
-                    binding.tvGeminiResponse.text = ""
-                    binding.progressBarGeminiResponse.visibility = View.VISIBLE
-                    val response = generativeModel.generateContent(prompt)
-                    Utils.printDebugLog("generatedResponse: ${response.text}")
-                    displayTextCharacterByCharacter(response.text!!)
-                } catch (e: Exception) {
-                    Log.d("Gemini_Internal_Exception", "$e")
-                }
+        val generativeModel = GenerativeModel(
+            modelName = "gemini-pro",
+            apiKey = "AIzaSyBm2GDZdhCshSNJ4jJvcw-n6HhcFFBaE_o"
+        )
+        val prompt = weatherDataParser!!.getWeatherPrompt()
+        Utils.printDebugLog("AI_Prompt: $prompt")
+        lifecycleScope.launch (Dispatchers.Main) {
+            try {
+                binding.tvGeminiTitle.text = "Please Wait, planning your day"
+                binding.tvGeminiResponse.visibility = View.GONE
+                binding.tvGeminiResponse.text = ""
+                binding.progressBarGeminiResponse.visibility = View.VISIBLE
+                val response = generativeModel.generateContent(prompt)
+                Utils.printDebugLog("generatedResponse: ${response.text}")
+                displayTextCharacterByCharacter(response.text!!)
+            } catch (exception: ServerException) {
+                binding.llTopGeminiLayout.isClickable = true
+                binding.tvGeminiTitle.text = "Tap to plan your day"
+                binding.tvGeminiResponse.visibility = View.GONE
+                binding.tvGeminiResponse.text = ""
+                binding.progressBarGeminiResponse.visibility = View.GONE
+                Utils.showLongToast(requireContext(), "Please try again!")
+            } catch (e: Exception) {
+                binding.llTopGeminiLayout.isClickable = true
+                binding.tvGeminiTitle.text = "Tap to plan your day"
+                binding.tvGeminiResponse.visibility = View.GONE
+                binding.tvGeminiResponse.text = ""
+                binding.progressBarGeminiResponse.visibility = View.GONE
+                Utils.showLongToast(requireContext(), "Please try again!")
+                Utils.printErrorLog("Gemini_Exception $e")
             }
-        } catch (e: Exception) {
-            Log.d("Gemini_Exception", "$e")
         }
     }
 
     private fun displayTextCharacterByCharacter(textToDisplay: String) {
+        binding.llTopGeminiLayout.isClickable = false
         binding.progressBarGeminiResponse.visibility = View.GONE
         binding.tvGeminiResponse.visibility = View.VISIBLE
         val runnable = object : Runnable {
@@ -717,9 +715,10 @@ class DashboardFragment : Fragment() {
                     val newText = currentText + textToDisplay[currentIndex]
                     binding.tvGeminiResponse.text = newText
                     currentIndex++
-                    // Adjust the delay time according to your preference
-                    handler.postDelayed(this, 25) // Delay in milliseconds
+                    handler.postDelayed(this, 30)
                 } else {
+                    currentIndex = 0
+                    binding.llTopGeminiLayout.isClickable = true
                     binding.tvGeminiTitle.text = "Tap to plan your day"
                 }
             }

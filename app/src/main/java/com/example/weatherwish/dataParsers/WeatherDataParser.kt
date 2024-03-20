@@ -238,7 +238,6 @@ class WeatherDataParser(
 
     fun getRainPrecipitationData(): Pair<String, String>? {
         val chanceOfRain = weatherForecastData.forecast.forecastday[index].day.daily_chance_of_rain
-        val text = StringBuilder("")
         return if (chanceOfRain > 0) {
             if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
                 Pair(
@@ -301,6 +300,21 @@ class WeatherDataParser(
         } else {
             null
         }
+    }
+
+    fun getWeatherPrompt(): String {
+        return  "Average temperature is  ${getCurrentTemperature()}. " +
+                "Average humidity is ${getHumidityPercentage()}. " +
+                "${getRainPrecipitationData()?.first}. " +
+                "${getSnowPrecipitaionData()?.first}. " +
+                "UV Index is ${getUVIndex()}. " +
+                "Max wind speed is ${getWindSpeed()}. " +
+                "Considering all these factors what are the things that should be taken care of like below asked questions:" +
+                "What should be worn, specifically cloth fabric, texture, material?" +
+                "What should be eaten?" +
+                "What should be done for skin care?." +
+                "What should be done for hair care?." +
+                "Give your response in as less words as possible."
     }
 
     private fun getUnit(scaleOfMeasurement: ScaleOfMeasurement): String {
