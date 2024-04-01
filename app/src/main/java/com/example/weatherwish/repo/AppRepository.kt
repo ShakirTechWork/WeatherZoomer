@@ -72,7 +72,7 @@ class AppRepository(
         return firebaseManager.updateTimelyWeatherUpdatesData(userId, timeList)
     }
 
-    fun updateUserUnitPreference(userId: String, preferredUnit: String): FirebaseResponse<Boolean> {
+    suspend fun updateUserUnitPreference(userId: String, preferredUnit: String): FirebaseResponse<Boolean> {
         return firebaseManager.updateUserUnitPreference(userId, preferredUnit)
     }
 

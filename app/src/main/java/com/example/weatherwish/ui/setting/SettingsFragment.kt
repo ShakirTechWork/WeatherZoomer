@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.weatherwish.Application
@@ -20,18 +21,22 @@ import com.example.weatherwish.SharedViewModel
 import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.databinding.FragmentSettingsBinding
+import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.utils.Utils
 
 
 class SettingsFragment : Fragment() {
 
+    private var userData: UserModel? = null
     private lateinit var navController: NavController
     private var _binding: FragmentSettingsBinding? = null
 
     private val binding get() = _binding!!
 
     private lateinit var settingsViewModel: SettingsViewModel
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +66,31 @@ class SettingsFragment : Fragment() {
 
         binding.tvAppVersion.text = "${getString(R.string.app_version)} ${BuildConfig.VERSION_NAME}"
         attachClickListener()
+        attachObserver()
+        userData = sharedViewModel.userData
+        if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.METRIC) {
+            binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
+        } else if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.IMPERIAL) {
+            binding.imgImperialTick.setImageResource(R.drawable.tick_circle)
+        }
+    }
+
+    private fun attachObserver() {
+        settingsViewModel.isUnitPreferenceUpdatedLiveData.observe(viewLifecycleOwner) {
+            when (it) {
+                is FirebaseResponse.Success -> {
+                    Utils.showLongToast(requireContext(), "Unit preference updated successfully")
+                }
+
+                is FirebaseResponse.Failure -> {
+                    Utils.showLongToast(requireContext(), "Something went wrong. Please try again.")
+                }
+
+                is FirebaseResponse.Loading -> {
+
+                }
+            }
+        }
     }
 
     private fun attachClickListener() {

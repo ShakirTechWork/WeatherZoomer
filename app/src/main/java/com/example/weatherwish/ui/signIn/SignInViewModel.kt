@@ -23,11 +23,6 @@ class SignInViewModel(private val appRepository: AppRepository) : ViewModel() {
     val resultMutableLiveData: MutableLiveData<FirebaseResponse<FirebaseUser>>
         get() = _resultMutableLiveData
 
-    private val _errorLiveMutableLiveData = MutableLiveData<FirebaseResponse<FirebaseUser>>()
-
-    val errorLiveMutableLiveData: MutableLiveData<FirebaseResponse<FirebaseUser>>
-        get() = _errorLiveMutableLiveData
-
     suspend fun signInWithEmailAndPassword(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _resultMutableLiveData.postValue(FirebaseResponse.Loading)

@@ -203,36 +203,19 @@ class FirebaseManager {
         }
     }
 
-    fun updateUserUnitPreference(
+    suspend fun updateUserUnitPreference(
         userId: String,
         preferredUnit: String
     ): FirebaseResponse<Boolean> {
-        val future = CompletableFuture<FirebaseResponse<Boolean>>()
-
-        try {
-            val userReference = Firebase.database.reference.child("users").child(userId)
-            val updateMap = mapOf<String, Any>("preferred_units" to preferredUnit)
-
-            userReference.updateChildren(updateMap)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        future.complete(FirebaseResponse.Success(true))
-                    } else {
-                        future.complete(
-                            FirebaseResponse.Failure(task.exception)
-                        )
-                    }
-                }
-
+        return try {
+            val userReference = Firebase.database.reference.child("users").child(userId).child("user_settings")
+            val updateMap = mapOf<String, Any>("preferred_unit" to preferredUnit)
+            userReference.updateChildren(updateMap).await()
+            FirebaseResponse.Success(true)
         } catch (e: Exception) {
-            future.complete(
-                FirebaseResponse.Failure(e)
-            )
+            FirebaseResponse.Failure(e)
         }
-
-        return future.join()
     }
-
 
     //sign in with email and password using firebase
     fun signInWithEmailAndPassword(

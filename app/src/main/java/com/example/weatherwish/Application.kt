@@ -30,7 +30,7 @@ class Application: Application() {
         super.onCreate()
         // Initialize Firebase
         FirebaseApp.initializeApp(this)
-        TextToSpeechManager.initialize(this)
+//        TextToSpeechManager.initialize(this)
         initialize()
 //        createNotificationChannel()
 //        setupWorker()

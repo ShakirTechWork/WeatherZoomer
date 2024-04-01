@@ -5,7 +5,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="set_your_location">Set your location to start getting \nweather updates</string>
-    <string name="enable_location">Enable device location</string>
+    <string name="enable_current_location">Enable current location</string>
     <string name="location_note">We only access your location while you are using the app to improve your experience.</string>
     <string name="enter_location_manually">Enter location manually</string>
     <string name="enter_location_of_ur_choice">Enter location of your choice.</string>
@@ -86,4 +86,5 @@
     <string name="uk_aqi_text_two">Adults and children with lung problems, and adults with heart problems, who experience symptoms, should consider reducing strenuous physical activity, particularly outdoors.</string>
     <string name="uk_aqi_text_three">Adults and children with lung problems, and adults with heart problems, should reduce strenuous physical exertion, particularly outdoors, and particularly if they experience symptoms. People with asthma may find they need to use their reliever inhaler more often. Older people should also reduce physical exertion.</string>
     <string name="uk_aqi_text_four">Adults and children with lung problems, adults with heart problems, and older people, should avoid strenuous physical activity. People with asthma may find they need to use their reliever inhaler more often.</string>
+    <string name="need_your_location">Need your location.</string>
 </resources>

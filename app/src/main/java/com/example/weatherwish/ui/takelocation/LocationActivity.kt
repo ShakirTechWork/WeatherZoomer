@@ -105,7 +105,7 @@ class LocationActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnEnterLocation.setOnClickListener {
+        binding.tvEnterLocationManually.setOnClickListener {
             val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
             dialogView.setBackgroundResource(R.drawable.dialog_background)
             val builder = AlertDialog.Builder(this)
