@@ -17,8 +17,17 @@
     <color name="lightgrey">#F8F8F8</color>
     <color name="lightestgrey">#F3F3F3</color>
     <color name="grey">#F5F5F5</color>
-    <color name="dark_blue">#1D71F2</color>
-    <color name="dark_blue_2">#003483</color>
+
+    <color name="color_primary_light">#1D71F2</color>
+    <color name="color_primary_variant_light">#003483</color>
+    <color name="color_secondary_light">#FF9800</color>
+    <color name="color_secondary_variant_light">#FFEB3B</color>
+
+    <color name="color_primary_dark_mode">#003483</color>
+    <color name="color_primary_variant_dark_mode">#1D71F2</color>
+    <color name="color_secondary_dark_mode">#FFEB3B</color>
+    <color name="color_secondary_variant_dark_mode">#FF9800</color>
+
     <color name="blue">#1C9CF6</color>
     <color name="light_blue">#19C3FB</color>
     <color name="sky_blue">#E3F4FE</color>

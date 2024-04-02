@@ -46,7 +46,7 @@
             style="@style/SmallRegularTextWithouDrawableTint"
             tools:text="30%"
             android:drawableStart="@drawable/baseline_water_drop_16"
-            android:drawableTint="@color/dark_blue"/>
+            android:drawableTint="@color/color_primary_light"/>
 
     </LinearLayout>
 

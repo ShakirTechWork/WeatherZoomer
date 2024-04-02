@@ -34,7 +34,7 @@ android {
             buildConfigField "String", "WEATHER_API_KEY", "\"${properties.getProperty("DEBUG_WEATHER_API_KEY")}\""
         }
         release {
-            minifyEnabled true
+            minifyEnabled false
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "String", "BASE_URL", "\"https::release\""
@@ -58,7 +58,7 @@ dependencies {
 
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // Import the BoM for the Firebase platform
@@ -75,17 +75,17 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     //google play services
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation 'com.google.android.gms:play-services-location:21.2.0'
 
-    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
 
     //navigation controller
-    def nav_version = "2.2.1"
+    def nav_version = "2.7.7"
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     //data store preferences
-    implementation "androidx.datastore:datastore-preferences:1.1.0-alpha07"
+    implementation "androidx.datastore:datastore-preferences:1.1.0-beta02"
 
     // retrofit
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
@@ -93,28 +93,28 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
 
     //gson
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.10'
 
     // coroutine
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 
 
     //room database
-    def room_version = "2.3.0"
+    def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 //    implementation "androidx.room:room-ktx:$room_version"
 
 
     //livedata and viemodel
-    def lifecycle_version = "2.2.0"
+    def lifecycle_version = "2.7.0"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
 
 
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
 
     implementation "androidx.work:work-runtime:2.9.0"
     implementation "androidx.work:work-gcm:2.9.0"

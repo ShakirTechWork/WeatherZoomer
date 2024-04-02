@@ -32,103 +32,66 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_user_name"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:boxStrokeColor="@drawable/text_input_color"
-            app:helperTextTextColor="@color/black">
+            style="@style/TextInputLayoutStyle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_userName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/user_name"
-                android:text="sean"
-                android:singleLine="true"
-                android:textColor="@color/black" />
+                style="@style/TextInputEditTextStyle"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_user_email"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:boxStrokeColor="@drawable/text_input_color"
-            app:helperTextTextColor="@color/black">
+            style="@style/TextInputLayoutStyle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_user_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/email"
-                android:singleLine="true"
-                android:text="sean@gmail.com"
-                android:textColor="@color/black" />
+                style="@style/TextInputEditTextStyle" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_user_password"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:boxStrokeColor="@drawable/text_input_color"
-            app:helperTextTextColor="@color/black"
-            app:passwordToggleEnabled="true">
+            app:passwordToggleEnabled="true"
+            style="@style/TextInputLayoutStyle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_user_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPassword"
                 android:hint="@string/password"
-                android:text="sean123"
-                android:singleLine="true"
-                android:textColor="@color/black" />
+                android:inputType="textPassword"
+                style="@style/TextInputEditTextStyle"  />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_confirm_password"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:boxStrokeColor="@drawable/text_input_color"
-            app:helperTextTextColor="@color/black"
-            app:passwordToggleEnabled="true"
-            app:boxBackgroundColor="@color/white">
+            style="@style/TextInputLayoutStyle"
+            app:passwordToggleEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edt_confirm_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/confirm_password"
-                android:singleLine="true"
-                android:text="sean123"
                 android:inputType="textPassword"
-                android:textColor="@color/black" />
+                style="@style/TextInputEditTextStyle"  />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
@@ -198,7 +161,7 @@
                 android:layout_marginVertical="26dp"
                 android:layout_marginStart="12dp"
                 android:text="@string/login_underline"
-                android:textColor="@color/dark_blue"
+                android:textColor="@color/color_primary_light"
                 style="@style/MediumBoldText"/>
         </LinearLayout>
 
