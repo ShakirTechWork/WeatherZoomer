@@ -61,18 +61,58 @@ class FirebaseManager {
         return auth.signInWithCredential(authCredential)
     }
 
-    fun addUserIntoDatabase(name: String, email: String): FirebaseResponse<Boolean> {
+//    fun addUserIntoDatabase(name: String, email: String): FirebaseResponse<Boolean> {
+//        return try {
+//            Firebase.database.reference.child("users")
+//                .child(auth.currentUser?.uid.toString())
+//                .setValue(
+//                    UserModel(
+//                        user_name = name,
+//                        user_email = email
+//                    )
+//                )
+//            FirebaseResponse.Success(true)
+//        } catch (e: Exception) {
+//            FirebaseResponse.Failure(e)
+//        }
+//    }
+
+    suspend fun addUserIntoDatabase(name: String, email: String): FirebaseResponse<Boolean> {
         return try {
-            Firebase.database.reference.child("users")
-                .child(auth.currentUser?.uid.toString())
-                .setValue(
-                    UserModel(
-                        user_name = name,
-                        user_email = email
-                    )
-                )
-            FirebaseResponse.Success(true)
+            val uid = auth.currentUser?.uid.toString()
+            val retrievedUser = getUserByUID(uid)
+            when (retrievedUser) {
+                is FirebaseResponse.Success -> {
+                    // User data retrieval successful
+
+                    val userDataExists = retrievedUser.data != null
+                    if (userDataExists) {
+                        // User data exists, update the existing entry
+                        FirebaseResponse.Success(true)
+                    } else {
+                        // User data doesn't exist, add a new entry
+                        databaseReference.child("users")
+                            .child(uid)
+                            .setValue(
+                                UserModel(
+                                    user_name = name,
+                                    user_email = email
+                                )
+                            ).await()
+                    }
+                    // Return success response
+                    FirebaseResponse.Success(true)
+                }
+                is FirebaseResponse.Failure -> {
+                    // User data retrieval failed, return failure response
+                    FirebaseResponse.Failure(retrievedUser.exception)
+                }
+                else -> {
+                    FirebaseResponse.Failure(Exception("Something went wrong"))
+                }
+            }
         } catch (e: Exception) {
+            // Exception occurred, return failure response
             FirebaseResponse.Failure(e)
         }
     }
@@ -233,6 +273,18 @@ class FirebaseManager {
             } catch (e: Exception) {
                 FirebaseResponse.Failure(e)
             }
+        }
+    }
+
+    private suspend fun getUserByUID(uid: String): FirebaseResponse<UserModel?> {
+        return try {
+            val userReference = databaseReference.child("users").child(uid)
+            val snapshot = userReference.get().await()
+
+            val userData = snapshot.getValue(UserModel::class.java)
+            FirebaseResponse.Success(userData)
+        } catch (e: Exception) {
+            FirebaseResponse.Failure(e)
         }
     }
 

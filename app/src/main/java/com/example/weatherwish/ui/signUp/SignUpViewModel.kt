@@ -45,7 +45,7 @@ class SignUpViewModel(private val appRepository: AppRepository) : ViewModel() {
         }
     }
 
-    fun addUserIntoFirebase(name: String, email: String): FirebaseResponse<Boolean> {
+    suspend fun addUserIntoFirebase(name: String, email: String): FirebaseResponse<Boolean> {
         return appRepository.addUserIntoFirebase(name, email)
     }
 

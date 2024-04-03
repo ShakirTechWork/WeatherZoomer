@@ -40,7 +40,7 @@ class AppRepository(
             firebaseManager.signInWithEmailAndPassword(email, password)
         }
 
-    fun addUserIntoFirebase(name: String, email: String): FirebaseResponse<Boolean> {
+    suspend fun addUserIntoFirebase(name: String, email: String): FirebaseResponse<Boolean> {
         return firebaseManager.addUserIntoDatabase(name, email)
     }
 
