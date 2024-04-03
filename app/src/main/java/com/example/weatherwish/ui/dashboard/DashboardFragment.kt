@@ -2,6 +2,7 @@ package com.example.weatherwish.ui.dashboard
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -150,7 +151,12 @@ class DashboardFragment : Fragment() {
 
         binding.tvDateTime.setOnClickListener {
             val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.custom_date_selection_dialog, null)
-            dialogView.setBackgroundResource(R.drawable.dialog_background)
+            // Determine theme mode (light/dark)
+            val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+            // Set background drawable based on theme mode
+            val drawableResId = if (isDarkMode) R.drawable.dialog_background_dark_mode else R.drawable.dialog_background_light_mode
+            dialogView.setBackgroundResource(drawableResId)
             val builder = AlertDialog.Builder(requireContext())
             val dialog = builder.setView(dialogView).create()
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)

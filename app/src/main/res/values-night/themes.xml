@@ -139,6 +139,22 @@
         <item name="android:singleLine">true</item>
     </style>
 
+    <style name="ManualLocationTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundMode">outline</item>
+        <item name="boxCornerRadiusTopStart">10dp</item>
+        <item name="boxCornerRadiusTopEnd">10dp</item>
+        <item name="boxCornerRadiusBottomStart">10dp</item>
+        <item name="boxCornerRadiusBottomEnd">10dp</item>
+        <item name="boxStrokeColor">@drawable/text_input_color</item>
+        <item name="boxBackgroundColor">@color/darkest_gray1</item>
+        <item name="hintTextColor">@color/color_primary_light</item>
+    </style>
+
+    <style name="ManualLocationTextInputEditTextStyle">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
     <style name="CustomAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:windowBackground">@drawable/rounded_corner</item>
     </style>

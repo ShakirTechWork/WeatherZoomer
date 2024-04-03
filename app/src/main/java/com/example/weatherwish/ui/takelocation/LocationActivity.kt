@@ -1,12 +1,11 @@
 package com.example.weatherwish.ui.takelocation
 
 import android.annotation.SuppressLint
-import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -14,7 +13,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import com.example.weatherwish.R
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -107,7 +105,12 @@ class LocationActivity : AppCompatActivity() {
 
         binding.tvEnterLocationManually.setOnClickListener {
             val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
-            dialogView.setBackgroundResource(R.drawable.dialog_background)
+            // Determine theme mode (light/dark)
+            val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+            // Set background drawable based on theme mode
+            val drawableResId = if (isDarkMode) R.drawable.dialog_background_dark_mode else R.drawable.dialog_background_light_mode
+            dialogView.setBackgroundResource(drawableResId)
             val builder = AlertDialog.Builder(this)
             val dialog = builder.setView(dialogView).create()
             dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
