@@ -15,7 +15,6 @@ import com.example.weatherwish.R
 import com.example.weatherwish.adapter.WalkthroughAdapter
 import com.example.weatherwish.databinding.ActivityWalkThroughBinding
 import com.example.weatherwish.ui.signIn.SignInActivity
-import com.example.weatherwish.utils.Utils
 
 class WalkThroughActivity : AppCompatActivity() {
 
@@ -73,7 +72,7 @@ class WalkThroughActivity : AppCompatActivity() {
             indicators[i]?.apply {
                 text = "•"
                 textSize = 50f
-                setTextColor(resources.getColor(R.color.red))
+                setTextColor(resources.getColor(R.color.color_primary_light))
 
                 val layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -103,9 +102,9 @@ class WalkThroughActivity : AppCompatActivity() {
         for (i in 0 until childCount) {
             val indicator = binding.indicatorLayout.getChildAt(i) as TextView
             if (i == index) {
-                indicator.setTextColor(resources.getColor(R.color.red))
+                indicator.setTextColor(resources.getColor(R.color.color_primary_light))
             } else {
-                indicator.setTextColor(resources.getColor(R.color.purple_200))
+                indicator.setTextColor(resources.getColor(R.color.dark_gray))
             }
         }
     }
@@ -113,10 +112,27 @@ class WalkThroughActivity : AppCompatActivity() {
     private fun getWalkthroughPages(): List<Fragment> {
         // Create and return your walkthrough fragments here
         return listOf(
-            WalkthroughPageFragment("Page 1", "Description 1"),
-            WalkthroughPageFragment("Page 2", "Description 2"),
-            WalkthroughPageFragment("Page 3", "Description 3"),
-            WalkthroughPageFragment("Page 4", "Description 4")
+            WalkthroughPageFragment(
+                R.drawable.get_weather_update_0,
+                "Welcome to Weatherwish Access tailored weather data",
+                "Real-time updates for any location."
+            ),
+            WalkthroughPageFragment(
+                R.drawable.get_weather_update_2,
+                "Monitor air quality and get advice.",
+                "Track chances of snowfall and rainfall"
+            ),
+            WalkthroughPageFragment(R.drawable.get_weather_updates_1,"Never miss sunrise, sunset, and lunar phases.", "Stay aware of humidity, wind speed and UV status"),
+            WalkthroughPageFragment(
+                R.drawable.get_weather_updates_3,
+                "Plan ahead with 3-day forecasts.",
+                "Receive warnings for potential hazards"
+            ),
+            WalkthroughPageFragment(
+                R.drawable.get_weather_updates_4,
+                "Utilise an AI-based day planner based on current weather.",
+                "Enjoy seamless experience with our user-friendly interface"
+            )
         )
     }
 

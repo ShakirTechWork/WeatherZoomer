@@ -22,6 +22,7 @@ import com.example.weatherwish.MainActivity
 import com.example.weatherwish.TurnOnGps
 import com.example.weatherwish.broadcastReceivers.GpsStatusListener
 import com.example.weatherwish.databinding.ActivityLocationBinding
+import com.example.weatherwish.extensionFunctions.setSafeOnClickListener
 import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import com.google.android.gms.location.*
@@ -87,7 +88,7 @@ class LocationActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnCurrentLocation.setOnClickListener {
+        binding.btnCurrentLocation.setSafeOnClickListener {
             val isLocationPermissionGranted = locationViewModel.gpsLocationLiveData.value!!.isLocationPermissionGranted
             val isGpsOn = locationViewModel.gpsLocationLiveData.value!!.isGpsOn
             if (isLocationPermissionGranted && isGpsOn) {

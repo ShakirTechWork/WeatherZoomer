@@ -5,9 +5,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
+import coil.load
 import com.example.weatherwish.R
-class WalkthroughPageFragment(private val title: String, private val description: String) : Fragment() {
+class WalkthroughPageFragment(
+    private val image: Int,
+    private val title: String,
+    private val description: String
+) : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -17,9 +23,11 @@ class WalkthroughPageFragment(private val title: String, private val description
 
         // Customize the UI elements based on the title and description
 
+        val imgItem: ImageView = view.findViewById(R.id.img_item)
         val tvTitle: TextView = view.findViewById(R.id.tv_title)
         val tvSubTitle: TextView = view.findViewById(R.id.tv_sub_title)
 
+        imgItem.load(image)
         tvTitle.text = title
         tvSubTitle.text = description
 
