@@ -7,11 +7,11 @@ import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ShareCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.weatherwish.Application
@@ -21,10 +21,14 @@ import com.example.weatherwish.SharedViewModel
 import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.databinding.FragmentSettingsBinding
+import com.example.weatherwish.extensionFunctions.setSafeOnClickListener
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.utils.Utils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class SettingsFragment : Fragment() {
@@ -152,6 +156,24 @@ class SettingsFragment : Fragment() {
                     startActivity(Intent(requireActivity(), SignInActivity::class.java))
                 },
                 {})
+
+            binding.cdShareApp.setSafeOnClickListener {
+                try {
+                    val shareIntent = ShareCompat.IntentBuilder(requireActivity())
+                        .setType("text/plain")
+                        .setText(getString(R.string.share_app_text))
+                        .intent
+                    if (shareIntent.resolveActivity(requireContext().packageManager) != null) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            startActivity(shareIntent)
+                        }
+                    } else {
+                        Utils.showShortToast(requireContext(), "No app available to handle the sharing.")
+                    }
+                } catch (e: Exception) {
+                    Utils.showShortToast(requireContext(), "Something went wrong! Try again.")
+                }
+            }
         }
 
         /*binding.cdPeriodicLayout.setOnClickListener {

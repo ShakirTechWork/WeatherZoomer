@@ -10,6 +10,14 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
+
     <application
         android:name=".Application"
         android:allowBackup="true"
@@ -48,25 +56,26 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask" /> <!-- Receiver for BOOT_COMPLETED -->
-        <receiver
-            android:name=".broadcastReceivers.DeviceRebootReceiver"
-            android:enabled="true"
-            android:exported="false"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
+<!--        <receiver-->
+<!--            android:name=".broadcastReceivers.DeviceRebootReceiver"-->
+<!--            android:enabled="true"-->
+<!--            android:exported="false"-->
+<!--            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.BOOT_COMPLETED" />-->
 
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".broadcastReceivers.WeatherUpdateReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="your.package.name.ACTION_SCHEDULED_NOTIFICATION" />
-                <!-- Add other intent filters if needed -->
-            </intent-filter>
-        </receiver> <!-- <receiver android:name=".widget.AppWidget" -->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
+<!--        <receiver-->
+<!--            android:name=".broadcastReceivers.WeatherUpdateReceiver"-->
+<!--            android:exported="false">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="your.package.name.ACTION_SCHEDULED_NOTIFICATION" />-->
+<!--                &lt;!&ndash; Add other intent filters if needed &ndash;&gt;-->
+<!--            </intent-filter>-->
+<!--        </receiver> -->
+        <!-- <receiver android:name=".widget.AppWidget" -->
         <!-- android:icon="@mipmap/ic_launcher" -->
         <!-- android:label="@string/app_name" -->
         <!-- android:exported="false"> -->
@@ -77,19 +86,19 @@
         <!-- android:name="android.appwidget.provider" -->
         <!-- android:resource="@xml/app_widget_info"/> -->
         <!-- </receiver> -->
-        <receiver
-            android:name=".widget.MyWidgetProvider"
-            android:exported="false"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
+<!--        <receiver-->
+<!--            android:name=".widget.MyWidgetProvider"-->
+<!--            android:exported="false"-->
+<!--            android:icon="@mipmap/ic_launcher"-->
+<!--            android:label="@string/app_name">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
+<!--            </intent-filter>-->
 
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info" />
-        </receiver>
+<!--            <meta-data-->
+<!--                android:name="android.appwidget.provider"-->
+<!--                android:resource="@xml/widget_info" />-->
+<!--        </receiver>-->
     </application>
 
 </manifest>

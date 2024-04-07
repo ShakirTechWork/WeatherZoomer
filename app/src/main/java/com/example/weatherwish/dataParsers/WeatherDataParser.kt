@@ -302,19 +302,20 @@ class WeatherDataParser(
         }
     }
 
-    fun getWeatherPrompt(): String {
-        return  "Average temperature is  ${getCurrentTemperature()}. " +
-                "Average humidity is ${getHumidityPercentage()}. " +
-                "${getRainPrecipitationData()?.first}. " +
-                "${getSnowPrecipitaionData()?.first}. " +
-                "UV Index is ${getUVIndex()}. " +
-                "Max wind speed is ${getWindSpeed()}. " +
-                "Considering all these factors what are the things that should be taken care of like below asked questions:" +
-                "What should be worn, specifically cloth fabric, texture, material?" +
-                "What should be eaten?" +
-                "What should be done for skin care?." +
-                "What should be done for hair care?." +
-                "Give your response in as less words as possible."
+    fun getGeminiAiPrompt(): String {
+        val prompt = StringBuilder("")
+        prompt.append("Average temperature is  ${getCurrentTemperature()}. ")
+        prompt.append("Average humidity is ${getHumidityPercentage()}. ")
+        if (getRainPrecipitationData()?.first != null && getRainPrecipitationData()?.second != null) {
+            prompt.append("${getRainPrecipitationData()?.first}. ${getRainPrecipitationData()?.second}. ")
+        }
+        if (getSnowPrecipitaionData()?.first != null && getSnowPrecipitaionData()?.second != null) {
+            prompt.append("${getSnowPrecipitaionData()?.first}. ${getSnowPrecipitaionData()?.second}. ")
+        }
+        prompt.append("UV Index is ${getUVIndex()}. ")
+        prompt.append("Max wind speed is ${getWindSpeed()}. ")
+        prompt.append("Considering all these factors what are the things that should be taken care of like below asked questions: What should be worn, specifically cloth fabric, texture, material? What should be eaten? What should be done for skin care?. What should be done for hair care?.\nGive your response in as less words as possible.")
+        return prompt.toString()
     }
 
     private fun getUnit(scaleOfMeasurement: ScaleOfMeasurement): String {

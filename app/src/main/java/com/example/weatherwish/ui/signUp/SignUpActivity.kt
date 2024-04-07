@@ -193,7 +193,7 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnSignUpWithGoogle.setOnClickListener {
+        binding.btnContinueWithGoogle.setOnClickListener {
             googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
                 override fun onSuccess() {
                     Utils.printDebugLog("signInWithGoogleAccount: Success")

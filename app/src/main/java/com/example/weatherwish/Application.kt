@@ -37,10 +37,10 @@ class Application: Application() {
     }
 
     private fun setupWorker() {
-        val constraint = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-        val workerRequest = PeriodicWorkRequest.Builder(AppWorker::class.java,15, TimeUnit.MINUTES)
-            .setConstraints(constraint).build()
-        WorkManager.getInstance(this).enqueue(workerRequest)
+//        val constraint = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+//        val workerRequest = PeriodicWorkRequest.Builder(AppWorker::class.java,15, TimeUnit.MINUTES)
+//            .setConstraints(constraint).build()
+//        WorkManager.getInstance(this).enqueue(workerRequest)
 
 
 

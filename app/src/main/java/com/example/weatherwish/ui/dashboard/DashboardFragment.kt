@@ -27,6 +27,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherwish.Application
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.adapter.DailyForecastAdapter
 import com.example.weatherwish.adapter.TemperatureAdapter
 import com.example.weatherwish.databinding.FragmentDashboardBinding
@@ -678,9 +679,9 @@ class DashboardFragment : Fragment() {
     private fun generateGeminiAnswer() {
         val generativeModel = GenerativeModel(
             modelName = "gemini-pro",
-            apiKey = "AIzaSyBm2GDZdhCshSNJ4jJvcw-n6HhcFFBaE_o"
+            apiKey = BuildConfig.GEMINI_AI_API_KEY
         )
-        val prompt = weatherDataParser!!.getWeatherPrompt()
+        val prompt = weatherDataParser!!.getGeminiAiPrompt()
         Utils.printDebugLog("AI_Prompt: $prompt")
         lifecycleScope.launch (Dispatchers.Main) {
             try {

@@ -292,14 +292,14 @@ class WeatherUpdatesFragment : Fragment(), TimeAdapter.OnTimeItemClickListener {
         binding.btnSetTimelyUpdates.setOnClickListener {
             if (alarmList.isNotEmpty()) {
                 Utils.printDebugLog("cancelling_previously_timely_updates_if_present")
-                cancelAllAlarms(requireContext())
+//                cancelAllAlarms(requireContext())
                 Utils.printDebugLog("setting_timely_updates")
                 for (time in alarmList) {
-                    scheduleNotification(
-                        requireContext(),
-                        time.time_in_millis,
-                        time.time_in_millis.toInt()
-                    )
+//                    scheduleNotification(
+//                        requireContext(),
+//                        time.time_in_millis,
+//                        time.time_in_millis.toInt()
+//                    )
                 }
                 Utils.printDebugLog("saving_timely_updates_in_firebase")
                 weatherUpdatesViewModel.updateTimelyWeatherUpdatesData(alarmList)
