@@ -1,6 +1,7 @@
 package com.example.weatherwish.ui.splashscreen
 
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
@@ -9,7 +10,11 @@ import androidx.lifecycle.lifecycleScope
 import com.example.weatherwish.Application
 import com.example.weatherwish.MainActivity
 import com.example.weatherwish.R
+import com.example.weatherwish.constants.AppConstants
+import com.example.weatherwish.databinding.ActivitySignInBinding
+import com.example.weatherwish.databinding.ActivitySplashBinding
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
+import com.example.weatherwish.extensionFunctions.setSafeOnClickListener
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.walkthrough.WalkThroughActivity
@@ -20,11 +25,14 @@ import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivitySplashBinding
+
     private lateinit var splashViewModel: SplashViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val repository = (application as Application).appRepository
 
@@ -59,6 +67,11 @@ class SplashActivity : AppCompatActivity() {
             } else {
                 navigate("WalkThroughActivity")
             }
+        }
+
+        binding.tvWeatherApiAttributionText.setSafeOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.Other.WEATHER_API_ATTRIBUTION_URL))
+            startActivity(intent)
         }
 
     }

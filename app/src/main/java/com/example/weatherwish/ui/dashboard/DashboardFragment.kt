@@ -52,10 +52,12 @@ import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.PAR
 import com.example.weatherwish.exceptionHandler.AppErrorCode.WeatherApiCodes.TOO_MANY_LOCATIONS_IN_BULK_REQUEST
 import com.example.weatherwish.exceptionHandler.WeatherApiException
 import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.model.WeatherForecastModel
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
+import com.example.weatherwish.ui.updateApp.UpdateAppActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.github.matteobattilana.weather.PrecipType
 import com.google.ai.client.generativeai.GenerativeModel
@@ -94,6 +96,8 @@ class DashboardFragment : Fragment() {
     private lateinit var navController: NavController
     private var _binding: FragmentDashboardBinding? = null
 
+    private var appRelatedData: AppRelatedData? = null
+
     private val binding get() = _binding!!
 
     private lateinit var dashboardViewModel: DashboardViewModel
@@ -123,9 +127,14 @@ class DashboardFragment : Fragment() {
             this,
             DashboardViewModelFactory(repository)
         )[DashboardViewModel::class.java]
-
-        attachObserver()
-
+        appRelatedData = (requireActivity().application as Application).appRelatedData
+        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
+            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
+            startActivity(Intent(requireContext(), UpdateAppActivity::class.java))
+            requireActivity().finish()
+        } else {
+            attachObserver()
+        }
         attachClickListener()
 
     }
@@ -187,7 +196,11 @@ class DashboardFragment : Fragment() {
         }
 
         binding.llTopGeminiLayout.setOnClickListener {
-            generateGeminiAnswer()
+            if ((requireActivity().application as Application).appRelatedData != null && (requireActivity().application as Application).appRelatedData?.is_gemini_ai_accessible == true) {
+                generateGeminiAnswer()
+            } else {
+                Utils.singleOptionAlertDialog(requireContext(),"Note", "Please try again after some time.", "Okay", false)
+            }
         }
 
         /*binding.cvAirQuality.setOnClickListener {
@@ -429,7 +442,6 @@ class DashboardFragment : Fragment() {
                     }
                 }
             }
-
         }
 
         //making the ai day planner visible to the user
@@ -456,7 +468,6 @@ class DashboardFragment : Fragment() {
         //setting moon data
         binding.cvMoonData.visibility = View.VISIBLE
         val moonData = weatherDataParser!!.getMoonData()
-        Utils.printDebugLog("moonData: $moonData")
         if (moonData.moon_phase_drawable != null) {
             binding.imgMoonPhase.setImageResource(moonData.moon_phase_drawable!!)
         }
@@ -733,7 +744,7 @@ class DashboardFragment : Fragment() {
         handler.post(runnable)
     }
 
-    fun updateApp() {
+    fun checkForAppUpdates2() {
         val appUpdateManager = AppUpdateManagerFactory.create(requireContext())
         Log.d("TAG", "updateAppCalled: "+ UpdateAvailability.UPDATE_AVAILABLE)
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
@@ -764,9 +775,24 @@ class DashboardFragment : Fragment() {
                 val alertDialog: AlertDialog = builder.create()
                 alertDialog.setCancelable(false)
                 alertDialog.show()
-
             }
         }
+    }
+
+    private fun checkForAppUpdates(): Boolean {
+        val appUpdateManager = AppUpdateManagerFactory.create(requireContext())
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        var updateAvailable = false
+        appUpdateInfoTask.addOnSuccessListener { result: AppUpdateInfo ->
+            Utils.printDebugLog("update_the_app: ${result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE}")
+            if (result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                updateAvailable = true
+            }
+        }.addOnFailureListener { exception ->
+            // Handle failure to fetch app update info
+            Log.e("AppUpdate", "Failed to fetch app update info: ${exception.message}")
+        }
+        return updateAvailable
     }
 
 }

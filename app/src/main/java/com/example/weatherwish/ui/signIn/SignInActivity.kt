@@ -1,25 +1,34 @@
 package com.example.weatherwish.ui.signIn
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.weatherwish.Application
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.MainActivity
 import com.example.weatherwish.R
 import com.example.weatherwish.databinding.ActivitySignInBinding
 import com.example.weatherwish.exceptionHandler.CustomException
 import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
+import com.example.weatherwish.extensionFunctions.setSafeOnClickListener
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.firebase.GoogleSignInCallback
 import com.example.weatherwish.firebase.GoogleSignInManager
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.ui.signUp.SignUpActivity
+import com.example.weatherwish.ui.updateApp.UpdateAppActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class SignInActivity : AppCompatActivity() {
@@ -28,6 +37,8 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var signInViewModel: SignInViewModel
 
     private lateinit var googleSignInManager: GoogleSignInManager
+
+    private var appRelatedData: AppRelatedData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,14 +50,21 @@ class SignInActivity : AppCompatActivity() {
             SignInViewModelFactory(repository)
         )[SignInViewModel::class.java]
 
-        val activityResultRegistry = this.activityResultRegistry
-        googleSignInManager = GoogleSignInManager(activityResultRegistry, this, this, repository)
+        appRelatedData = (application as Application).appRelatedData
+        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
+            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
+            startActivity(Intent(this@SignInActivity, UpdateAppActivity::class.java))
+            finish()
+        } else {
+            val activityResultRegistry = this.activityResultRegistry
+            googleSignInManager = GoogleSignInManager(activityResultRegistry, this, this, repository)
 
-        attachObservers()
+            attachObservers()
 
-        attachTextChangeListeners()
+            attachTextChangeListeners()
 
-        attachClickListeners()
+            attachClickListeners()
+        }
 
     }
 
@@ -84,7 +102,7 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun attachClickListeners() {
-        binding.btnSignIn.setOnClickListener {
+        binding.btnSignIn.setSafeOnClickListener {
             val userEmail = binding.edtUserEmail.text?.trim().toString()
             val userPassword = binding.edtUserPassword.text?.trim().toString()
 
@@ -107,7 +125,24 @@ class SignInActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnContinueWithGoogle.setOnClickListener {
+        binding.tvForgotPassword.setSafeOnClickListener {
+//            val currentUser = FirebaseAuth.getInstance().currentUser
+//            if (currentUser != null) {
+//                FirebaseAuth.getInstance().sendPasswordResetEmail(currentUser.email!!)
+//                    .addOnCompleteListener { task ->
+//                        if (task.isSuccessful) {
+//                            Utils.printDebugLog("Password reset email sent successfully")
+//                        } else {
+//                            Utils.printDebugLog("Failed to send password reset email")
+//                        }
+//                    }
+//            } else {
+//                Utils.printDebugLog("User is not signed in")
+//            }
+            sendPasswordResetEmail("connect.shakir.ansari@gmail.com")
+        }
+
+        binding.btnContinueWithGoogle.setSafeOnClickListener {
             googleSignInManager.signInWithGoogleAccount(object : GoogleSignInCallback {
                 override fun onSuccess() {
                     Utils.printDebugLog("signInWithGoogleAccount: Success")
@@ -132,7 +167,7 @@ class SignInActivity : AppCompatActivity() {
             })
         }
 
-        binding.tvSignupText.setOnClickListener {
+        binding.tvSignupText.setSafeOnClickListener {
             startActivity(Intent(this@SignInActivity, SignUpActivity::class.java))
         }
     }
@@ -171,6 +206,23 @@ class SignInActivity : AppCompatActivity() {
             }
 
         })
+    }
+
+    private fun sendPasswordResetEmail(email: String) {
+        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Utils.singleOptionAlertDialog(this@SignInActivity, "Email sent", "Password reset email sent successfully.", "Okay", true)
+                } else {
+                    Utils.singleOptionAlertDialog(
+                        this@SignInActivity,
+                        "Email sent",
+                        "Failed to send password reset email.",
+                        "Okay",
+                        true
+                    )
+                }
+            }
     }
 
 }

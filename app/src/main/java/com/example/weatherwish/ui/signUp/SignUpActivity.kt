@@ -1,24 +1,29 @@
 package com.example.weatherwish.ui.signUp
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.DeadObjectException
 import android.os.TransactionTooLargeException
 import android.text.Editable
 import android.text.TextWatcher
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.weatherwish.Application
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.MainActivity
 import com.example.weatherwish.R
 import com.example.weatherwish.databinding.ActivitySignUpBinding
 import com.example.weatherwish.exceptionHandler.ExceptionHandler
-import com.example.weatherwish.exceptionHandler.WeatherApiException
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.firebase.GoogleSignInCallback
 import com.example.weatherwish.firebase.GoogleSignInManager
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.ui.signIn.SignInActivity
+import com.example.weatherwish.ui.updateApp.UpdateAppActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -47,8 +52,6 @@ import java.net.UnknownServiceException
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLHandshakeException
 
-private const val TAG = "SignUpActivity"
-
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -57,6 +60,8 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var signUpViewModel: SignUpViewModel
 
     private lateinit var googleSignInManager: GoogleSignInManager
+
+    private var appRelatedData: AppRelatedData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,18 +72,27 @@ class SignUpActivity : AppCompatActivity() {
             this,
             SignUpViewModelFactory(repository)
         )[SignUpViewModel::class.java]
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("806589059954-hl0bgnug2g90qdjqstvd0jvsapdk8f35.apps.googleusercontent.com")
-            .requestEmail().build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        val activityResultRegistry = this.activityResultRegistry
-        googleSignInManager = GoogleSignInManager(activityResultRegistry, this, this, repository)
-        attachObservers()
+        appRelatedData = (application as Application).appRelatedData
+        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
+            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
+            startActivity(Intent(this@SignUpActivity, UpdateAppActivity::class.java))
+            finish()
+        } else {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("806589059954-hl0bgnug2g90qdjqstvd0jvsapdk8f35.apps.googleusercontent.com")
+                .requestEmail().build()
+            googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        attachTextChangeListeners()
+            val activityResultRegistry = this.activityResultRegistry
+            googleSignInManager =
+                GoogleSignInManager(activityResultRegistry, this, this, repository)
+            attachObservers()
 
-        attachClickListeners()
+            attachTextChangeListeners()
+
+            attachClickListeners()
+        }
     }
 
     private fun attachObservers() {

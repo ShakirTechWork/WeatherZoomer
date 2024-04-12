@@ -23,6 +23,7 @@ import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.databinding.FragmentSettingsBinding
 import com.example.weatherwish.extensionFunctions.setSafeOnClickListener
 import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.utils.Utils
@@ -36,6 +37,8 @@ class SettingsFragment : Fragment() {
     private var userData: UserModel? = null
     private lateinit var navController: NavController
     private var _binding: FragmentSettingsBinding? = null
+
+    private var appRelatedData: AppRelatedData? = null
 
     private val binding get() = _binding!!
 
@@ -67,7 +70,7 @@ class SettingsFragment : Fragment() {
             this,
             SettingsViewModelFactory(repository)
         )[SettingsViewModel::class.java]
-
+        appRelatedData = (requireActivity().application as Application).appRelatedData
         binding.tvAppVersion.text = "${getString(R.string.app_version)} ${BuildConfig.VERSION_NAME}"
         attachClickListener()
         attachObserver()
@@ -110,19 +113,19 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        binding.clMetricLayout.setOnClickListener {
+        binding.clMetricLayout.setSafeOnClickListener {
             binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
             binding.imgImperialTick.setImageResource(0)
             settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.METRIC)
         }
 
-        binding.clImperialLayout.setOnClickListener {
+        binding.clImperialLayout.setSafeOnClickListener {
             binding.imgImperialTick.setImageResource(R.drawable.tick_circle)
             binding.imgMetricTick.setImageResource(0)
             settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.IMPERIAL)
         }
 
-        binding.cdThemeLayout.setOnClickListener {
+        binding.cdThemeLayout.setSafeOnClickListener {
             Utils.twoOptionAlertDialog(
                 requireContext(),
                 "Change App Theme",
@@ -141,7 +144,7 @@ class SettingsFragment : Fragment() {
                 })
         }
 
-        binding.cdSignoutLayout.setOnClickListener {
+        binding.cdSignoutLayout.setSafeOnClickListener {
             Utils.twoOptionAlertDialog(
                 requireContext(),
                 "Confirmation",
@@ -156,12 +159,15 @@ class SettingsFragment : Fragment() {
                     startActivity(Intent(requireActivity(), SignInActivity::class.java))
                 },
                 {})
+        }
 
-            binding.cdShareApp.setSafeOnClickListener {
+        binding.cdShareApp.setSafeOnClickListener {
+            if (appRelatedData != null) {
                 try {
                     val shareIntent = ShareCompat.IntentBuilder(requireActivity())
                         .setType("text/plain")
-                        .setText(getString(R.string.share_app_text))
+                        .setText("${getString(R.string.share_app_text)}\n${
+                            appRelatedData!!.app_play_store_link}")
                         .intent
                     if (shareIntent.resolveActivity(requireContext().packageManager) != null) {
                         CoroutineScope(Dispatchers.IO).launch {
@@ -173,6 +179,8 @@ class SettingsFragment : Fragment() {
                 } catch (e: Exception) {
                     Utils.showShortToast(requireContext(), "Something went wrong! Try again.")
                 }
+            } else {
+                Utils.showLongToast(requireContext(), "Please share the app link from play store.")
             }
         }
 

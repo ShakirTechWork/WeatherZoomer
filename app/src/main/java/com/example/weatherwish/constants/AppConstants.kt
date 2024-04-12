@@ -1,6 +1,10 @@
 package com.example.weatherwish.constants
 
 object AppConstants {
+
+    object Other {
+        const val WEATHER_API_ATTRIBUTION_URL = "https://www.weatherapi.com"
+    }
     object Units {
         const val DEGREE_CELSIUS = "°C"
         const val DEGREE_FAHRENHEIT = "°F"

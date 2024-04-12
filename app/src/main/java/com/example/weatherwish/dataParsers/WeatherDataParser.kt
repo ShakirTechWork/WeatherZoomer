@@ -279,14 +279,14 @@ class WeatherDataParser(
         val moonPhase = weatherForecastData.forecast.forecastday[index].astro.moon_phase
         val moonIlluminationPercentage = weatherForecastData.forecast.forecastday[index].astro.moon_illumination
         val moonPhaseDrawable = when (moonPhase) {
-            AppConstants.MoonPhases.NEW_MOON -> R.drawable.moonphase_moonphase1
-            AppConstants.MoonPhases.WAXING_CRESCENT -> R.drawable.moonphase_moonphase1
-            AppConstants.MoonPhases.FIRST_QUARTER ->  R.drawable.moonphase_moonphase1
-            AppConstants.MoonPhases.WAXING_GIBBOUS -> R.drawable.moonphase_moonphase1
-            AppConstants.MoonPhases.FULL_MOON -> R.drawable.moonphase_moonphase1
-            AppConstants.MoonPhases.WANING_GIBBOUS -> R.drawable.moonphase_moonphase1
-            AppConstants.MoonPhases.LAST_QUARTER -> R.drawable.moonphase_moonphase1
-            AppConstants.MoonPhases.WANING_CRESCENT -> R.drawable.moonphase_moonphase1
+            AppConstants.MoonPhases.NEW_MOON -> R.drawable.new_moon_image
+            AppConstants.MoonPhases.WAXING_CRESCENT -> R.drawable.waxing_crescent_moon_image
+            AppConstants.MoonPhases.FIRST_QUARTER ->  R.drawable.first_quarter_moon_image
+            AppConstants.MoonPhases.WAXING_GIBBOUS -> R.drawable.waxing_gibbous_moon_image
+            AppConstants.MoonPhases.FULL_MOON -> R.drawable.full_moon_image
+            AppConstants.MoonPhases.WANING_GIBBOUS -> R.drawable.waning_gibbous_moon_image
+            AppConstants.MoonPhases.LAST_QUARTER -> R.drawable.last_quarter_moon_image
+            AppConstants.MoonPhases.WANING_CRESCENT -> R.drawable.waning_crescent_moon_image
             else -> null
         }
         return MoonData("Illumination Percentage: $moonIlluminationPercentage%", "Moon Phase: $moonPhaseText", moonPhaseDrawable, "Moonrise: $moonRiseTime", "Moonset: $moonSetTime")
@@ -350,10 +350,6 @@ class WeatherDataParser(
                 } else {
                     AppConstants.Units.MILES //miles
                 }
-            }
-
-            else -> {
-                ""
             }
         }
     }

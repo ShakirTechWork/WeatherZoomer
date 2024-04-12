@@ -22,7 +22,7 @@
     <string name="sign_up_sub_title">Sign-up with email-password or sign with your existing google account</string>
     <string name="or_with">Or With</string>
     <string name="sign_up">Sign Up</string>
-    <string name="signup_with_google">Signup with Google</string>
+    <string name="continue_with_google">Continue with Google</string>
     <string name="already_have_an_account"><u>Already have an account?</u></string>
     <string name="login_underline"><u>Login</u></string>
     <string name="hi_welcome_back">Hi, Welcome Back</string>
@@ -88,5 +88,8 @@
     <string name="uk_aqi_text_four">Adults and children with lung problems, adults with heart problems, and older people, should avoid strenuous physical activity. People with asthma may find they need to use their reliever inhaler more often.</string>
     <string name="need_your_location">Need your location.</string>
     <string name="share_this_app">Share this app</string>
-    <string name="share_app_text">Stay ahead of the weather trends!\nDownload this app for precise weather updates:\nwww.google.com.</string>
+    <string name="share_app_text">Stay ahead of the weather trends!\nDownload this app for precise weather updates:</string>
+    <string name="new_update_is_available">New update is available</string>
+    <string name="update_now">Update now</string>
+    <string name="powered_by_weatherapi_com">Powered by <font color="#1D71F2">WeatherAPI.com</font></string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.weatherwish.firebase
 
 import android.app.Activity
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.model.SelectedTimeModel
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.utils.Utils
@@ -60,22 +61,6 @@ class FirebaseManager {
     fun signInWithGoogleAccount(authCredential: AuthCredential) :Task<AuthResult> {
         return auth.signInWithCredential(authCredential)
     }
-
-//    fun addUserIntoDatabase(name: String, email: String): FirebaseResponse<Boolean> {
-//        return try {
-//            Firebase.database.reference.child("users")
-//                .child(auth.currentUser?.uid.toString())
-//                .setValue(
-//                    UserModel(
-//                        user_name = name,
-//                        user_email = email
-//                    )
-//                )
-//            FirebaseResponse.Success(true)
-//        } catch (e: Exception) {
-//            FirebaseResponse.Failure(e)
-//        }
-//    }
 
     suspend fun addUserIntoDatabase(name: String, email: String): FirebaseResponse<Boolean> {
         return try {
@@ -308,6 +293,16 @@ class FirebaseManager {
 //            startActivity(intent)
 //            finish()
 //        }
+    }
+
+    suspend fun getAppRelatedData(): FirebaseResponse<AppRelatedData> {
+        return try {
+            val appRef = databaseReference.child("app_related_data").get().await()
+            val appData = appRef.getValue(AppRelatedData::class.java)
+            return FirebaseResponse.Success(appData)
+        } catch (exception: Exception) {
+            FirebaseResponse.Failure(exception)
+        }
     }
 
     // Example: Write data to Firebase Realtime Database

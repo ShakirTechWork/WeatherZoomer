@@ -1,11 +1,13 @@
 package com.example.weatherwish.ui.signUp
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
 import com.example.weatherwish.exceptionHandler.ExceptionErrorMessages
 import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.repo.AppRepository
 import com.example.weatherwish.utils.Utils
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +19,7 @@ class SignUpViewModel(private val appRepository: AppRepository) : ViewModel() {
 
     private val _resultMutableLiveData = MutableLiveData<FirebaseResponse<Boolean>>()
 
-    val resultMutableLiveData: MutableLiveData<FirebaseResponse<Boolean>>
+    val resultMutableLiveData: LiveData<FirebaseResponse<Boolean>>
         get() = _resultMutableLiveData
 
     suspend fun createUserWithEmailAndPassword(name: String, email: String, password: String) {

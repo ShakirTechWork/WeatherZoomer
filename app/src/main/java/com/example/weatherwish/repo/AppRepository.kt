@@ -10,6 +10,7 @@ import com.example.weatherwish.datastore.AppDataStore
 import com.example.weatherwish.firebase.FirebaseManager
 import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.firebase.firebaseAwaitOperationCaller
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.model.SelectedTimeModel
 import com.example.weatherwish.model.UserModel
 import com.example.weatherwish.model.WeatherData
@@ -74,6 +75,10 @@ class AppRepository(
 
     suspend fun updateUserUnitPreference(userId: String, preferredUnit: String): FirebaseResponse<Boolean> {
         return firebaseManager.updateUserUnitPreference(userId, preferredUnit)
+    }
+
+    suspend fun getAppRelatedData(): FirebaseResponse<AppRelatedData> {
+        return firebaseManager.getAppRelatedData()
     }
 
     suspend fun saveUserPrimaryLocation(primaryLocation: String) {

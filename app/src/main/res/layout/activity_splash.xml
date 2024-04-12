@@ -3,23 +3,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.splashscreen.SplashActivity"
     android:background="#E9EBEA">
 
     <ImageView
+        android:id="@+id/img_logo"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="300dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:src="@drawable/app_logo"
-        android:contentDescription="@string/app_logo"/>
+        android:contentDescription="@string/app_logo"
+        android:scaleType="centerCrop"/>
 
-<!--    <TextView-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        android:text="Splash Screen"-->
-<!--        android:textSize="40sp"/>-->
+    <TextView
+        android:id="@+id/tv_weather_api_attribution_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/img_logo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"
+        android:text="@string/powered_by_weatherapi_com"
+        android:textSize="16sp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

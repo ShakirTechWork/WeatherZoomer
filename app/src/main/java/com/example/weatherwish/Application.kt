@@ -7,24 +7,28 @@ import android.content.Context
 import android.os.Build
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import com.example.weatherwish.api.NetworkEndpoints
 import com.example.weatherwish.api.RetrofitHelper
 import com.example.weatherwish.datastore.AppDataStore
-import com.example.weatherwish.datastore.AppDataStore2
 import com.example.weatherwish.firebase.FirebaseManager
+import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.repo.AppRepository
+import com.example.weatherwish.utils.Utils
 import com.example.weatherwish.workManager.AppWorker
 import com.google.firebase.FirebaseApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class Application: Application() {
 
     lateinit var appRepository: AppRepository
+    var appRelatedData: AppRelatedData? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -82,6 +86,7 @@ class Application: Application() {
         val appDataStore: AppDataStore = AppDataStore.getInstance(applicationContext)
         val firebaseManager = FirebaseManager()
         appRepository = AppRepository(networkEndpoints, appDataStore, firebaseManager, applicationContext)
+        getAppRelatedData()
     }
 
     private fun createNotificationChannel() {
@@ -93,6 +98,30 @@ class Application: Application() {
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun getAppRelatedData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            Utils.printDebugLog("getAppRelatedData:: Loading")
+            val data = appRepository.getAppRelatedData()
+            when (data) {
+                is FirebaseResponse.Success -> {
+                    if (data.data != null) {
+                        appRelatedData = data.data
+                        if (appRelatedData != null) {
+                            Utils.printDebugLog("getAppRelatedData:: Success | App_version: ${appRelatedData!!.app_latest_version}")
+                        } else {
+                            Utils.printDebugLog("getAppRelatedData:: Sucess | but got null")
+                        }
+                    }
+                }
+                is FirebaseResponse.Failure -> {
+                    Utils.printDebugLog("getAppRelatedData:: Failed | exception: ${data.exception}")
+                    appRelatedData = null
+                }
+                FirebaseResponse.Loading -> {}
+            }
         }
     }
 

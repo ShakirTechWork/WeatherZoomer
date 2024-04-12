@@ -11,10 +11,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.example.weatherwish.Application
+import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.R
 import com.example.weatherwish.adapter.WalkthroughAdapter
 import com.example.weatherwish.databinding.ActivityWalkThroughBinding
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.ui.signIn.SignInActivity
+import com.example.weatherwish.ui.updateApp.UpdateAppActivity
+import com.example.weatherwish.utils.Utils
 
 class WalkThroughActivity : AppCompatActivity() {
 
@@ -22,6 +26,8 @@ class WalkThroughActivity : AppCompatActivity() {
     private lateinit var walkThroughViewModel: WalkThroughViewModel
 
     private lateinit var walkthroughAdapter: WalkthroughAdapter
+
+    private var appRelatedData: AppRelatedData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,35 +37,42 @@ class WalkThroughActivity : AppCompatActivity() {
 
         walkThroughViewModel = ViewModelProvider(this, WalkThroughViewModelFactory(repository))[WalkThroughViewModel::class.java]
 
-        walkthroughAdapter = WalkthroughAdapter(this, getWalkthroughPages())
-        binding.viewPager.adapter = walkthroughAdapter
-        setupIndicator()
-        setCurrentIndicator(0)
-
-        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                setCurrentIndicator(position)
-            }
-        })
-
-        binding.tvPrevious.setOnClickListener {
-            if (binding.viewPager.currentItem > 0) {
-                binding.viewPager.currentItem -= 1
-            }
-        }
-
-        binding.tvNext.setOnClickListener {
-            if (binding.viewPager.currentItem < walkthroughAdapter.itemCount - 1) {
-                binding.viewPager.currentItem += 1
-            }
-        }
-
-        binding.tvStart.setOnClickListener {
-            walkThroughViewModel.updateIsAppOpenedFirstTime(true)
-            val intent = Intent(this@WalkThroughActivity, SignInActivity::class.java)
-            startActivity(intent)
+        appRelatedData = (application as Application).appRelatedData
+        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
+            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
+            startActivity(Intent(this@WalkThroughActivity, UpdateAppActivity::class.java))
             finish()
+        } else {
+            walkthroughAdapter = WalkthroughAdapter(this, getWalkthroughPages())
+            binding.viewPager.adapter = walkthroughAdapter
+            setupIndicator()
+            setCurrentIndicator(0)
+
+            binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
+                    setCurrentIndicator(position)
+                }
+            })
+
+            binding.tvPrevious.setOnClickListener {
+                if (binding.viewPager.currentItem > 0) {
+                    binding.viewPager.currentItem -= 1
+                }
+            }
+
+            binding.tvNext.setOnClickListener {
+                if (binding.viewPager.currentItem < walkthroughAdapter.itemCount - 1) {
+                    binding.viewPager.currentItem += 1
+                }
+            }
+
+            binding.tvStart.setOnClickListener {
+                walkThroughViewModel.updateIsAppOpenedFirstTime(true)
+                val intent = Intent(this@WalkThroughActivity, SignInActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
     }
 
