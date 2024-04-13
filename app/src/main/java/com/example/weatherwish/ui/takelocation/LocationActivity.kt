@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import com.example.weatherwish.R
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,6 +25,7 @@ import com.example.weatherwish.extensionFunctions.setSafeOnClickListener
 import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
 import com.google.android.gms.location.*
+import com.google.android.material.textfield.TextInputEditText
 
 
 private const val TAG = "LocationActivity"
@@ -104,7 +104,7 @@ class LocationActivity : AppCompatActivity() {
             }
         }
 
-        binding.tvEnterLocationManually.setOnClickListener {
+        binding.tvEnterLocationManually.setSafeOnClickListener {
             val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
             // Determine theme mode (light/dark)
             val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
@@ -120,15 +120,21 @@ class LocationActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
             val textTitle = dialogView.findViewById<TextView>(R.id.tv_title)
-            val edtLocation = dialogView.findViewById<EditText>(R.id.edt_location)
-            val btnOK = dialogView.findViewById<Button>(R.id.btn_set_location)
+            val edtTxtInputLocation = dialogView.findViewById<TextInputEditText>(R.id.text_input_edit_text)
+            val btnApply = dialogView.findViewById<Button>(R.id.btn_apply)
             val btnCancel = dialogView.findViewById<Button>(R.id.btn_cancel)
             textTitle.text = "Type your location"
-            btnOK.setOnClickListener {
-                val location = edtLocation.text.toString()
+            edtTxtInputLocation.hint = "Type your location"
+            btnApply.text = "Set location"
+            btnApply.setOnClickListener {
+                val location = edtTxtInputLocation.text.toString().trim()
                 if (location.isNotBlank()) {
-                    storeLocationAndNavigate(location)
-                    dialog.dismiss()
+                    if (Utils.isInternetAvailable(this@LocationActivity)) {
+                        storeLocationAndNavigate(location)
+                        dialog.dismiss()
+                    } else {
+                        Utils.showShortToast(this@LocationActivity, "Please check your internet connection")
+                    }
                 } else {
                     Utils.showLongToast(this@LocationActivity, "Please enter the location first.")
                 }

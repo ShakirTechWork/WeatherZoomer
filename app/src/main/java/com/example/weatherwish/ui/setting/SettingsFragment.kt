@@ -75,6 +75,10 @@ class SettingsFragment : Fragment() {
         attachClickListener()
         attachObserver()
         userData = sharedViewModel.userData
+        if (userData != null) {
+            binding.tvUserName.text = userData!!.user_name
+            binding.tvUserEmail.text = userData!!.user_email
+        }
         if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.METRIC) {
             binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
         } else if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.IMPERIAL) {
@@ -114,15 +118,23 @@ class SettingsFragment : Fragment() {
         }
 
         binding.clMetricLayout.setSafeOnClickListener {
-            binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
-            binding.imgImperialTick.setImageResource(0)
-            settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.METRIC)
+            if (Utils.isInternetAvailable(requireContext())) {
+                binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
+                binding.imgImperialTick.setImageResource(0)
+                settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.METRIC)
+            } else {
+                Utils.showLongToast(requireContext(), "Please check your internet connection.")
+            }
         }
 
         binding.clImperialLayout.setSafeOnClickListener {
-            binding.imgImperialTick.setImageResource(R.drawable.tick_circle)
-            binding.imgMetricTick.setImageResource(0)
-            settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.IMPERIAL)
+            if (Utils.isInternetAvailable(requireContext())) {
+                binding.imgImperialTick.setImageResource(R.drawable.tick_circle)
+                binding.imgMetricTick.setImageResource(0)
+                settingsViewModel.updateUserUnitPreference(AppConstants.UserPreferredUnit.IMPERIAL)
+            } else {
+                Utils.showLongToast(requireContext(), "Please check your internet connection.")
+            }
         }
 
         binding.cdThemeLayout.setSafeOnClickListener {

@@ -133,7 +133,7 @@ class DashboardFragment : Fragment() {
             startActivity(Intent(requireContext(), UpdateAppActivity::class.java))
             requireActivity().finish()
         } else {
-            attachObserver()
+            fetchUserAndWeatherData()
         }
         attachClickListener()
 
@@ -210,79 +210,93 @@ class DashboardFragment : Fragment() {
         }*/
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun attachObserver() {
-        fetchUserAndWeatherData()
-    }
-
     private fun fetchUserAndWeatherData() {
         resetViews()
-        ProgressDialog.initialize(requireContext())
-        ProgressDialog.show("Loading weather data")
-        lifecycleScope.launch {
-            userDataResult = dashboardViewModel.getUserData()
-            when (userDataResult) {
-                is FirebaseResponse.Success -> {
-                    val userData = (userDataResult as FirebaseResponse.Success<UserModel?>).data
-                    if (userData != null) {
-                        Utils.printDebugLog("Fetching_User_Data :: Success")
-                        sharedViewModel.userData = userData
-                        if (userData.user_primary_location.isNotBlank()) {
-                            Utils.printDebugLog("Got_primary_location :: ${userData.user_primary_location}")
-                            val primaryLocation = userData.user_primary_location
-                            systemOfMeasurement = when (userData.user_settings.preferred_unit) {
-                                AppConstants.UserPreferredUnit.METRIC -> {
-                                    SystemOfMeasurement.METRIC
-                                }
-                                AppConstants.UserPreferredUnit.IMPERIAL -> {
-                                    SystemOfMeasurement.IMPERIAL
-                                }
-                                else -> {
-                                    SystemOfMeasurement.METRIC
-                                }
-                            }
-                            dashboardViewModel.getForecastData(primaryLocation, 3, "yes", "yes")
-                                .asLiveData()
-                                .observe(viewLifecycleOwner) {
-                                    when (it) {
-                                        is ApiResponse.Success -> {
-                                            weatherForecastData = it.data
-                                            if (weatherForecastData != null) {
-                                                ProgressDialog.dismiss()
-                                                Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
-                                                weatherDataParser = null
-                                                setData(weatherForecastData!!, 0)
-                                            }
-                                        }
-
-                                        is ApiResponse.Failure -> {
-                                            ProgressDialog.dismiss()
-                                            Utils.printErrorLog("Fetch_Weather_forecast :: Failure ${it.exception}")
-                                            handleExceptions(it.exception)
-                                        }
-
-                                        is ApiResponse.Loading -> {
-                                            Utils.printDebugLog("Fetch_Weather_forecast :: Loading")
-                                        }
+        if (Utils.isInternetAvailable(requireContext())) {
+            ProgressDialog.initialize(requireContext())
+            ProgressDialog.show("Loading weather data")
+            lifecycleScope.launch {
+                userDataResult = dashboardViewModel.getUserData()
+                when (userDataResult) {
+                    is FirebaseResponse.Success -> {
+                        val userData = (userDataResult as FirebaseResponse.Success<UserModel?>).data
+                        if (userData != null) {
+                            Utils.printDebugLog("Fetching_User_Data :: Success")
+                            sharedViewModel.userData = userData
+                            if (userData.user_primary_location.isNotBlank()) {
+                                Utils.printDebugLog("Got_primary_location :: ${userData.user_primary_location}")
+                                val primaryLocation = userData.user_primary_location
+                                systemOfMeasurement = when (userData.user_settings.preferred_unit) {
+                                    AppConstants.UserPreferredUnit.METRIC -> {
+                                        SystemOfMeasurement.METRIC
+                                    }
+                                    AppConstants.UserPreferredUnit.IMPERIAL -> {
+                                        SystemOfMeasurement.IMPERIAL
+                                    }
+                                    else -> {
+                                        SystemOfMeasurement.METRIC
                                     }
                                 }
+                                dashboardViewModel.getForecastData(primaryLocation, 3, "yes", "yes")
+                                    .asLiveData()
+                                    .observe(viewLifecycleOwner) {
+                                        when (it) {
+                                            is ApiResponse.Success -> {
+                                                weatherForecastData = it.data
+                                                if (weatherForecastData != null) {
+                                                    ProgressDialog.dismiss()
+                                                    Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
+                                                    weatherDataParser = null
+                                                    setData(weatherForecastData!!, 0)
+                                                }
+                                            }
+
+                                            is ApiResponse.Failure -> {
+                                                ProgressDialog.dismiss()
+                                                Utils.printErrorLog("Fetch_Weather_forecast :: Failure ${it.exception}")
+                                                handleExceptions(it.exception)
+                                            }
+
+                                            is ApiResponse.Loading -> {
+                                                Utils.printDebugLog("Fetch_Weather_forecast :: Loading")
+                                            }
+                                        }
+                                    }
+                            } else {
+                                Utils.printDebugLog("User_Primary_Location_Not_Found")
+                                Utils.singleOptionAlertDialog(
+                                    requireContext(),
+                                    "No location found",
+                                    "Please give the location name.",
+                                    "OKAY",
+                                    false
+                                ) {
+                                    ProgressDialog.dismiss()
+                                    val intent = Intent(requireContext(), LocationActivity::class.java)
+                                    startActivity(intent)
+                                    requireActivity().finish()
+                                }
+                            }
                         } else {
-                            Utils.printDebugLog("User_Primary_Location_Not_Found")
+                            Utils.printErrorLog("User_Data_Not_Found")
                             Utils.singleOptionAlertDialog(
                                 requireContext(),
-                                "No location found",
-                                "Please give the location name.",
+                                "Something went wrong",
+                                "Please login again.",
                                 "OKAY",
                                 false
                             ) {
                                 ProgressDialog.dismiss()
-                                val intent = Intent(requireContext(), LocationActivity::class.java)
+                                val intent = Intent(requireContext(), SignInActivity::class.java)
                                 startActivity(intent)
                                 requireActivity().finish()
                             }
                         }
-                    } else {
-                        Utils.printErrorLog("User_Data_Not_Found")
+                    }
+
+                    is FirebaseResponse.Failure -> {
+                        ProgressDialog.dismiss()
+                        Utils.printErrorLog("Fetching_User_Data :: Failure: ${(userDataResult as FirebaseResponse.Failure).exception}")
                         Utils.singleOptionAlertDialog(
                             requireContext(),
                             "Something went wrong",
@@ -290,33 +304,20 @@ class DashboardFragment : Fragment() {
                             "OKAY",
                             false
                         ) {
-                            ProgressDialog.dismiss()
                             val intent = Intent(requireContext(), SignInActivity::class.java)
                             startActivity(intent)
                             requireActivity().finish()
                         }
                     }
-                }
 
-                is FirebaseResponse.Failure -> {
-                    ProgressDialog.dismiss()
-                    Utils.printErrorLog("Fetching_User_Data :: Failure: ${(userDataResult as FirebaseResponse.Failure).exception}")
-                    Utils.singleOptionAlertDialog(
-                        requireContext(),
-                        "Something went wrong",
-                        "Please login again.",
-                        "OKAY",
-                        false
-                    ) {
-                        val intent = Intent(requireContext(), SignInActivity::class.java)
-                        startActivity(intent)
-                        requireActivity().finish()
+                    is FirebaseResponse.Loading -> {
+                        Utils.printErrorLog("Fetching_User_Data :: Loading")
                     }
                 }
-
-                is FirebaseResponse.Loading -> {
-                    Utils.printErrorLog("Fetching_User_Data :: Loading")
-                }
+            }
+        } else {
+            makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                fetchUserAndWeatherData()
             }
         }
     }
@@ -554,6 +555,16 @@ class DashboardFragment : Fragment() {
                     fetchUserAndWeatherData()
                 }
             }
+            is SocketTimeoutException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
+            is SocketException -> {
+                makeUserRetryAgain("Something went wrong. May be an internet problem") {
+                    fetchUserAndWeatherData()
+                }
+            }
             is WeatherApiException -> handleWeatherApiException(exception)
             is DeadObjectException -> showSimpleMessage("Something went wrong. Please kill and reopen the app.")
             is TransactionTooLargeException -> {
@@ -572,11 +583,6 @@ class DashboardFragment : Fragment() {
                 }
             }
             is SocketException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    fetchUserAndWeatherData()
-                }
-            }
-            is SocketTimeoutException -> {
                 makeUserRetryAgain("Something went wrong. May be an internet problem") {
                     fetchUserAndWeatherData()
                 }

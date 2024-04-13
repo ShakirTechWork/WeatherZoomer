@@ -196,7 +196,11 @@ class SignUpActivity : AppCompatActivity() {
             ) {
                 if (Utils.isValidEmailId(userEmail)) {
                     if (userPassword == userConfirmPassword) {
-                        createUserWithEmailAndPassword(userName, userEmail, userPassword)
+                        if (Utils.isInternetAvailable(this@SignUpActivity)) {
+                            createUserWithEmailAndPassword(userName, userEmail, userPassword)
+                        } else {
+                            Utils.showLongToast(this@SignUpActivity, "Please check your internet connection.")
+                        }
                     } else {
                         binding.tilConfirmPassword.error =
                             getString(R.string.passwrd_confirm_passwrd_should_be_same)
@@ -208,28 +212,32 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         binding.btnContinueWithGoogle.setOnClickListener {
-            googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
-                override fun onSuccess() {
-                    Utils.printDebugLog("signInWithGoogleAccount: Success")
-//                    ProgressDialog.dismiss()
-                    Utils.showLongToast(this@SignUpActivity, "Registration Successful")
-                    startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
-                    finish()
-                }
+            if (Utils.isInternetAvailable(this@SignUpActivity)) {
+                googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
+                    override fun onSuccess() {
+                        Utils.printDebugLog("signInWithGoogleAccount: Success")
+    //                    ProgressDialog.dismiss()
+                        Utils.showLongToast(this@SignUpActivity, "Registration Successful")
+                        startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
+                        finish()
+                    }
 
 
-                override fun onFailure(exception: Exception) {
-                    Utils.printDebugLog("signInWithGoogleAccount: Failed")
-//                    ProgressDialog.dismiss()
-                    ExceptionHandler.handleException(this@SignUpActivity, exception)
-                }
+                    override fun onFailure(exception: Exception) {
+                        Utils.printDebugLog("signInWithGoogleAccount: Failed")
+    //                    ProgressDialog.dismiss()
+                        ExceptionHandler.handleException(this@SignUpActivity, exception)
+                    }
 
-                override fun onLoading() {
-                    Utils.printDebugLog("signInWithGoogleAccount: Loading")
-//                    ProgressDialog.initialize(this@SignUpActivity)
-//                    ProgressDialog.show("Creating your account")
-                }
-            })
+                    override fun onLoading() {
+                        Utils.printDebugLog("signInWithGoogleAccount: Loading")
+    //                    ProgressDialog.initialize(this@SignUpActivity)
+    //                    ProgressDialog.show("Creating your account")
+                    }
+                })
+            } else {
+                Utils.showLongToast(this@SignUpActivity, "Please check your internet connection.")
+            }
         }
 
         binding.tvLoginText.setOnClickListener {

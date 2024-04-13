@@ -1,13 +1,15 @@
 package com.example.weatherwish.ui.signIn
 
-import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
+import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.widget.Toast
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -28,6 +30,7 @@ import com.example.weatherwish.ui.signUp.SignUpActivity
 import com.example.weatherwish.ui.updateApp.UpdateAppActivity
 import com.example.weatherwish.utils.ProgressDialog
 import com.example.weatherwish.utils.Utils
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -116,8 +119,12 @@ class SignInActivity : AppCompatActivity() {
 
             if (userEmail.isNotBlank() && userPassword.isNotBlank()) {
                 if (Utils.isValidEmailId(userEmail)) {
-                    lifecycleScope.launch {
-                        signInViewModel.signInWithEmailAndPassword(userEmail, userPassword)
+                    if (Utils.isInternetAvailable(this@SignInActivity)) {
+                        lifecycleScope.launch {
+                            signInViewModel.signInWithEmailAndPassword(userEmail, userPassword)
+                        }
+                    } else {
+                        Utils.showLongToast(this@SignInActivity, "Please check your internet connection.")
                     }
                 } else {
                     binding.tilUserEmail.error = getString(R.string.please_enter_valid_email)
@@ -126,45 +133,73 @@ class SignInActivity : AppCompatActivity() {
         }
 
         binding.tvForgotPassword.setSafeOnClickListener {
-//            val currentUser = FirebaseAuth.getInstance().currentUser
-//            if (currentUser != null) {
-//                FirebaseAuth.getInstance().sendPasswordResetEmail(currentUser.email!!)
-//                    .addOnCompleteListener { task ->
-//                        if (task.isSuccessful) {
-//                            Utils.printDebugLog("Password reset email sent successfully")
-//                        } else {
-//                            Utils.printDebugLog("Failed to send password reset email")
-//                        }
-//                    }
-//            } else {
-//                Utils.printDebugLog("User is not signed in")
-//            }
-            sendPasswordResetEmail("connect.shakir.ansari@gmail.com")
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
+            // Determine theme mode (light/dark)
+            val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+            // Set background drawable based on theme mode
+            val drawableResId = if (isDarkMode) R.drawable.dialog_background_dark_mode else R.drawable.dialog_background_light_mode
+            dialogView.setBackgroundResource(drawableResId)
+            val builder = AlertDialog.Builder(this)
+            val dialog = builder.setView(dialogView).create()
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            val textTitle = dialogView.findViewById<TextView>(R.id.tv_title)
+            val edtTxtInputEmailId = dialogView.findViewById<TextInputEditText>(R.id.text_input_edit_text)
+            val btnApply = dialogView.findViewById<Button>(R.id.btn_apply)
+            val btnCancel = dialogView.findViewById<Button>(R.id.btn_cancel)
+            edtTxtInputEmailId.hint = "Type your email id"
+            btnApply.text = "Reset"
+            textTitle.text = "Type your email id"
+            btnApply.setOnClickListener {
+                val emailId = edtTxtInputEmailId.text.toString().trim()
+                if (emailId.isNotBlank()) {
+                    if (Utils.isInternetAvailable(this@SignInActivity)) {
+                        sendPasswordResetEmail(emailId)
+                        dialog.dismiss()
+                    } else {
+                        Utils.showLongToast(this@SignInActivity, "Please check your internet connection.")
+                    }
+                } else {
+                    Utils.showLongToast(this@SignInActivity, "Please enter the email id first.")
+                }
+            }
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
         }
 
         binding.btnContinueWithGoogle.setSafeOnClickListener {
-            googleSignInManager.signInWithGoogleAccount(object : GoogleSignInCallback {
-                override fun onSuccess() {
-                    Utils.printDebugLog("signInWithGoogleAccount: Success")
-                    ProgressDialog.dismiss()
-                    Utils.showLongToast(this@SignInActivity, "Registration Successful")
-                    startActivity(Intent(this@SignInActivity, MainActivity::class.java))
-                    finish()
-                }
+            if (Utils.isInternetAvailable(this@SignInActivity)) {
+                googleSignInManager.signInWithGoogleAccount(object : GoogleSignInCallback {
+                    override fun onSuccess() {
+                        Utils.printDebugLog("signInWithGoogleAccount: Success")
+                        ProgressDialog.dismiss()
+                        Utils.showLongToast(this@SignInActivity, "Registration Successful")
+                        startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+                        finish()
+                    }
 
 
-                override fun onFailure(exception: Exception) {
-                    Utils.printDebugLog("signInWithGoogleAccount: Failed")
-                    ProgressDialog.dismiss()
-                    ExceptionHandler.handleException(this@SignInActivity, exception)
-                }
+                    override fun onFailure(exception: Exception) {
+                        Utils.printDebugLog("signInWithGoogleAccount: Failed")
+                        ProgressDialog.dismiss()
+                        ExceptionHandler.handleException(this@SignInActivity, exception)
+                    }
 
-                override fun onLoading() {
-                    Utils.printDebugLog("signInWithGoogleAccount: Loading")
-                    ProgressDialog.initialize(this@SignInActivity)
-                    ProgressDialog.show("Creating your account")
-                }
-            })
+                    override fun onLoading() {
+                        Utils.printDebugLog("signInWithGoogleAccount: Loading")
+                        ProgressDialog.initialize(this@SignInActivity)
+                        ProgressDialog.show("Creating your account")
+                    }
+                })
+            } else {
+                Utils.showLongToast(this@SignInActivity, "Please check your internet connection.")
+            }
         }
 
         binding.tvSignupText.setSafeOnClickListener {

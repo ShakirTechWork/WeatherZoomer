@@ -51,9 +51,9 @@ fun <T> result(call: suspend () -> Response<T>): Flow<ApiResponse<T?>> = flow {
             }
         }
 
-    } catch (t: Throwable) {
-        Log.e(TAG, "API_Error: ${t.printStackTrace()}" )
-        emit(ApiResponse.Failure(WeatherApiException(201, 1000, "unknown message")))
+    } catch (exception: Exception) {
+        Log.e(TAG, "API_Error: $exception" )
+        emit(ApiResponse.Failure(exception))
     }
 
 }

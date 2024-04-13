@@ -6,6 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -15,6 +18,7 @@ import com.example.weatherwish.BuildConfig
 import com.example.weatherwish.constants.AppEnum
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.installations.Utils
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,6 +47,21 @@ object Utils {
     fun isGpsEnabled(context: Context): Boolean {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+    fun isInternetAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val network = connectivityManager.activeNetwork ?: return false
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        val boolean = networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+        printErrorLog("internet: $boolean")
+        if (!boolean) {
+            printErrorLog("No internet connection")
+        }
+        return boolean
     }
 
     fun singleOptionAlertDialog(
