@@ -68,7 +68,7 @@ dependencies {
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-analytics")
+//    implementation("com.google.firebase:firebase-analytics")
     implementation ("com.google.firebase:firebase-database-ktx")
     implementation("com.google.android.play:app-update-ktx:2.1.0")
 
@@ -128,7 +128,7 @@ dependencies {
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
 
     //gemini ai
-    implementation("com.google.ai.client.generativeai:generativeai:0.2.2")
+    implementation("com.google.ai.client.generativeai:generativeai:0.3.0")
 
     //lottie animation
     implementation("com.airbnb.android:lottie:3.5.0")
