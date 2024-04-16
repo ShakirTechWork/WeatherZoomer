@@ -32,7 +32,7 @@
         android:id="@+id/tv_sub_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="The current version of this application is no location supported. We apologize for any inconvenience we may have caused you."
+        android:text="@string/current_version_is_not_supported_text"
         style="@style/SmallRegularText"
         android:textColor="@color/dark_text_color"
         android:gravity="center"

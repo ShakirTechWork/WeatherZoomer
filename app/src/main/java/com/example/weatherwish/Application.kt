@@ -110,7 +110,7 @@ class Application: Application() {
                     if (data.data != null) {
                         appRelatedData = data.data
                         if (appRelatedData != null) {
-                            Utils.printDebugLog("getAppRelatedData:: Success | App_version: ${appRelatedData!!.app_latest_version}")
+                            Utils.printDebugLog("getAppRelatedData:: Success | App_version: $appRelatedData")
                         } else {
                             Utils.printDebugLog("getAppRelatedData:: Sucess | but got null")
                         }
