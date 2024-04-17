@@ -94,4 +94,5 @@
     <string name="powered_by_weatherapi_com">Powered by <font color="#1D71F2">WeatherAPI.com</font></string>
     <string name="current_version_is_not_supported_text">The current version of this application is no longer supported. We apologize for any inconvenience we may have caused you.</string>
     <string name="tap_to_continue">Tap to continue.</string>
+    <string name="alert">Alert</string>
 </resources>

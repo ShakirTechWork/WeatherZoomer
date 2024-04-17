@@ -6,6 +6,8 @@ import com.example.weatherwish.constants.AppConstants
 import com.example.weatherwish.constants.ScaleOfMeasurement
 import com.example.weatherwish.constants.SystemOfMeasurement
 import com.example.weatherwish.model.AQIData
+import com.example.weatherwish.model.Alert
+import com.example.weatherwish.model.AlertAvailableData
 import com.example.weatherwish.model.Current
 import com.example.weatherwish.model.Hour
 import com.example.weatherwish.model.Location
@@ -292,11 +294,35 @@ class WeatherDataParser(
         return MoonData("Illumination Percentage: $moonIlluminationPercentage%", "Moon Phase: $moonPhaseText", moonPhaseDrawable, "Moonrise: $moonRiseTime", "Moonset: $moonSetTime")
     }
 
-    fun getAlerts(): Pair<String, String>? {
+    fun getAlerts2(): Triple<String, String, String>? {
         val alerts = weatherForecastData.alerts.alert
         return if (alerts.isNotEmpty()) {
+            Utils.printErrorLog("alerts: $alerts")
             val alert = alerts[0]
-            Pair(alert.headline, alert.instruction)
+            Triple(alert.headline, alert.areas, alert.desc)
+        } else {
+            null
+        }
+    }
+
+    fun getAlerts(): AlertAvailableData? {
+        val alerts = weatherForecastData.alerts.alert
+        return if (alerts.isNotEmpty()) {
+            Utils.printErrorLog("alerts: $alerts")
+            val alert = alerts[0]
+            if (alert.headline.isNotBlank() || alert.areas.isNotBlank() ||
+                alert.desc.isNotBlank()) {
+                AlertAvailableData(
+                    alert.areas,
+                    alert.desc,
+                    "Alert start time\n${Utils.convertTimestampToReadableTime(alert.effective)}",
+                    "Alert end time\n${Utils.convertTimestampToReadableTime(alert.expires)}",
+                    alert.headline,
+                    alert.instruction
+                )
+            } else {
+                null
+            }
         } else {
             null
         }

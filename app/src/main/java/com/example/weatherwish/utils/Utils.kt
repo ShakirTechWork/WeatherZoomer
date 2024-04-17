@@ -20,6 +20,8 @@ import com.example.weatherwish.ui.signIn.SignInActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.installations.Utils
 import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 private const val TAG = "Utils"
@@ -171,6 +173,14 @@ object Utils {
         val date = Date(unixTime * 1000L) // Convert seconds to milliseconds
         val sdf = SimpleDateFormat("EEE dd MMM yyyy", Locale.getDefault())
         return sdf.format(date)
+    }
+
+    fun convertTimestampToReadableTime(timestamp: String): String {
+        //converts this type of time "2024-04-15T22:00:00+00:00" to "15 Apr 2024 10:00 PM"
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd MMM yyyy hh:mm a", Locale.getDefault())
+        val date = inputFormat.parse(timestamp)
+        return outputFormat.format(date!!)
     }
 
     fun isValidEmailId(email: String): Boolean {

@@ -24,7 +24,7 @@ import com.example.weatherwish.firebase.GoogleSignInManager
 import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.updateApp.UpdateAppActivity
-import com.example.weatherwish.utils.ProgressDialog
+import com.example.weatherwish.utils.GifProgressDialog
 import com.example.weatherwish.utils.Utils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -100,21 +100,21 @@ class SignUpActivity : AppCompatActivity() {
             when (it) {
                 is FirebaseResponse.Success -> {
                     Utils.printDebugLog("Signup_User :: Success")
-                    ProgressDialog.dismiss()
+                    GifProgressDialog.dismiss()
                     Utils.showLongToast(this@SignUpActivity, "Registration Successful")
                     startActivity(Intent(this, SignInActivity::class.java))
                     finish()
                 }
                 is FirebaseResponse.Failure -> {
                     Utils.printErrorLog("Signup_User :: ${it.exception}")
-                    ProgressDialog.dismiss()
+                    GifProgressDialog.dismiss()
 //                    ExceptionHandler.handleException(this@SignUpActivity, it.exception!!)
                     handleExceptions(it.exception)
                 }
                 is FirebaseResponse.Loading -> {
                     Utils.printDebugLog("Signup_User :: Loading")
-                    ProgressDialog.initialize(this@SignUpActivity)
-                    ProgressDialog.show("Creating your account")
+                    GifProgressDialog.initialize(this@SignUpActivity)
+                    GifProgressDialog.show("Creating your account")
                 }
                 else -> {
                     Utils.printErrorLog("Signup_User :: No Status Found")
@@ -216,7 +216,7 @@ class SignUpActivity : AppCompatActivity() {
                 googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
                     override fun onSuccess() {
                         Utils.printDebugLog("signInWithGoogleAccount: Success")
-    //                    ProgressDialog.dismiss()
+    //                    GifProgressDialog.dismiss()
                         Utils.showLongToast(this@SignUpActivity, "Registration Successful")
                         startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
                         finish()
@@ -225,14 +225,14 @@ class SignUpActivity : AppCompatActivity() {
 
                     override fun onFailure(exception: Exception) {
                         Utils.printDebugLog("signInWithGoogleAccount: Failed")
-    //                    ProgressDialog.dismiss()
+    //                    GifProgressDialog.dismiss()
                         ExceptionHandler.handleException(this@SignUpActivity, exception)
                     }
 
                     override fun onLoading() {
                         Utils.printDebugLog("signInWithGoogleAccount: Loading")
-    //                    ProgressDialog.initialize(this@SignUpActivity)
-    //                    ProgressDialog.show("Creating your account")
+    //                    GifProgressDialog.initialize(this@SignUpActivity)
+    //                    GifProgressDialog.show("Creating your account")
                     }
                 })
             } else {

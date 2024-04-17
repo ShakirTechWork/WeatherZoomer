@@ -58,7 +58,7 @@ import com.example.weatherwish.model.WeatherForecastModel
 import com.example.weatherwish.ui.signIn.SignInActivity
 import com.example.weatherwish.ui.takelocation.LocationActivity
 import com.example.weatherwish.ui.updateApp.UpdateAppActivity
-import com.example.weatherwish.utils.ProgressDialog
+import com.example.weatherwish.utils.GifProgressDialog
 import com.github.matteobattilana.weather.PrecipType
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.ServerException
@@ -213,8 +213,8 @@ class DashboardFragment : Fragment() {
     private fun fetchUserAndWeatherData() {
         resetViews()
         if (Utils.isInternetAvailable(requireContext())) {
-            ProgressDialog.initialize(requireContext())
-            ProgressDialog.show("Loading weather data")
+            GifProgressDialog.initialize(requireContext())
+            GifProgressDialog.show("Loading weather data")
             lifecycleScope.launch {
                 userDataResult = dashboardViewModel.getUserData()
                 when (userDataResult) {
@@ -244,7 +244,7 @@ class DashboardFragment : Fragment() {
                                             is ApiResponse.Success -> {
                                                 weatherForecastData = it.data
                                                 if (weatherForecastData != null) {
-                                                    ProgressDialog.dismiss()
+                                                    GifProgressDialog.dismiss()
                                                     Utils.printDebugLog("Fetch_Weather_forecast :: Success location: ${weatherForecastData!!.location.region}")
                                                     weatherDataParser = null
                                                     setData(weatherForecastData!!, 0)
@@ -252,7 +252,7 @@ class DashboardFragment : Fragment() {
                                             }
 
                                             is ApiResponse.Failure -> {
-                                                ProgressDialog.dismiss()
+                                                GifProgressDialog.dismiss()
                                                 Utils.printErrorLog("Fetch_Weather_forecast :: Failure ${it.exception}")
                                                 handleExceptions(it.exception)
                                             }
@@ -271,7 +271,7 @@ class DashboardFragment : Fragment() {
                                     "OKAY",
                                     false
                                 ) {
-                                    ProgressDialog.dismiss()
+                                    GifProgressDialog.dismiss()
                                     val intent = Intent(requireContext(), LocationActivity::class.java)
                                     startActivity(intent)
                                     requireActivity().finish()
@@ -286,7 +286,8 @@ class DashboardFragment : Fragment() {
                                 "OKAY",
                                 false
                             ) {
-                                ProgressDialog.dismiss()
+                                GifProgressDialog.dismiss()
+                                dashboardViewModel.signOutCurrentUser(requireActivity())
                                 val intent = Intent(requireContext(), SignInActivity::class.java)
                                 startActivity(intent)
                                 requireActivity().finish()
@@ -295,7 +296,7 @@ class DashboardFragment : Fragment() {
                     }
 
                     is FirebaseResponse.Failure -> {
-                        ProgressDialog.dismiss()
+                        GifProgressDialog.dismiss()
                         Utils.printErrorLog("Fetching_User_Data :: Failure: ${(userDataResult as FirebaseResponse.Failure).exception}")
                         Utils.singleOptionAlertDialog(
                             requireContext(),
@@ -304,6 +305,7 @@ class DashboardFragment : Fragment() {
                             "OKAY",
                             false
                         ) {
+                            dashboardViewModel.signOutCurrentUser(requireActivity())
                             val intent = Intent(requireContext(), SignInActivity::class.java)
                             startActivity(intent)
                             requireActivity().finish()
@@ -481,8 +483,17 @@ class DashboardFragment : Fragment() {
         val alertPair = weatherDataParser!!.getAlerts()
         if (alertPair != null) {
             binding.cvAlertCard.visibility = View.VISIBLE
-            binding.tvHeadline.text = alertPair.first
-            binding.tvInstruction.text = alertPair.second
+            binding.tvHeadline.text = alertPair.headline
+            binding.tvDescription.text = alertPair.desc
+            binding.tvAreas.text = alertPair.areas
+            if (alertPair.effective.isNotBlank()) {
+                binding.tvAlertStartTime.visibility = View.VISIBLE
+                binding.tvAlertStartTime.text = alertPair.effective
+            }
+            if (alertPair.expires.isNotBlank()) {
+                binding.tvAlertEndTime.visibility = View.VISIBLE
+                binding.tvAlertEndTime.text = alertPair.expires
+            }
         }
 
         //future days weather data
@@ -530,6 +541,8 @@ class DashboardFragment : Fragment() {
         binding.clTopHeaderLayout.visibility = View.GONE
         binding.cvCurrentDataCard.visibility = View.GONE
         binding.cvAlertCard.visibility = View.GONE
+        binding.tvAlertStartTime.visibility = View.GONE
+        binding.tvAlertEndTime.visibility = View.GONE
         binding.rvForecastTemp.visibility = View.GONE
         binding.cvSnowData.visibility = View.GONE
         binding.cvRainData.visibility = View.GONE
@@ -686,6 +699,7 @@ class DashboardFragment : Fragment() {
             .setCancelable(true)
             .setPositiveButton("Ok") { dialog, _ ->
                 dialog.dismiss()
+                dashboardViewModel.signOutCurrentUser(requireActivity())
                 val intent = Intent(requireContext(), SignInActivity::class.java)
                 startActivity(intent)
                 requireActivity().finish()

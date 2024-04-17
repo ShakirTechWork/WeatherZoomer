@@ -4,11 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
-import com.example.weatherwish.workManager.WeatherUpdatesWorker
+//import com.example.weatherwish.workManager.WeatherUpdatesWorker
 import java.util.concurrent.TimeUnit
 
 class DeviceRebootReceiver : BroadcastReceiver() {

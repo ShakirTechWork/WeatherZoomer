@@ -5,11 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import com.example.weatherwish.api.NetworkEndpoints
 import com.example.weatherwish.api.RetrofitHelper
 import com.example.weatherwish.datastore.AppDataStore
@@ -18,7 +13,7 @@ import com.example.weatherwish.firebase.FirebaseResponse
 import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.repo.AppRepository
 import com.example.weatherwish.utils.Utils
-import com.example.weatherwish.workManager.AppWorker
+//import com.example.weatherwish.workManager.AppWorker
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,32 +46,32 @@ class Application: Application() {
     }
 
     private fun setupWorker2() {
-        val constraint = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-
-        val sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-
-        // Check if it's the first app launch
-        val isFirstLaunch = sharedPreferences.getBoolean("is_first_launch", true)
-
-        if (isFirstLaunch) {
-            // Set the flag to false after the first launch
-            sharedPreferences.edit().putBoolean("is_first_launch", false).apply()
-        } else {
-            // Create a periodic work request to repeat the API call every 6 hours
-            val periodicWorkRequest = PeriodicWorkRequest.Builder(
-                AppWorker::class.java,
-                15, TimeUnit.MINUTES
-            )
-                .setConstraints(constraint)
-                .build()
-
-            // Enqueue the periodic work request with KEEP policy
-            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                "periodic_work_tag",
-                ExistingPeriodicWorkPolicy.KEEP,
-                periodicWorkRequest
-            )
-        }
+//        val constraint = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+//
+//        val sharedPreferences = getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+//
+//        // Check if it's the first app launch
+//        val isFirstLaunch = sharedPreferences.getBoolean("is_first_launch", true)
+//
+//        if (isFirstLaunch) {
+//            // Set the flag to false after the first launch
+//            sharedPreferences.edit().putBoolean("is_first_launch", false).apply()
+//        } else {
+//            // Create a periodic work request to repeat the API call every 6 hours
+//            val periodicWorkRequest = PeriodicWorkRequest.Builder(
+//                AppWorker::class.java,
+//                15, TimeUnit.MINUTES
+//            )
+//                .setConstraints(constraint)
+//                .build()
+//
+//            // Enqueue the periodic work request with KEEP policy
+//            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//                "periodic_work_tag",
+//                ExistingPeriodicWorkPolicy.KEEP,
+//                periodicWorkRequest
+//            )
+//        }
     }
 
 

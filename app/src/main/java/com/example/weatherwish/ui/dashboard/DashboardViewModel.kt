@@ -1,5 +1,6 @@
 package com.example.weatherwish.ui.dashboard
 
+import android.app.Activity
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -74,6 +75,12 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
         alerts: String
     ): Flow<ApiResponse<WeatherForecastModel?>> {
         return appRepository.getForecastData(location, numOfDays, aqi, alerts)
+    }
+
+    fun signOutCurrentUser(activity: Activity) {
+        viewModelScope.launch {
+            appRepository.signOutCurrentUser(activity)
+        }
     }
 
 }

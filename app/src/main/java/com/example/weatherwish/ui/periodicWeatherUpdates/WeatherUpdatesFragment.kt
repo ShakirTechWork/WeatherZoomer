@@ -26,9 +26,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import com.example.weatherwish.Application
 import com.example.weatherwish.R
 import com.example.weatherwish.SharedViewModel
@@ -37,7 +34,7 @@ import com.example.weatherwish.broadcastReceivers.WeatherUpdateReceiver
 import com.example.weatherwish.databinding.FragmentWeatherUpdatesBinding
 import com.example.weatherwish.model.SelectedTimeModel
 import com.example.weatherwish.utils.Utils
-import com.example.weatherwish.workManager.WeatherUpdatesWorker
+//import com.example.weatherwish.workManager.WeatherUpdatesWorker
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.TimeZone
@@ -164,27 +161,27 @@ class WeatherUpdatesFragment : Fragment(), TimeAdapter.OnTimeItemClickListener {
 //                    Utils.printDebugLog("workInfos: ${workInfos}")
 //                    if (workInfos.any { it.state == WorkInfo.State.RUNNING }) {
                             Utils.printDebugLog("Cancelling already running worker and setting a new worker.")
-                            val uniqueWorkName = WeatherUpdatesWorker::class.java.simpleName
-                            WorkManager.getInstance(requireContext()).cancelUniqueWork(uniqueWorkName)
+//                            val uniqueWorkName = WeatherUpdatesWorker::class.java.simpleName
+//                            WorkManager.getInstance(requireContext()).cancelUniqueWork(uniqueWorkName)
 //                    }
-                            val weatherWorkRequest =
-                                PeriodicWorkRequest.Builder(
-                                    WeatherUpdatesWorker::class.java,
-                                    periodicUpdateIntervalInHours!!.toLong(),
-                                    TimeUnit.MINUTES
-                                ).addTag("WeatherUpdatesWorker").build()
-                            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
-                                "WeatherUpdatesWorker",
-                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                                weatherWorkRequest
-                            )
+//                            val weatherWorkRequest =
+//                                PeriodicWorkRequest.Builder(
+//                                    WeatherUpdatesWorker::class.java,
+//                                    periodicUpdateIntervalInHours!!.toLong(),
+//                                    TimeUnit.MINUTES
+//                                ).addTag("WeatherUpdatesWorker").build()
+//                            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+//                                "WeatherUpdatesWorker",
+//                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+//                                weatherWorkRequest
+//                            )
                         }
                     }
 
                     "Saved And Enabled" -> {
                         Utils.printDebugLog("Cancelling already running worker and setting a new worker.")
-                        val uniqueWorkName = WeatherUpdatesWorker::class.java.simpleName
-                        WorkManager.getInstance(requireContext()).cancelUniqueWork(uniqueWorkName)
+//                        val uniqueWorkName = WeatherUpdatesWorker::class.java.simpleName
+//                        WorkManager.getInstance(requireContext()).cancelUniqueWork(uniqueWorkName)
                     }
 
                     "Unsaved And Disabled" -> {
@@ -198,20 +195,20 @@ class WeatherUpdatesFragment : Fragment(), TimeAdapter.OnTimeItemClickListener {
 //                    Utils.printDebugLog("workInfos: ${workInfos}")
 //                    if (workInfos.any { it.state == WorkInfo.State.RUNNING }) {
                             Utils.printDebugLog("Cancelling already running worker and setting a new worker.")
-                            val uniqueWorkName = WeatherUpdatesWorker::class.java.simpleName
-                            WorkManager.getInstance(requireContext()).cancelUniqueWork(uniqueWorkName)
+//                            val uniqueWorkName = WeatherUpdatesWorker::class.java.simpleName
+//                            WorkManager.getInstance(requireContext()).cancelUniqueWork(uniqueWorkName)
 //                    }
-                            val weatherWorkRequest =
-                                PeriodicWorkRequest.Builder(
-                                    WeatherUpdatesWorker::class.java,
-                                    periodicUpdateIntervalInHours!!.toLong(),
-                                    TimeUnit.MINUTES
-                                ).addTag("WeatherUpdatesWorker").build()
-                            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
-                                "WeatherUpdatesWorker",
-                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                                weatherWorkRequest
-                            )
+//                            val weatherWorkRequest =
+//                                PeriodicWorkRequest.Builder(
+//                                    WeatherUpdatesWorker::class.java,
+//                                    periodicUpdateIntervalInHours!!.toLong(),
+//                                    TimeUnit.MINUTES
+//                                ).addTag("WeatherUpdatesWorker").build()
+//                            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+//                                "WeatherUpdatesWorker",
+//                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+//                                weatherWorkRequest
+//                            )
                         }
                     }
                 }
