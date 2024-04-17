@@ -32,6 +32,9 @@ object GifProgressDialog {
 
     fun dismiss() {
         if (isVisible && dialog != null) {
+            val imageView = dialog?.findViewById<ImageView>(R.id.progress_gif)
+            Glide.with(imageView!!)
+                .clear(imageView)
             dialog?.dismiss()
             dialog = null
             isVisible = false

@@ -485,7 +485,11 @@ class DashboardFragment : Fragment() {
             binding.cvAlertCard.visibility = View.VISIBLE
             binding.tvHeadline.text = alertPair.headline
             binding.tvDescription.text = alertPair.desc
-            binding.tvAreas.text = alertPair.areas
+            if (alertPair.areas.isNotBlank()) {
+                binding.tvAreas.text = alertPair.areas
+            } else {
+                binding.tvAreas.visibility = View.GONE
+            }
             if (alertPair.effective.isNotBlank()) {
                 binding.tvAlertStartTime.visibility = View.VISIBLE
                 binding.tvAlertStartTime.text = alertPair.effective
