@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.weatherwish.exceptionHandler.ExceptionErrorCodes
 import com.example.weatherwish.exceptionHandler.ExceptionErrorMessages
 import com.example.weatherwish.firebase.FirebaseResponse
+import com.example.weatherwish.model.AppRelatedData
 import com.example.weatherwish.model.WeatherForecastModel
 import com.example.weatherwish.repo.AppRepository
 import com.example.weatherwish.utils.Utils
@@ -21,8 +22,17 @@ class SplashViewModel(private val appRepository: AppRepository) : ViewModel() {
     val currentLoggedInUserLiveData: LiveData<FirebaseResponse<Boolean>>
         get() = _currentLoggedInUserMutableLiveData
 
+    private val _appRelatedMLiveData = MutableLiveData<AppRelatedData?>()
+
+    val appRelatedLiveData: LiveData<AppRelatedData?>
+        get() = _appRelatedMLiveData
+
     init {
         getCurrentLoggedInUser()
+    }
+
+    fun updateAppRelatedData(appRelatedData: AppRelatedData) {
+        _appRelatedMLiveData.postValue(appRelatedData)
     }
 
     private fun getCurrentLoggedInUser() {

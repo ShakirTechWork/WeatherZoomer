@@ -94,7 +94,8 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:text="Mon 05:22 PM"
-                        android:textColor="@color/color_primary_light"/>
+                        android:textColor="@color/color_primary_light"
+                        android:gravity="start"/>
 
                     <TextView
                         android:id="@+id/tv_current_temperature"

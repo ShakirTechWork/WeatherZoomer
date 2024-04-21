@@ -29,15 +29,15 @@ class WeatherDataParser(
     fun getSelectedDate(): String {
         return when (index) {
             0 -> {
-                "Today"
+                "Today\nTap to change the day"
             }
 
             1 -> {
-                "${Utils.convertUnixTimeToFormattedDayAndDate(weatherForecastData.forecast.forecastday[index].date_epoch.toLong())} (Tommorrow)"
+                "${Utils.convertUnixTimeToFormattedDayAndDate(weatherForecastData.forecast.forecastday[index].date_epoch.toLong())} (Tommorrow)\nTap to change the day"
             }
 
             else -> {
-                Utils.convertUnixTimeToFormattedDayAndDate(weatherForecastData.forecast.forecastday[index].date_epoch.toLong())
+                "${Utils.convertUnixTimeToFormattedDayAndDate(weatherForecastData.forecast.forecastday[index].date_epoch.toLong())}\nTap to change the day"
             }
         }
     }

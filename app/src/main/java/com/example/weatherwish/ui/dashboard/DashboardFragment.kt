@@ -347,13 +347,15 @@ class DashboardFragment : Fragment() {
             weatherDataParser!!.getConditionImageUrl()), "drawable", requireActivity().packageName))
 
         //setting hour wise horizontal list
-        val temperatureAdapter = TemperatureAdapter(weatherDataParser!!.getHourlyTemperatureData(), requireContext(), systemOfMeasurement)
+        val temperatureList = weatherDataParser!!.getHourlyTemperatureData()
         val systemCurrentHour = SimpleDateFormat("HH", Locale.getDefault()).format(Date(System.currentTimeMillis())).toInt()
         val position: Int
         for ((indexNumber, hourlyDataItem) in weatherDataParser!!.getHourlyTemperatureData().withIndex()) {
             val dataListItemTimeHour = SimpleDateFormat("HH", Locale.getDefault()).format(Date(hourlyDataItem.time_epoch.toLong() * 1000)).toInt()
             if (dataListItemTimeHour == systemCurrentHour) {
                 position = indexNumber
+                temperatureList[position].isCurrentHour = true
+                val temperatureAdapter = TemperatureAdapter(temperatureList, requireContext(), systemOfMeasurement)
                 binding.rvForecastTemp.visibility = View.VISIBLE
                 binding.rvForecastTemp.adapter = temperatureAdapter
                 binding.rvForecastTemp.scrollToPosition(position)

@@ -81,7 +81,7 @@ class Application: Application() {
         val appDataStore: AppDataStore = AppDataStore.getInstance(applicationContext)
         val firebaseManager = FirebaseManager()
         appRepository = AppRepository(networkEndpoints, appDataStore, firebaseManager, applicationContext)
-        getAppRelatedData()
+//        getAppRelatedData()
     }
 
     private fun createNotificationChannel() {
@@ -93,30 +93,6 @@ class Application: Application() {
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
-        }
-    }
-
-    private fun getAppRelatedData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            Utils.printDebugLog("getAppRelatedData:: Loading")
-            val data = appRepository.getAppRelatedData()
-            when (data) {
-                is FirebaseResponse.Success -> {
-                    if (data.data != null) {
-                        appRelatedData = data.data
-                        if (appRelatedData != null) {
-                            Utils.printDebugLog("getAppRelatedData:: Success | App_version: $appRelatedData")
-                        } else {
-                            Utils.printDebugLog("getAppRelatedData:: Sucess | but got null")
-                        }
-                    }
-                }
-                is FirebaseResponse.Failure -> {
-                    Utils.printDebugLog("getAppRelatedData:: Failed | exception: ${data.exception}")
-                    appRelatedData = null
-                }
-                FirebaseResponse.Loading -> {}
-            }
         }
     }
 
