@@ -42,7 +42,7 @@
 }
 
 # Keep all classes that are used as arguments or destinations in navigation graph XML files
--keep class com.example.weatherwish.ui.*.** { *; }
+-keep class com.shakir.weatherzoomer.ui.*.** { *; }
 
 # Keep default constructors for Firebase models
 -keepclassmembers class * {
@@ -52,6 +52,6 @@
 # This rule will properly ProGuard all the model classes in
 # the package com.yourcompany.models.
 # Modify this rule to fit the structure of your app.
--keepclassmembers class com.example.weatherwish.model.** {
+-keepclassmembers class com.shakir.weatherzoomer.model.** {
     *;
 }

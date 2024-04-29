@@ -12,11 +12,11 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file("local.properties").newDataInputStream())
 
 android {
-    namespace 'com.example.weatherwish'
+    namespace 'com.shakir.weatherzoomer'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.weatherwish"
+        applicationId "com.shakir.weatherzoomer"
         minSdk 24
         targetSdk 33
         versionCode 1

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/fr_dashboard"
-        android:name="com.example.weatherwish.ui.dashboard.DashboardFragment"
+        android:name="com.shakir.weatherzoomer.ui.dashboard.DashboardFragment"
         tools:layout="@layout/fragment_dashboard">
 
         <action
@@ -21,7 +21,7 @@
 
     <fragment
         android:id="@+id/fr_settings"
-        android:name="com.example.weatherwish.ui.setting.SettingsFragment"
+        android:name="com.shakir.weatherzoomer.ui.setting.SettingsFragment"
         tools:layout="@layout/fragment_settings">
         <action
             android:id="@+id/action_settings_to_weather_updates_fragment"
@@ -30,12 +30,12 @@
 
     <fragment
         android:id="@+id/fr_weather_updates"
-        android:name="com.example.weatherwish.ui.periodicWeatherUpdates.WeatherUpdatesFragment"
+        android:name="com.shakir.weatherzoomer.ui.periodicWeatherUpdates.WeatherUpdatesFragment"
         tools:layout="@layout/fragment_weather_updates" />
 
     <fragment
         android:id="@+id/fr_air_quality"
-        android:name="com.example.weatherwish.ui.airquality.AirQualityFragment"
+        android:name="com.shakir.weatherzoomer.ui.airquality.AirQualityFragment"
         tools:layout="@layout/fragment_air_quality" />
 
 </navigation>

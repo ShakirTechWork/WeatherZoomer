@@ -7,7 +7,7 @@
 
         <variable
             name="darshboardViewModel"
-            type="com.example.weatherwish.ui.dashboard.DashboardViewModel" />
+            type="com.shakir.weatherzoomer.ui.dashboard.DashboardViewModel" />
 
         <import type="android.view.View" />
 

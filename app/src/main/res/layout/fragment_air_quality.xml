@@ -7,7 +7,7 @@
 
         <variable
             name="airQualityViewModel"
-            type="com.example.weatherwish.ui.airquality.AirQualityViewModel" />
+            type="com.shakir.weatherzoomer.ui.airquality.AirQualityViewModel" />
 
         <import type="android.view.View" />
 
