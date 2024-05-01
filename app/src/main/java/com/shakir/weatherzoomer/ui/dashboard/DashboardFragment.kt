@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.util.Util
 import com.shakir.weatherzoomer.Application
 import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.adapter.DailyForecastAdapter
@@ -73,6 +74,9 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.DatabaseException
+import com.google.firebase.remoteconfig.ConfigUpdate
+import com.google.firebase.remoteconfig.ConfigUpdateListener
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.EOFException

@@ -38,6 +38,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseAuthWebException
 import com.google.firebase.database.DatabaseException
+import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
 import kotlinx.coroutines.launch
 import java.io.EOFException
 import java.net.ConnectException
@@ -59,6 +60,7 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var googleSignInManager: GoogleSignInManager
 
     private var appRelatedData: AppRelatedData? = null
+    private var firebaseRemoteConfigManager: FirebaseRemoteConfigManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

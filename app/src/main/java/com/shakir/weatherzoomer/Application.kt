@@ -10,9 +10,7 @@ import com.shakir.weatherzoomer.datastore.AppDataStore
 import com.shakir.weatherzoomer.firebase.FirebaseManager
 import com.shakir.weatherzoomer.model.AppRelatedData
 import com.shakir.weatherzoomer.repo.AppRepository
-//import com.example.weatherzoomer.workManager.AppWorker
 import com.google.firebase.FirebaseApp
-import com.shakir.weatherzoomer.appRelatedData.AppDataManager
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
 import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.CoroutineScope
