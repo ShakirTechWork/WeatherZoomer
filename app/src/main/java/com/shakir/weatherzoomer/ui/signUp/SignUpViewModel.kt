@@ -16,8 +16,25 @@ class SignUpViewModel(private val appRepository: AppRepository) : ViewModel() {
 
     private val _resultMutableLiveData = MutableLiveData<FirebaseResponse<Boolean>>()
 
+    private val _privacyCheckUrlMLiveData = MutableLiveData("")
+    val privacyCheckUrlLiveData: LiveData<String>
+        get() = _privacyCheckUrlMLiveData
+
+
     val resultMutableLiveData: LiveData<FirebaseResponse<Boolean>>
         get() = _resultMutableLiveData
+    private val _privacyCheckBoxMutableLiveData = MutableLiveData<Boolean>(false)
+
+    val privacyCheckBoxLiveData: LiveData<Boolean>
+        get() = _privacyCheckBoxMutableLiveData
+
+    fun setPrivacyUrl(url: String) {
+        _privacyCheckUrlMLiveData.postValue(url)
+    }
+
+    fun setPrivacyCheckBoxChecked(boolean: Boolean) {
+        _privacyCheckBoxMutableLiveData.postValue(boolean)
+    }
 
     suspend fun createUserWithEmailAndPassword(name: String, email: String, password: String) {
         viewModelScope.launch(Dispatchers.Main) {

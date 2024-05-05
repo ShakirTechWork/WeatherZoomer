@@ -191,13 +191,13 @@ object Utils {
 
     fun printDebugLog(message: String) {
 //        if (BuildConfig.DEBUG) {
-            Log.d("WEATHER_WISH_LOG:", message)
+            Log.d("WEATHER_ZOOMER_LOG:", message)
 //        }
     }
 
     fun printErrorLog(message: String) {
 //        if (BuildConfig.DEBUG) {
-            Log.e("WEATHER_WISH_LOG:", message)
+            Log.e("WEATHER_ZOOMER_LOG:", message)
 //        }
     }
 

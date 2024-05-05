@@ -23,7 +23,6 @@ import com.shakir.weatherzoomer.constants.AppEnum
 import com.shakir.weatherzoomer.databinding.FragmentSettingsBinding
 import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.model.AppRelatedData
 import com.shakir.weatherzoomer.model.UserModel
 import com.shakir.weatherzoomer.ui.signIn.SignInActivity
 import com.shakir.weatherzoomer.utils.Utils
@@ -37,8 +36,6 @@ class SettingsFragment : Fragment() {
     private var userData: UserModel? = null
     private lateinit var navController: NavController
     private var _binding: FragmentSettingsBinding? = null
-
-    private var appRelatedData: AppRelatedData? = null
 
     private val binding get() = _binding!!
 
@@ -70,7 +67,6 @@ class SettingsFragment : Fragment() {
             this,
             SettingsViewModelFactory(repository)
         )[SettingsViewModel::class.java]
-        appRelatedData = (requireActivity().application as Application).appRelatedData
         binding.tvAppVersion.text = "${getString(R.string.app_version)} ${BuildConfig.VERSION_NAME}"
         attachClickListener()
         attachObserver()
@@ -174,25 +170,20 @@ class SettingsFragment : Fragment() {
         }
 
         binding.cdShareApp.setSafeOnClickListener {
-            if (appRelatedData != null) {
-                try {
-                    val shareIntent = ShareCompat.IntentBuilder(requireActivity())
-                        .setType("text/plain")
-                        .setText("${getString(R.string.share_app_text)}\n${
-                            appRelatedData!!.app_play_store_link}")
-                        .intent
-                    if (shareIntent.resolveActivity(requireContext().packageManager) != null) {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            startActivity(shareIntent)
-                        }
-                    } else {
-                        Utils.showShortToast(requireContext(), "No app available to handle the sharing.")
+            try {
+                val shareIntent = ShareCompat.IntentBuilder(requireActivity())
+                    .setType("text/plain")
+                    .setText("${getString(R.string.share_app_text)}\n${sharedViewModel.appPlayStoreLink}")
+                    .intent
+                if (shareIntent.resolveActivity(requireContext().packageManager) != null) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        startActivity(shareIntent)
                     }
-                } catch (e: Exception) {
-                    Utils.showShortToast(requireContext(), "Something went wrong! Try again.")
+                } else {
+                    Utils.showShortToast(requireContext(), "No app available to handle the sharing.")
                 }
-            } else {
-                Utils.showLongToast(requireContext(), "Please share the app link from play store.")
+            } catch (e: Exception) {
+                Utils.showShortToast(requireContext(), "Something went wrong! Try again.")
             }
         }
 

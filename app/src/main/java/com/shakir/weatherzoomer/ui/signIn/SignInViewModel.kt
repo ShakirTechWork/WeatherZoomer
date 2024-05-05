@@ -1,5 +1,6 @@
 package com.shakir.weatherzoomer.ui.signIn
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,9 +14,25 @@ private const val TAG = "SignInViewModel"
 class SignInViewModel(private val appRepository: AppRepository) : ViewModel() {
 
     private val _resultMutableLiveData = MutableLiveData<FirebaseResponse<FirebaseUser>>()
-
     val resultMutableLiveData: MutableLiveData<FirebaseResponse<FirebaseUser>>
         get() = _resultMutableLiveData
+
+    private val _privacyCheckUrlMLiveData = MutableLiveData("")
+    val privacyCheckUrlLiveData: LiveData<String>
+        get() = _privacyCheckUrlMLiveData
+
+    private val _privacyCheckBoxMutableLiveData = MutableLiveData(false)
+
+    val privacyCheckBoxLiveData: LiveData<Boolean>
+        get() = _privacyCheckBoxMutableLiveData
+
+    fun setPrivacyUrl(url: String) {
+        _privacyCheckUrlMLiveData.postValue(url)
+    }
+
+    fun setPrivacyCheckBoxChecked(boolean: Boolean) {
+        _privacyCheckBoxMutableLiveData.postValue(boolean)
+    }
 
     suspend fun signInWithEmailAndPassword(email: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {

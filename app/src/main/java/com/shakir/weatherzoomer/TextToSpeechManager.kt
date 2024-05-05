@@ -18,7 +18,7 @@ object TextToSpeechManager {
     }
 
     fun speak(text: String) {
-        Log.d("WEATHER_WISH_LOG", "using text_to_speech ")
+        Log.d("WEATHER_ZOOMER_LOG", "using text_to_speech ")
         textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 

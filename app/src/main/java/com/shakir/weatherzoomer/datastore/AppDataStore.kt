@@ -99,7 +99,7 @@ class AppDataStore(context: Context) {
         val primaryLocation = it[USER_PRIMARY_LOCATION] ?: ""
 
         val userModel = UserModel(name, email, token)
-        Log.d("WEATHER_WISH_LOG", "Emitting userStoredData: $userModel")
+        Log.d("WEATHER_ZOOMER_LOG", "Emitting userStoredData: $userModel")
         userModel
     }
 

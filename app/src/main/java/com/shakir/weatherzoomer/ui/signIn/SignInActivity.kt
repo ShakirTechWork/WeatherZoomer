@@ -2,10 +2,15 @@ package com.shakir.weatherzoomer.ui.signIn
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Color
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableString
 import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Button
@@ -32,6 +37,8 @@ import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.shakir.weatherzoomer.utils.Utils
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
+import com.shakir.weatherzoomer.constants.AppConstants
+import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
 import kotlinx.coroutines.launch
 
 class SignInActivity : AppCompatActivity() {
@@ -41,7 +48,7 @@ class SignInActivity : AppCompatActivity() {
 
     private lateinit var googleSignInManager: GoogleSignInManager
 
-    private var appRelatedData: AppRelatedData? = null
+    private lateinit var firebaseRemoteConfigManager: FirebaseRemoteConfigManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,20 +60,37 @@ class SignInActivity : AppCompatActivity() {
             SignInViewModelFactory(repository)
         )[SignInViewModel::class.java]
 
-        appRelatedData = (application as Application).appRelatedData
-        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
-            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
-            startActivity(Intent(this@SignInActivity, UpdateAppActivity::class.java))
-            finish()
-        } else {
-            val activityResultRegistry = this.activityResultRegistry
-            googleSignInManager = GoogleSignInManager(activityResultRegistry, this, this, repository)
+        val activityResultRegistry = this.activityResultRegistry
+        googleSignInManager = GoogleSignInManager(activityResultRegistry, this, this, repository)
 
-            attachObservers()
+        firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
+        firebaseRemoteConfigManager.observeRemoteConfigData().observe(this@SignInActivity) {
+            Utils.printDebugLog("Firebase_Config SplashActivity data observed: $it")
+            for (item in it) {
+                if (item.key == "app_latest_version") {
+                    if (BuildConfig.VERSION_NAME != item.value) {
+                        startActivity(Intent(this@SignInActivity, UpdateAppActivity::class.java))
+                        finish()
+                    }
+                    break
+                }
+            }
+            for (item in it) {
+                if (item.key == "privacy_policy_url") {
+                    signInViewModel.setPrivacyUrl(item.value)
+                    break
+                }
+            }
+        }
 
-            attachTextChangeListeners()
+        attachObservers()
 
-            attachClickListeners()
+        attachTextChangeListeners()
+
+        attachClickListeners()
+
+        binding.chkboxPrivacyPolicy.setOnCheckedChangeListener { _, isChecked ->
+            signInViewModel.setPrivacyCheckBoxChecked(isChecked)
         }
 
     }
@@ -174,32 +198,41 @@ class SignInActivity : AppCompatActivity() {
         }
 
         binding.btnContinueWithGoogle.setSafeOnClickListener {
-            if (Utils.isInternetAvailable(this@SignInActivity)) {
-                googleSignInManager.signInWithGoogleAccount(object : GoogleSignInCallback {
-                    override fun onSuccess() {
-                        Utils.printDebugLog("signInWithGoogleAccount: Success")
-                        GifProgressDialog.dismiss()
-                        Utils.showLongToast(this@SignInActivity, "Registration Successful")
-                        startActivity(Intent(this@SignInActivity, MainActivity::class.java))
-                        finish()
-                    }
+            if (signInViewModel.privacyCheckBoxLiveData.value!!) {
+                if (Utils.isInternetAvailable(this@SignInActivity)) {
+                    googleSignInManager.signInWithGoogleAccount(object : GoogleSignInCallback {
+                        override fun onSuccess() {
+                            Utils.printDebugLog("signInWithGoogleAccount: Success")
+                            GifProgressDialog.dismiss()
+                            Utils.showLongToast(this@SignInActivity, "Registration Successful")
+                            startActivity(Intent(this@SignInActivity, MainActivity::class.java))
+                            finish()
+                        }
 
 
-                    override fun onFailure(exception: Exception) {
-                        Utils.printDebugLog("signInWithGoogleAccount: Failed")
-                        GifProgressDialog.dismiss()
-                        ExceptionHandler.handleException(this@SignInActivity, exception)
-                    }
+                        override fun onFailure(exception: Exception) {
+                            Utils.printDebugLog("signInWithGoogleAccount: Failed")
+                            GifProgressDialog.dismiss()
+                            ExceptionHandler.handleException(this@SignInActivity, exception)
+                        }
 
-                    override fun onLoading() {
-                        Utils.printDebugLog("signInWithGoogleAccount: Loading")
-                        GifProgressDialog.initialize(this@SignInActivity)
-                        GifProgressDialog.show("Creating your account")
-                    }
-                })
+                        override fun onLoading() {
+                            Utils.printDebugLog("signInWithGoogleAccount: Loading")
+                            GifProgressDialog.initialize(this@SignInActivity)
+                            GifProgressDialog.show("Creating your account")
+                        }
+                    })
+                } else {
+                    Utils.showLongToast(this@SignInActivity, "Please check your internet connection.")
+                }
             } else {
-                Utils.showLongToast(this@SignInActivity, "Please check your internet connection.")
+                Utils.showLongToast(this@SignInActivity, "Please accept the privacy policy.")
             }
+        }
+
+        binding.tvPrivacyPolicy.setSafeOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(signInViewModel.privacyCheckUrlLiveData.value))
+            startActivity(intent)
         }
 
         binding.tvSignupText.setSafeOnClickListener {
@@ -259,5 +292,11 @@ class SignInActivity : AppCompatActivity() {
                 }
             }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        firebaseRemoteConfigManager.removeConfigUpdateListener()
+    }
+
 
 }

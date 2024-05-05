@@ -100,8 +100,6 @@ class DashboardFragment : Fragment() {
     private lateinit var navController: NavController
     private var _binding: FragmentDashboardBinding? = null
 
-    private var appRelatedData: AppRelatedData? = null
-
     private val binding get() = _binding!!
 
     private lateinit var dashboardViewModel: DashboardViewModel
@@ -131,14 +129,7 @@ class DashboardFragment : Fragment() {
             this,
             DashboardViewModelFactory(repository)
         )[DashboardViewModel::class.java]
-        appRelatedData = (requireActivity().application as Application).appRelatedData
-        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
-            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
-            startActivity(Intent(requireContext(), UpdateAppActivity::class.java))
-            requireActivity().finish()
-        } else {
-            fetchUserAndWeatherData()
-        }
+        fetchUserAndWeatherData()
         attachClickListener()
 
     }
@@ -200,11 +191,7 @@ class DashboardFragment : Fragment() {
         }
 
         binding.llTopGeminiLayout.setOnClickListener {
-            if ((requireActivity().application as Application).appRelatedData != null && (requireActivity().application as Application).appRelatedData?.is_gemini_ai_accessible == true) {
-                generateGeminiAnswer()
-            } else {
-                Utils.singleOptionAlertDialog(requireContext(),"Note", "Please try again after some time.", "Okay", false)
-            }
+            generateGeminiAnswer()
         }
 
         /*binding.cvAirQuality.setOnClickListener {
@@ -807,22 +794,6 @@ class DashboardFragment : Fragment() {
                 alertDialog.show()
             }
         }
-    }
-
-    private fun checkForAppUpdates(): Boolean {
-        val appUpdateManager = AppUpdateManagerFactory.create(requireContext())
-        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-        var updateAvailable = false
-        appUpdateInfoTask.addOnSuccessListener { result: AppUpdateInfo ->
-            Utils.printDebugLog("update_the_app: ${result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE}")
-            if (result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                updateAvailable = true
-            }
-        }.addOnFailureListener { exception ->
-            // Handle failure to fetch app update info
-            Log.e("AppUpdate", "Failed to fetch app update info: ${exception.message}")
-        }
-        return updateAvailable
     }
 
 }

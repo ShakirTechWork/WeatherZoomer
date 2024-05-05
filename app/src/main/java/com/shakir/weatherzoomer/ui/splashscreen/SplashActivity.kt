@@ -4,14 +4,15 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
-import com.google.firebase.remoteconfig.ConfigUpdate
-import com.google.firebase.remoteconfig.ConfigUpdateListener
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.shakir.weatherzoomer.Application
+import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.MainActivity
 import com.shakir.weatherzoomer.constants.AppConstants
 import com.shakir.weatherzoomer.databinding.ActivitySplashBinding
@@ -19,27 +20,27 @@ import com.shakir.weatherzoomer.exceptionHandler.ExceptionHandler
 import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.model.AppRelatedData
 import com.shakir.weatherzoomer.ui.signIn.SignInActivity
 import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
 import com.shakir.weatherzoomer.ui.walkthrough.WalkThroughActivity
 import com.shakir.weatherzoomer.utils.Utils
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-
-class SplashActivity : AppCompatActivity(), ConfigUpdateListener {
+class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
 
     private lateinit var splashViewModel: SplashViewModel
 
-    private var appRelatedData: AppRelatedData? = null
-    private var firebaseRemoteConfigManager: FirebaseRemoteConfigManager? = null
+    private lateinit var firebaseRemoteConfigManager: FirebaseRemoteConfigManager
 
     private var isNavigatingToWeatherAPIUrl = false
+    private var isAppOpenedFirstTime = false
+    private var isAppUpdateNotRequired = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,14 +51,6 @@ class SplashActivity : AppCompatActivity(), ConfigUpdateListener {
 
         splashViewModel =
             ViewModelProvider(this, SplashViewModelFactory(repository))[SplashViewModel::class.java]
-        appRelatedData = (application as Application).appRelatedData
-        firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
-//        splashViewModel.updateAppRelatedData(appRelatedData!!)
-        try {
-            firebaseRemoteConfigManager!!.addConfigUpdateListener(this)
-        } catch (e: Exception) {
-            Utils.printErrorLog("remoteConfigManager_exception: $e")
-        }
         checkNextScreen(3000L)
 
         binding.tvWeatherApiAttributionText.setSafeOnClickListener {
@@ -75,99 +68,65 @@ class SplashActivity : AppCompatActivity(), ConfigUpdateListener {
 
     }
 
-    private fun getAppRelatedData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            Utils.printDebugLog("getAppRelatedData:: Loading")
-//            val data = appRepository.getAppRelatedData()
-//            when (data) {
-//                is FirebaseResponse.Success -> {
-//                    if (data.data != null) {
-//                        appRelatedData = data.data
-//                        if (appRelatedData != null) {
-//                            Utils.printDebugLog("getAppRelatedData:: Success | App_version: $appRelatedData")
-//                        } else {
-//                            Utils.printDebugLog("getAppRelatedData:: Sucess | but got null")
-//                        }
-//                    }
-//                }
-//                is FirebaseResponse.Failure -> {
-//                    Utils.printDebugLog("getAppRelatedData:: Failed | exception: ${data.exception}")
-//                    appRelatedData = null
-//                }
-//                FirebaseResponse.Loading -> {}
-//            }
+    private fun checkNextScreen(delay: Long) {
+        lifecycleScope.launch {
+            Utils.printDebugLog("action_started")
+            delay(delay)
+            if (!isNavigatingToWeatherAPIUrl) {
+                firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
+                firebaseRemoteConfigManager.observeRemoteConfigData().observe(this@SplashActivity) {
+                    Utils.printDebugLog("Firebase_Config SplashActivity data observed: $it")
+                    for (item in it) {
+                        if (item.key == "app_latest_version") {
+                            isAppUpdateNotRequired = BuildConfig.VERSION_NAME == item.value
+                            if (isAppUpdateNotRequired) {
+                                lifecycleScope.launch {
+                                    val boolean = isAppOpenedByUserFirstTime()
+                                    Utils.printDebugLog("bboooo: $boolean")
+                                    if (!boolean) {
+                                        splashViewModel.currentLoggedInUserLiveData.observe(this@SplashActivity) {
+                                            when (it) {
+                                                is FirebaseResponse.Success -> {
+                                                    if ((it.data != null) && it.data) {
+                                                        Utils.printDebugLog("Currently_LoggedIn_User: Success (user is already logged in)")
+                                                        navigate("MainActivity")
+                                                    } else {
+                                                        Utils.printDebugLog("Currently_LoggedIn_User: no user found")
+                                                        navigate("SignInActivity")
+                                                    }
+                                                }
+
+                                                is FirebaseResponse.Failure -> {
+                                                    Utils.printErrorLog("Currently_LoggedIn_User: Failure ${it.exception}")
+                                                    ExceptionHandler.handleException(this@SplashActivity, it.exception!!)
+                                                }
+
+                                                is FirebaseResponse.Loading -> {
+                                                    Utils.printDebugLog("Currently_LoggedIn_User: Loading")
+                                                }
+
+                                            }
+                                        }
+                                    } else {
+                                        navigate("WalkThroughActivity")
+                                    }
+                                }
+                            } else {
+                                navigate("UpdateAppActivity")
+                            }
+                            break
+                        }
+                    }
+                }
+            }
+            Utils.printDebugLog("action_ended")
         }
     }
 
-    private fun checkNextScreen(delay: Long) {
-        lifecycleScope.launch {
-            Utils.printErrorLog("start")
-            delay(delay) // 3 seconds delay for splash screen
-            Utils.printErrorLog("end")
-            /*if (appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
-                Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
-                startActivity(Intent(this@SplashActivity, UpdateAppActivity::class.java))
-                finish()
-            } else {
-                splashViewModel.isAppOpenedFirstTime().asLiveData().observe(this@SplashActivity) {
-                    if (it) {
-                        splashViewModel.currentLoggedInUserLiveData.observe(this@SplashActivity) {
-                            when (it) {
-                                is FirebaseResponse.Success -> {
-                                    if ((it.data != null) && it.data) {
-                                        Utils.printDebugLog("Currently_LoggedIn_User: Success (user is already logged in)")
-                                        navigate("MainActivity")
-                                    } else {
-                                        Utils.printDebugLog("Currently_LoggedIn_User: no user found")
-                                        navigate("SignInActivity")
-                                    }
-                                }
-
-                                is FirebaseResponse.Failure -> {
-                                    Utils.printErrorLog("Currently_LoggedIn_User: Failure ${it.exception}")
-                                    ExceptionHandler.handleException(this@SplashActivity, it.exception!!)
-                                }
-
-                                is FirebaseResponse.Loading -> {
-                                    Utils.printDebugLog("Currently_LoggedIn_User: Loading")
-                                }
-
-                            }
-                        }
-                    } else {
-                        navigate("WalkThroughActivity")
-                    }
-                }
-            }*/
-            splashViewModel.isAppOpenedFirstTime().asLiveData().observe(this@SplashActivity) {
-                if (it) {
-                    splashViewModel.currentLoggedInUserLiveData.observe(this@SplashActivity) {
-                        when (it) {
-                            is FirebaseResponse.Success -> {
-                                if ((it.data != null) && it.data) {
-                                    Utils.printDebugLog("Currently_LoggedIn_User: Success (user is already logged in)")
-                                    navigate("MainActivity")
-                                } else {
-                                    Utils.printDebugLog("Currently_LoggedIn_User: no user found")
-                                    navigate("SignInActivity")
-                                }
-                            }
-
-                            is FirebaseResponse.Failure -> {
-                                Utils.printErrorLog("Currently_LoggedIn_User: Failure ${it.exception}")
-                                ExceptionHandler.handleException(this@SplashActivity, it.exception!!)
-                            }
-
-                            is FirebaseResponse.Loading -> {
-                                Utils.printDebugLog("Currently_LoggedIn_User: Loading")
-                            }
-
-                        }
-                    }
-                } else {
-                    navigate("WalkThroughActivity")
-                }
-            }
+    private suspend fun isAppOpenedByUserFirstTime(): Boolean {
+        return withContext(Dispatchers.Main) {
+            splashViewModel.isAppOpenedFirstTime()
+                .firstOrNull() ?: false
         }
     }
 
@@ -182,6 +141,9 @@ class SplashActivity : AppCompatActivity(), ConfigUpdateListener {
                 val intent = Intent(this@SplashActivity, WalkThroughActivity::class.java)
                 startActivity(intent)
                 finish()
+            } else if (nextScreen == "UpdateAppActivity"){
+                startActivity(Intent(this@SplashActivity, UpdateAppActivity::class.java))
+                finish()
             } else {
                 val intent = Intent(this@SplashActivity, MainActivity::class.java)
                 startActivity(intent)
@@ -190,24 +152,25 @@ class SplashActivity : AppCompatActivity(), ConfigUpdateListener {
         }
     }
 
-    override fun onUpdate(configUpdate: ConfigUpdate) {
-        Utils.printDebugLog("1234 Updated_keys:${configUpdate.updatedKeys}")
-        if (configUpdate.updatedKeys.contains("app_latest_version")) {
-            firebaseRemoteConfigManager!!.firebaseRemoteConfig.activate().addOnCompleteListener {
-                Utils.printDebugLog("Updated keys:${configUpdate.updatedKeys}")
-                startActivity(Intent(this@SplashActivity, UpdateAppActivity::class.java))
-            }
-        }
-    }
-
-    override fun onError(error: FirebaseRemoteConfigException) {
-        Utils.printDebugLog("Config update error with code: ${error.code} | $error")
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        firebaseRemoteConfigManager?.removeConfigUpdateListener()
-        firebaseRemoteConfigManager = null
+        firebaseRemoteConfigManager.removeConfigUpdateListener()
+    }
+
+    private fun isAppUpdateAvailable(): Boolean {
+        val appUpdateManager = AppUpdateManagerFactory.create(this@SplashActivity)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        var updateAvailable = false
+        appUpdateInfoTask.addOnSuccessListener { result: AppUpdateInfo ->
+            Utils.printDebugLog("update_the_app: ${result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE}")
+            if (result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                updateAvailable = true
+            }
+        }.addOnFailureListener { exception ->
+            // Handle failure to fetch app update info
+            Log.e("AppUpdate", "Failed to fetch app update info: ${exception.message}")
+        }
+        return updateAvailable
     }
 
 }

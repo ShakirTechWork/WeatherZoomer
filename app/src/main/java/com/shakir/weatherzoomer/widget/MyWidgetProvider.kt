@@ -69,7 +69,7 @@ class MyWidgetProvider : AppWidgetProvider() {
             val connectivityManager =
                 context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val networkInfo = connectivityManager.activeNetworkInfo
-            Log.d("WEATHER_WISH_LOG", "onUpdate_called ")
+            Log.d("WEATHER_ZOOMER_LOG", "onUpdate_called ")
 
             if (networkInfo != null && networkInfo.isConnected) {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -97,13 +97,13 @@ class MyWidgetProvider : AppWidgetProvider() {
                                     if (userPrimaryLocation.isNotBlank()) {
                                         val response = getCurrentWeather(userPrimaryLocation)
                                         Log.d(
-                                            "WEATHER_WISH_LOG",
+                                            "WEATHER_ZOOMER_LOG",
                                             "fetch_weather_updates: Loading"
                                         )
                                         if (response.isSuccessful) {
                                             val weatherData = response.body()
                                             Log.d(
-                                                "WEATHER_WISH_LOG",
+                                                "WEATHER_ZOOMER_LOG",
                                                 "fetch_weather_updates: Success: ${weatherData!!.location}"
                                             )
 
@@ -208,13 +208,13 @@ class MyWidgetProvider : AppWidgetProvider() {
                                             }
                                         } else {
                                             Log.e(
-                                                "WEATHER_WISH_LOG",
+                                                "WEATHER_ZOOMER_LOG",
                                                 "fetch_weather_updates: Failure: ${response.errorBody()}"
                                             )
                                         }
                                     } else {
                                         Log.d(
-                                            "WEATHER_WISH_LOG",
+                                            "WEATHER_ZOOMER_LOG",
                                             "User_Primary_Location_Not_Found"
                                         )
                                     }
@@ -227,23 +227,23 @@ class MyWidgetProvider : AppWidgetProvider() {
                                 Utils.printErrorLog("Fetching_User_Data :: Something_went_wrong_while_fetching_the_user_data")
                             }
                         } else {
-                            Log.d("WEATHER_WISH_LOG", "Currently_signed_in_user_not_found")
+                            Log.d("WEATHER_ZOOMER_LOG", "Currently_signed_in_user_not_found")
                         }
                     } else if (currentlySignedInUser is FirebaseResponse.Failure) {
                         Log.d(
-                            "WEATHER_WISH_LOG",
+                            "WEATHER_ZOOMER_LOG",
                             "Something_went_wrong_while_fetching_the_currently_signed_in_user exception: ${currentlySignedInUser.exception}"
                         )
                     } else {
                         Log.d(
-                            "WEATHER_WISH_LOG",
+                            "WEATHER_ZOOMER_LOG",
                             "Something_went_wrong_while_fetching_the_currently_signed_in_user"
                         )
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e("WEATHER_WISH_LOG", "fetch_weather_updates: Failure: ${e.message}")
+            Log.e("WEATHER_ZOOMER_LOG", "fetch_weather_updates: Failure: ${e.message}")
         } finally {
             // Release resources here
             Log.d("WEATHER_WISH", "onUpdate: in_finally_block")
@@ -256,7 +256,7 @@ class MyWidgetProvider : AppWidgetProvider() {
             if (intent.action == ACTION_REFRESH_WIDGET) {
                 // Handle the refresh action here
                 // You can fetch new data and update the widget accordingly
-                Log.d("WEATHER_WISH_LOG", "Button clicked, refreshing data")
+                Log.d("WEATHER_ZOOMER_LOG", "Button clicked, refreshing data")
 
                 // Call your data fetching logic and update the widget as needed
                 // ...
@@ -266,7 +266,7 @@ class MyWidgetProvider : AppWidgetProvider() {
                 val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
                 onUpdate(context, appWidgetManager, intArrayOf(appWidgetId))
             } else {
-                Log.d("WEATHER_WISH_LOG", "Button clicked, onReceive called but intent or context is null")
+                Log.d("WEATHER_ZOOMER_LOG", "Button clicked, onReceive called but intent or context is null")
             }
         }
     }

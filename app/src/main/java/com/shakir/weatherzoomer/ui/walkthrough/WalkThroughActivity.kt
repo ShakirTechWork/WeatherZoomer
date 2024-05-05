@@ -15,7 +15,7 @@ import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.R
 import com.shakir.weatherzoomer.adapter.WalkthroughAdapter
 import com.shakir.weatherzoomer.databinding.ActivityWalkThroughBinding
-import com.shakir.weatherzoomer.model.AppRelatedData
+import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
 import com.shakir.weatherzoomer.ui.signIn.SignInActivity
 import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
 import com.shakir.weatherzoomer.utils.Utils
@@ -27,7 +27,7 @@ class WalkThroughActivity : AppCompatActivity() {
 
     private lateinit var walkthroughAdapter: WalkthroughAdapter
 
-    private var appRelatedData: AppRelatedData? = null
+    private lateinit var firebaseRemoteConfigManager: FirebaseRemoteConfigManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,42 +37,51 @@ class WalkThroughActivity : AppCompatActivity() {
 
         walkThroughViewModel = ViewModelProvider(this, WalkThroughViewModelFactory(repository))[WalkThroughViewModel::class.java]
 
-        appRelatedData = (application as Application).appRelatedData
-        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
-            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
-            startActivity(Intent(this@WalkThroughActivity, UpdateAppActivity::class.java))
+        walkThroughViewModel.signOutCurrentUser(this@WalkThroughActivity)
+
+        firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
+        firebaseRemoteConfigManager.observeRemoteConfigData().observe(this@WalkThroughActivity) {
+            Utils.printDebugLog("Firebase_Config WalkThroughActivity data observed: $it")
+            for (item in it) {
+                if (item.key == "app_latest_version") {
+                    if (BuildConfig.VERSION_NAME != item.value) {
+                        startActivity(Intent(this@WalkThroughActivity, UpdateAppActivity::class.java))
+                        finish()
+                    }
+                    break
+                }
+            }
+        }
+
+        walkthroughAdapter = WalkthroughAdapter(this, getWalkthroughPages())
+        binding.viewPager.adapter = walkthroughAdapter
+        setupIndicator()
+        setCurrentIndicator(0)
+
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                setCurrentIndicator(position)
+            }
+        })
+
+        binding.tvPrevious.setOnClickListener {
+            if (binding.viewPager.currentItem > 0) {
+                binding.viewPager.currentItem -= 1
+            }
+        }
+
+        binding.tvNext.setOnClickListener {
+            if (binding.viewPager.currentItem < walkthroughAdapter.itemCount - 1) {
+                binding.viewPager.currentItem += 1
+            }
+        }
+
+        binding.tvStart.setOnClickListener {
+            walkThroughViewModel.updateIsAppOpenedFirstTime(false)
+            val intent = Intent(this@WalkThroughActivity, SignInActivity::class.java)
+            startActivity(intent)
             finish()
-        } else {
-            walkthroughAdapter = WalkthroughAdapter(this, getWalkthroughPages())
-            binding.viewPager.adapter = walkthroughAdapter
-            setupIndicator()
-            setCurrentIndicator(0)
-
-            binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    super.onPageSelected(position)
-                    setCurrentIndicator(position)
-                }
-            })
-
-            binding.tvPrevious.setOnClickListener {
-                if (binding.viewPager.currentItem > 0) {
-                    binding.viewPager.currentItem -= 1
-                }
-            }
-
-            binding.tvNext.setOnClickListener {
-                if (binding.viewPager.currentItem < walkthroughAdapter.itemCount - 1) {
-                    binding.viewPager.currentItem += 1
-                }
-            }
-
-            binding.tvStart.setOnClickListener {
-                walkThroughViewModel.updateIsAppOpenedFirstTime(true)
-                val intent = Intent(this@WalkThroughActivity, SignInActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
         }
     }
 
@@ -147,6 +156,11 @@ class WalkThroughActivity : AppCompatActivity() {
                 "Enjoy seamless experience with our user-friendly interface"
             )
         )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        firebaseRemoteConfigManager.removeConfigUpdateListener()
     }
 
 }

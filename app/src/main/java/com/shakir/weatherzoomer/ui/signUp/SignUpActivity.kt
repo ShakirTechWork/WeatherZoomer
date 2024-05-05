@@ -1,28 +1,19 @@
 package com.shakir.weatherzoomer.ui.signUp
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.os.DeadObjectException
 import android.os.TransactionTooLargeException
 import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableString
 import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.shakir.weatherzoomer.Application
-import com.shakir.weatherzoomer.BuildConfig
-import com.shakir.weatherzoomer.MainActivity
-import com.shakir.weatherzoomer.R
-import com.shakir.weatherzoomer.databinding.ActivitySignUpBinding
-import com.shakir.weatherzoomer.exceptionHandler.ExceptionHandler
-import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.firebase.GoogleSignInCallback
-import com.shakir.weatherzoomer.firebase.GoogleSignInManager
-import com.shakir.weatherzoomer.model.AppRelatedData
-import com.shakir.weatherzoomer.ui.signIn.SignInActivity
-import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
-import com.shakir.weatherzoomer.utils.GifProgressDialog
-import com.shakir.weatherzoomer.utils.Utils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -38,7 +29,22 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseAuthWebException
 import com.google.firebase.database.DatabaseException
+import com.shakir.weatherzoomer.Application
+import com.shakir.weatherzoomer.BuildConfig
+import com.shakir.weatherzoomer.MainActivity
+import com.shakir.weatherzoomer.R
+import com.shakir.weatherzoomer.constants.AppConstants
+import com.shakir.weatherzoomer.databinding.ActivitySignUpBinding
+import com.shakir.weatherzoomer.exceptionHandler.ExceptionHandler
+import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
+import com.shakir.weatherzoomer.firebase.FirebaseResponse
+import com.shakir.weatherzoomer.firebase.GoogleSignInCallback
+import com.shakir.weatherzoomer.firebase.GoogleSignInManager
+import com.shakir.weatherzoomer.ui.signIn.SignInActivity
+import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
+import com.shakir.weatherzoomer.utils.GifProgressDialog
+import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.launch
 import java.io.EOFException
 import java.net.ConnectException
@@ -50,6 +56,7 @@ import java.net.UnknownServiceException
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLHandshakeException
 
+
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -59,8 +66,7 @@ class SignUpActivity : AppCompatActivity() {
 
     private lateinit var googleSignInManager: GoogleSignInManager
 
-    private var appRelatedData: AppRelatedData? = null
-    private var firebaseRemoteConfigManager: FirebaseRemoteConfigManager? = null
+    private lateinit var firebaseRemoteConfigManager: FirebaseRemoteConfigManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,25 +78,43 @@ class SignUpActivity : AppCompatActivity() {
             SignUpViewModelFactory(repository)
         )[SignUpViewModel::class.java]
 
-        appRelatedData = (application as Application).appRelatedData
-        if (appRelatedData != null && appRelatedData?.app_latest_version != BuildConfig.VERSION_NAME) {
-            Utils.printErrorLog("New_App_Version_Available:${appRelatedData?.app_latest_version}")
-            startActivity(Intent(this@SignUpActivity, UpdateAppActivity::class.java))
-            finish()
-        } else {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("519620655091-pccssobbeded1frouj0h64smta168djf.apps.googleusercontent.com")
-                .requestEmail().build()
-            googleSignInClient = GoogleSignIn.getClient(this, gso)
+        firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
+        firebaseRemoteConfigManager.observeRemoteConfigData().observe(this@SignUpActivity) {
+            Utils.printDebugLog("Firebase_Config SplashActivity data observed: $it")
+            for (item in it) {
+                if (item.key == "app_latest_version") {
+                    if (BuildConfig.VERSION_NAME != item.value) {
+                        startActivity(Intent(this@SignUpActivity, UpdateAppActivity::class.java))
+                        finish()
+                    }
+                    break
+                }
+            }
 
-            val activityResultRegistry = this.activityResultRegistry
-            googleSignInManager =
-                GoogleSignInManager(activityResultRegistry, this, this, repository)
-            attachObservers()
+            for (item in it) {
+                if (item.key == "privacy_policy_url") {
+                    signUpViewModel.setPrivacyUrl(item.value)
+                    break
+                }
+            }
+        }
 
-            attachTextChangeListeners()
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("519620655091-pccssobbeded1frouj0h64smta168djf.apps.googleusercontent.com")
+            .requestEmail().build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-            attachClickListeners()
+        val activityResultRegistry = this.activityResultRegistry
+        googleSignInManager =
+            GoogleSignInManager(activityResultRegistry, this, this, repository)
+        attachObservers()
+
+        attachTextChangeListeners()
+
+        attachClickListeners()
+
+        binding.chkboxPrivacyPolicy.setOnCheckedChangeListener { _, isChecked ->
+            signUpViewModel.setPrivacyCheckBoxChecked(isChecked)
         }
     }
 
@@ -168,78 +192,91 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun attachClickListeners() {
-        binding.btnSignUp.setOnClickListener {
-            val userName = binding.edtUserName.text?.trim().toString()
-            val userEmail = binding.edtUserEmail.text?.trim().toString()
-            val userPassword = binding.edtUserPassword.text?.trim().toString()
-            val userConfirmPassword = binding.edtConfirmPassword.text?.trim().toString()
+        binding.btnSignUp.setSafeOnClickListener {
+            if (signUpViewModel.privacyCheckBoxLiveData.value!!) {
+                val userName = binding.edtUserName.text?.trim().toString()
+                val userEmail = binding.edtUserEmail.text?.trim().toString()
+                val userPassword = binding.edtUserPassword.text?.trim().toString()
+                val userConfirmPassword = binding.edtConfirmPassword.text?.trim().toString()
 
-            if (userName.isBlank()) {
-                binding.tilUserName.error = getString(R.string.please_enter_detail)
-            }
+                if (userName.isBlank()) {
+                    binding.tilUserName.error = getString(R.string.please_enter_detail)
+                }
 
-            if (userEmail.isBlank()) {
-                binding.tilUserEmail.error = getString(R.string.please_enter_detail)
-            }
+                if (userEmail.isBlank()) {
+                    binding.tilUserEmail.error = getString(R.string.please_enter_detail)
+                }
 
-            if (userPassword.isBlank()) {
-                binding.tilUserPassword.error = getString(R.string.please_enter_detail)
-            }
+                if (userPassword.isBlank()) {
+                    binding.tilUserPassword.error = getString(R.string.please_enter_detail)
+                }
 
-            if (userConfirmPassword.isBlank()) {
-                binding.tilConfirmPassword.error = getString(R.string.please_enter_detail)
-            }
+                if (userConfirmPassword.isBlank()) {
+                    binding.tilConfirmPassword.error = getString(R.string.please_enter_detail)
+                }
 
-            if (userName.isNotBlank() && userEmail.isNotBlank() &&
-                userPassword.isNotBlank() && userConfirmPassword.isNotBlank()
-            ) {
-                if (Utils.isValidEmailId(userEmail)) {
-                    if (userPassword == userConfirmPassword) {
-                        if (Utils.isInternetAvailable(this@SignUpActivity)) {
-                            createUserWithEmailAndPassword(userName, userEmail, userPassword)
+                if (userName.isNotBlank() && userEmail.isNotBlank() &&
+                    userPassword.isNotBlank() && userConfirmPassword.isNotBlank()
+                ) {
+                    if (Utils.isValidEmailId(userEmail)) {
+                        if (userPassword == userConfirmPassword) {
+                            if (Utils.isInternetAvailable(this@SignUpActivity)) {
+                                createUserWithEmailAndPassword(userName, userEmail, userPassword)
+                            } else {
+                                Utils.showLongToast(this@SignUpActivity, "Please check your internet connection.")
+                            }
                         } else {
-                            Utils.showLongToast(this@SignUpActivity, "Please check your internet connection.")
+                            binding.tilConfirmPassword.error =
+                                getString(R.string.passwrd_confirm_passwrd_should_be_same)
                         }
                     } else {
-                        binding.tilConfirmPassword.error =
-                            getString(R.string.passwrd_confirm_passwrd_should_be_same)
+                        binding.tilUserEmail.error = getString(R.string.please_enter_valid_email)
                     }
-                } else {
-                    binding.tilUserEmail.error = getString(R.string.please_enter_valid_email)
                 }
-            }
-        }
-
-        binding.btnContinueWithGoogle.setOnClickListener {
-            if (Utils.isInternetAvailable(this@SignUpActivity)) {
-                googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
-                    override fun onSuccess() {
-                        Utils.printDebugLog("signInWithGoogleAccount: Success")
-    //                    GifProgressDialog.dismiss()
-                        Utils.showLongToast(this@SignUpActivity, "Registration Successful")
-                        startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
-                        finish()
-                    }
-
-
-                    override fun onFailure(exception: Exception) {
-                        Utils.printDebugLog("signInWithGoogleAccount: Failed")
-    //                    GifProgressDialog.dismiss()
-                        ExceptionHandler.handleException(this@SignUpActivity, exception)
-                    }
-
-                    override fun onLoading() {
-                        Utils.printDebugLog("signInWithGoogleAccount: Loading")
-    //                    GifProgressDialog.initialize(this@SignUpActivity)
-    //                    GifProgressDialog.show("Creating your account")
-                    }
-                })
             } else {
-                Utils.showLongToast(this@SignUpActivity, "Please check your internet connection.")
+                Utils.showLongToast(this@SignUpActivity, "Please accept the privacy policy.")
             }
         }
 
-        binding.tvLoginText.setOnClickListener {
+        binding.btnContinueWithGoogle.setSafeOnClickListener {
+            if (signUpViewModel.privacyCheckBoxLiveData.value!!) {
+                if (Utils.isInternetAvailable(this@SignUpActivity)) {
+                    googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
+                        override fun onSuccess() {
+                            Utils.printDebugLog("signInWithGoogleAccount: Success")
+        //                    GifProgressDialog.dismiss()
+                            Utils.showLongToast(this@SignUpActivity, "Registration Successful")
+                            startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
+                            finish()
+                        }
+
+
+                        override fun onFailure(exception: Exception) {
+                            Utils.printDebugLog("signInWithGoogleAccount: Failed")
+        //                    GifProgressDialog.dismiss()
+                            ExceptionHandler.handleException(this@SignUpActivity, exception)
+                        }
+
+                        override fun onLoading() {
+                            Utils.printDebugLog("signInWithGoogleAccount: Loading")
+        //                    GifProgressDialog.initialize(this@SignUpActivity)
+        //                    GifProgressDialog.show("Creating your account")
+                        }
+                    })
+                } else {
+                    Utils.showLongToast(this@SignUpActivity, "Please check your internet connection.")
+                }
+            } else {
+                Utils.showLongToast(this@SignUpActivity, "Please accept the privacy policy.")
+            }
+        }
+
+        binding.tvPrivacyPolicy.setSafeOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(signUpViewModel.privacyCheckUrlLiveData.value))
+            startActivity(intent)
+        }
+
+        binding.tvLoginText.setSafeOnClickListener {
             startActivity(Intent(this, SignInActivity::class.java))
             finish()
         }
@@ -324,6 +361,11 @@ class SignUpActivity : AppCompatActivity() {
                 userPassword
             )
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        firebaseRemoteConfigManager.removeConfigUpdateListener()
     }
 
 }

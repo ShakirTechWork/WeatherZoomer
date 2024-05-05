@@ -1,9 +1,6 @@
 package com.shakir.weatherzoomer
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
 import com.shakir.weatherzoomer.api.NetworkEndpoints
 import com.shakir.weatherzoomer.api.RetrofitHelper
 import com.shakir.weatherzoomer.datastore.AppDataStore
@@ -20,7 +17,6 @@ import kotlinx.coroutines.launch
 class Application: Application() {
 
     lateinit var appRepository: AppRepository
-    var appRelatedData: AppRelatedData? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -37,9 +33,6 @@ class Application: Application() {
 //        val workerRequest = PeriodicWorkRequest.Builder(AppWorker::class.java,15, TimeUnit.MINUTES)
 //            .setConstraints(constraint).build()
 //        WorkManager.getInstance(this).enqueue(workerRequest)
-
-
-
     }
 
     private fun setupWorker2() {
@@ -78,45 +71,22 @@ class Application: Application() {
         val appDataStore: AppDataStore = AppDataStore.getInstance(applicationContext)
         val firebaseManager = FirebaseManager()
         appRepository = AppRepository(networkEndpoints, appDataStore, firebaseManager, applicationContext)
-        getAppRelatedData()
     }
 
-    private fun getAppRelatedData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            Utils.printDebugLog("fetchAppRelatedData:: Loading")
-            val data = appRepository.getAppRelatedData()
-            when (data) {
-                is FirebaseResponse.Success -> {
-                    if (data.data != null) {
-                        appRelatedData = data.data
-                        Utils.printDebugLog("fetchAppRelatedData:: Success | App_version: ${data.data}")
-                    } else {
-                        Utils.printDebugLog("fetchAppRelatedData:: Success | but got null")
-                    }
-                }
-                is FirebaseResponse.Failure -> {
-                    Utils.printDebugLog("fetchAppRelatedData:: Failed | exception: ${data.exception}")
-                    appRelatedData = null
-                }
-                FirebaseResponse.Loading -> {}
-            }
-        }
-    }
+//    private fun createNotificationChannel() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            val channel = NotificationChannel(
+//                CHANNEL_ID,
+//                "Channel Name",
+//                NotificationManager.IMPORTANCE_DEFAULT
+//            )
+//            val notificationManager = getSystemService(NotificationManager::class.java)
+//            notificationManager.createNotificationChannel(channel)
+//        }
+//    }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Channel Name",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
-
-    companion object {
-        const val CHANNEL_ID = "my_channel_id"
-    }
+//    companion object {
+//        const val CHANNEL_ID = "my_channel_id"
+//    }
 
 }

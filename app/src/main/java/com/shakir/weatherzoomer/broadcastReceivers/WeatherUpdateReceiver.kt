@@ -60,7 +60,7 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
             val connectivityManager =
                 context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val networkInfo = connectivityManager.activeNetworkInfo
-            Log.d("WEATHER_WISH_LOG", "onReceive_called ")
+            Log.d("WEATHER_ZOOMER_LOG", "onReceive_called ")
 
             if (networkInfo != null && networkInfo.isConnected) {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -77,13 +77,13 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
                                     if (userPrimaryLocation.isNotBlank()) {
                                         val response = getCurrentWeather(userPrimaryLocation)
                                         Log.d(
-                                            "WEATHER_WISH_LOG",
+                                            "WEATHER_ZOOMER_LOG",
                                             "fetch_weather_updates: Loading"
                                         )
                                         if (response.isSuccessful) {
                                             val weatherData = response.body()
                                             Log.d(
-                                                "WEATHER_WISH_LOG",
+                                                "WEATHER_ZOOMER_LOG",
                                                 "fetch_weather_updates: Success: ${weatherData!!.location}"
                                             )
 //                                            TextToSpeechManager.initialize(context)
@@ -95,13 +95,13 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
                                             showNotification(context, weatherData.current.temp_c.toInt())
                                         } else {
                                             Log.e(
-                                                "WEATHER_WISH_LOG",
+                                                "WEATHER_ZOOMER_LOG",
                                                 "fetch_weather_updates: Failure: ${response.errorBody()}"
                                             )
                                         }
                                     } else {
                                         Log.d(
-                                            "WEATHER_WISH_LOG",
+                                            "WEATHER_ZOOMER_LOG",
                                             "User_Primary_Location_Not_Found"
                                         )
                                     }
@@ -114,23 +114,23 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
                                 Utils.printErrorLog("Fetching_User_Data :: Something_went_wrong_while_fetching_the_user_data")
                             }
                         } else {
-                            Log.d("WEATHER_WISH_LOG", "Currently_signed_in_user_not_found")
+                            Log.d("WEATHER_ZOOMER_LOG", "Currently_signed_in_user_not_found")
                         }
                     } else if (currentlySignedInUser is FirebaseResponse.Failure) {
                         Log.d(
-                            "WEATHER_WISH_LOG",
+                            "WEATHER_ZOOMER_LOG",
                             "Something_went_wrong_while_fetching_the_currently_signed_in_user exception: ${currentlySignedInUser.exception}"
                         )
                     } else {
                         Log.d(
-                            "WEATHER_WISH_LOG",
+                            "WEATHER_ZOOMER_LOG",
                             "Something_went_wrong_while_fetching_the_currently_signed_in_user"
                         )
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.e("WEATHER_WISH_LOG", "fetch_weather_updates: Failure: ${e.message}")
+            Log.e("WEATHER_ZOOMER_LOG", "fetch_weather_updates: Failure: ${e.message}")
         } finally {
             // Release resources here
             TextToSpeechManager.shutdown()
@@ -159,7 +159,7 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
             .build()
 
         // Show the notification
-        Log.d("WEATHER_WISH_LOG", "showing_notification")
+        Log.d("WEATHER_ZOOMER_LOG", "showing_notification")
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, notification)
@@ -168,7 +168,7 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
     // Create a notification channel for Android 8.0 and above
     private fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.d("WEATHER_WISH_LOG", "creating_notification_channel")
+            Log.d("WEATHER_ZOOMER_LOG", "creating_notification_channel")
             val notificationManager =
                 context.getSystemService(NotificationManager::class.java)
 
@@ -184,7 +184,7 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
                 }
                 notificationManager.createNotificationChannel(channel)
             } else {
-                Log.d("WEATHER_WISH_LOG", "notification_channel_is_already_created")
+                Log.d("WEATHER_ZOOMER_LOG", "notification_channel_is_already_created")
             }
         }
     }
