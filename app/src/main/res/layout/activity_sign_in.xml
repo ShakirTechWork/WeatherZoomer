@@ -150,7 +150,7 @@
                 style="@style/MediumBoldText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/already_have_an_account" />
+                android:text="@string/dont_have_an_account" />
 
             <TextView
                 android:id="@+id/tv_signup_text"

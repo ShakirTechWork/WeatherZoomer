@@ -24,6 +24,7 @@
     <string name="sign_up">Sign Up</string>
     <string name="continue_with_google">Continue with Google</string>
     <string name="already_have_an_account"><u>Already have an account?</u></string>
+    <string name="dont_have_an_account"><u>Don\'t have an account?</u></string>
     <string name="login_underline"><u>Login</u></string>
     <string name="hi_welcome_back">Hi, Welcome Back</string>
     <string name="sign_up_underline"><u>Sign Up</u></string>

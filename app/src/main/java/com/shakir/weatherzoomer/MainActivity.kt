@@ -49,6 +49,11 @@ class MainActivity : AppCompatActivity() {
                     sharedViewModel.appPlayStoreLink = item.value
                 }
             }
+            for (item in it) {
+                if (item.key == "privacy_policy_url") {
+                    sharedViewModel.privacyPolicyUrl = item.value
+                }
+            }
         }
 
     }

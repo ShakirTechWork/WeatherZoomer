@@ -1,6 +1,7 @@
 package com.shakir.weatherzoomer.ui.setting
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
@@ -101,7 +102,7 @@ class SettingsFragment : Fragment() {
     }
 
     private fun attachClickListener() {
-        binding.clTopUnitLayout.setOnClickListener {
+        binding.clTopUnitLayout.setSafeOnClickListener {
             if (binding.llBottomTemperatureLayout.isVisible) {
                 binding.llBottomTemperatureLayout.visibility = View.GONE
                 TransitionManager.beginDelayedTransition(binding.cdUnitLayout, AutoTransition())
@@ -152,21 +153,9 @@ class SettingsFragment : Fragment() {
                 })
         }
 
-        binding.cdSignoutLayout.setSafeOnClickListener {
-            Utils.twoOptionAlertDialog(
-                requireContext(),
-                "Confirmation",
-                "Are you sure you want to sign out?",
-                "Yes",
-                "Cancel",
-                true,
-                {
-                    settingsViewModel.signOutCurrentUser(requireActivity())
-                    navController.popBackStack()
-                    requireActivity().finish()
-                    startActivity(Intent(requireActivity(), SignInActivity::class.java))
-                },
-                {})
+        binding.cdPrivacyPolicy.setSafeOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(sharedViewModel.privacyPolicyUrl))
+            startActivity(intent)
         }
 
         binding.cdShareApp.setSafeOnClickListener {
@@ -185,6 +174,23 @@ class SettingsFragment : Fragment() {
             } catch (e: Exception) {
                 Utils.showShortToast(requireContext(), "Something went wrong! Try again.")
             }
+        }
+
+        binding.cdSignoutLayout.setSafeOnClickListener {
+            Utils.twoOptionAlertDialog(
+                requireContext(),
+                "Confirmation",
+                "Are you sure you want to sign out?",
+                "Yes",
+                "Cancel",
+                true,
+                {
+                    settingsViewModel.signOutCurrentUser(requireActivity())
+                    navController.popBackStack()
+                    requireActivity().finish()
+                    startActivity(Intent(requireActivity(), SignInActivity::class.java))
+                },
+                {})
         }
 
         /*binding.cdPeriodicLayout.setOnClickListener {
