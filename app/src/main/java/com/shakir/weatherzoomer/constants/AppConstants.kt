@@ -4,6 +4,7 @@ object AppConstants {
 
     object Other {
         const val WEATHER_API_ATTRIBUTION_URL = "https://www.weatherapi.com"
+        const val ACCOUNT_DELETION_REQUEST_FORM_URL = "https://forms.gle/SZFGCDthvWNdX5SF8"
     }
     object Units {
         const val DEGREE_CELSIUS = "°C"

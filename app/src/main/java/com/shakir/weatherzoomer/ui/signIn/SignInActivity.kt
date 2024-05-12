@@ -211,9 +211,11 @@ class SignInActivity : AppCompatActivity() {
 
 
                         override fun onFailure(exception: Exception) {
-                            Utils.printDebugLog("signInWithGoogleAccount: Failed")
+                            Utils.printDebugLog("signInWithGoogleAccount: Failed ${exception.message}")
                             GifProgressDialog.dismiss()
-                            ExceptionHandler.handleException(this@SignInActivity, exception)
+                            if (exception.message != "Sign-in cancelled or failed") {
+                                ExceptionHandler.handleException(this@SignInActivity, exception)
+                            }
                         }
 
                         override fun onLoading() {

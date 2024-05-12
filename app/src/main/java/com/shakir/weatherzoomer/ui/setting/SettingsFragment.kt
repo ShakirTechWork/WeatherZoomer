@@ -43,6 +43,9 @@ class SettingsFragment : Fragment() {
     private lateinit var settingsViewModel: SettingsViewModel
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
+    private var userName = ""
+    private var userEmailId = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -73,8 +76,10 @@ class SettingsFragment : Fragment() {
         attachObserver()
         userData = sharedViewModel.userData
         if (userData != null) {
-            binding.tvUserName.text = userData!!.user_name
-            binding.tvUserEmail.text = userData!!.user_email
+            userName = userData!!.user_name
+            binding.tvUserName.text = userName
+            userEmailId = userData!!.user_email
+            binding.tvUserEmail.text = userEmailId
         }
         if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.METRIC) {
             binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
@@ -189,6 +194,21 @@ class SettingsFragment : Fragment() {
                     navController.popBackStack()
                     requireActivity().finish()
                     startActivity(Intent(requireActivity(), SignInActivity::class.java))
+                },
+                {})
+        }
+
+        binding.cdAccountDeleteLayout.setSafeOnClickListener {
+            Utils.twoOptionAlertDialog(
+                requireContext(),
+                "Confirmation",
+                "Deleting your account will delete all the data related to your account in WeatherZoomer App. Are you sure you want to delete your account? \n User Name: $userName \n Email ID: $userEmailId",
+                "Yes",
+                "Cancel",
+                true,
+                {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.Other.ACCOUNT_DELETION_REQUEST_FORM_URL))
+                    startActivity(intent)
                 },
                 {})
         }
