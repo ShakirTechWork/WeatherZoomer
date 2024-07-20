@@ -1,5 +1,9 @@
 package com.shakir.weatherzoomer.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class AirQuality(
     val co: Double,
     val `gb-defra-index`: Int,
@@ -9,4 +13,4 @@ data class AirQuality(
     val pm2_5: Double,
     val so2: Double,
     val `us-epa-index`: Int
-)
+) : Parcelable

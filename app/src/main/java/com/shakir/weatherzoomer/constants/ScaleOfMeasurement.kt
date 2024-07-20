@@ -4,5 +4,6 @@ enum class ScaleOfMeasurement {
     TEMPERATURE,
     SPEED,
     PRECIPITATION,
-    DISTANCE
+    DISTANCE,
+    ATMOSPHERIC_PRESSURE
 }

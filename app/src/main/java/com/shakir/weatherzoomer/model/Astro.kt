@@ -1,5 +1,9 @@
 package com.shakir.weatherzoomer.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Astro(
     val is_moon_up: Int,
     val is_sun_up: Int,
@@ -9,4 +13,4 @@ data class Astro(
     val moonset: String,
     val sunrise: String,
     val sunset: String
-)
+) : Parcelable

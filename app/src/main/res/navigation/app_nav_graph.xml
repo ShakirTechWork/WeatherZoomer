@@ -15,6 +15,10 @@
             app:destination="@id/fr_settings" />
 
         <action
+            android:id="@+id/action_dashboard_to_hourly_weather_info_fragment"
+            app:destination="@id/fr_hourly_weather_info"/>
+
+        <action
             android:id="@+id/action_dashboard_to_air_quality_fragment"
             app:destination="@id/fr_air_quality" />
     </fragment>
@@ -26,6 +30,18 @@
         <action
             android:id="@+id/action_settings_to_weather_updates_fragment"
             app:destination="@id/fr_weather_updates" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fr_hourly_weather_info"
+        android:name="com.shakir.weatherzoomer.ui.hourlyWeatherInfo.HourlyWeatherInfoFragment"
+        tools:layout="@layout/fragment_hourly_weather_info">
+        <argument
+            android:name="hour"
+            app:argType="com.shakir.weatherzoomer.model.Hour" />
+        <argument
+            android:name="systemOfMeasurement"
+            app:argType="com.shakir.weatherzoomer.constants.SystemOfMeasurement"/>
     </fragment>
 
     <fragment

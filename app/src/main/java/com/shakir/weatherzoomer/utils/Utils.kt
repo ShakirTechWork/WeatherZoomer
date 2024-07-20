@@ -12,6 +12,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.shakir.weatherzoomer.constants.AppEnum
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.shakir.weatherzoomer.constants.AppConstants
+import com.shakir.weatherzoomer.constants.ScaleOfMeasurement
+import com.shakir.weatherzoomer.constants.SystemOfMeasurement
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -199,6 +202,50 @@ object Utils {
 //        if (BuildConfig.DEBUG) {
             Log.e("WEATHER_ZOOMER_LOG:", message)
 //        }
+    }
+
+    fun getUnit(systemOfMeasurement: SystemOfMeasurement, scaleOfMeasurement: ScaleOfMeasurement): String {
+        return when (scaleOfMeasurement) {
+            ScaleOfMeasurement.TEMPERATURE -> {
+                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                    AppConstants.Units.DEGREE_CELSIUS //celsius
+                } else {
+                    AppConstants.Units.DEGREE_FAHRENHEIT //fahrenheit
+                }
+            }
+
+            ScaleOfMeasurement.SPEED -> {
+                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                    AppConstants.Units.KILOMETERS_PER_HOUR //kilometers per hour
+                } else {
+                    AppConstants.Units.MILES_PER_HOUR //miles per hour
+                }
+            }
+
+            ScaleOfMeasurement.PRECIPITATION -> {
+                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                    AppConstants.Units.MILLIMETERS //millimetres
+                } else {
+                    AppConstants.Units.INCHES //inches
+                }
+            }
+
+            ScaleOfMeasurement.DISTANCE -> {
+                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                    AppConstants.Units.KILOMETERS //kilometer
+                } else {
+                    AppConstants.Units.MILES //miles
+                }
+            }
+
+            ScaleOfMeasurement.ATMOSPHERIC_PRESSURE -> {
+                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
+                    AppConstants.Units.MILLIBARS
+                } else {
+                    AppConstants.Units.INCHES_OF_MERCURY
+                }
+            }
+        }
     }
 
 }

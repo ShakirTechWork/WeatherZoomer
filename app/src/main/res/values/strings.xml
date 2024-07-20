@@ -99,4 +99,7 @@
     <string name="alert">Alert</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="read_and_accept_text">I have read and I accept the</string>
+    <string name="search_location">Search Location</string>
+    <string name="condition_image">Condition Image</string>
+    <string name="wind">Wind</string>
 </resources>

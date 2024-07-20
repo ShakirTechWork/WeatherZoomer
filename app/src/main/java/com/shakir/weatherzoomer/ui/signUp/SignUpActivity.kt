@@ -239,11 +239,13 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         binding.btnContinueWithGoogle.setSafeOnClickListener {
+            Utils.printDebugLog("btnContinueWithGoogle: clicked")
             if (signUpViewModel.privacyCheckBoxLiveData.value!!) {
                 if (Utils.isInternetAvailable(this@SignUpActivity)) {
+                    Utils.printDebugLog("googleSignInManager: calling signInWithGoogleAccount")
                     googleSignInManager.signInWithGoogleAccount(object: GoogleSignInCallback {
                         override fun onSuccess() {
-                            Utils.printDebugLog("signInWithGoogleAccount: Success")
+                            Utils.printDebugLog("googleSignInManager signInWithGoogleAccount: Success")
         //                    GifProgressDialog.dismiss()
                             Utils.showLongToast(this@SignUpActivity, "Registration Successful")
                             startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
@@ -252,7 +254,7 @@ class SignUpActivity : AppCompatActivity() {
 
 
                         override fun onFailure(exception: Exception) {
-                            Utils.printDebugLog("signInWithGoogleAccount: Failed")
+                            Utils.printDebugLog("googleSignInManager signInWithGoogleAccount: Failed exception-> $exception")
         //                    GifProgressDialog.dismiss()
                             if (exception.message != "Sign-in cancelled or failed") {
                                 ExceptionHandler.handleException(this@SignUpActivity, exception)
@@ -260,7 +262,7 @@ class SignUpActivity : AppCompatActivity() {
                         }
 
                         override fun onLoading() {
-                            Utils.printDebugLog("signInWithGoogleAccount: Loading")
+                            Utils.printDebugLog("googleSignInManager signInWithGoogleAccount: Loading")
         //                    GifProgressDialog.initialize(this@SignUpActivity)
         //                    GifProgressDialog.show("Creating your account")
                         }

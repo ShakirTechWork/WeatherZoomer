@@ -1,7 +1,12 @@
 package com.shakir.weatherzoomer.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+
+@Parcelize
 data class Hour(
-    val air_quality: AirQuality,
+    val air_quality: AirQuality?,
     val chance_of_rain: Int,
     val chance_of_snow: Int,
     val cloud: Int,
@@ -36,4 +41,4 @@ data class Hour(
     val windchill_c: Double,
     val windchill_f: Double,
     var isCurrentHour: Boolean = false
-)
+) : Parcelable

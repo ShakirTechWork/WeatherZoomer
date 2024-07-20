@@ -27,8 +27,7 @@
         <ImageView
             android:id="@+id/img_icon"
             android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/day323"/>
+            android:layout_height="50dp"/>
 
         <TextView
             android:id="@+id/tv_temperature"

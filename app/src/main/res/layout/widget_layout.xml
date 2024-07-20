@@ -12,8 +12,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/day323" />
+        android:layout_alignParentTop="true" />
 
     <TextView
         android:id="@+id/tv_location"
@@ -81,8 +80,7 @@
             <ImageView
                     android:id="@+id/img_current_condition_image_1"
                     android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/day323"/>
+                    android:layout_height="30dp"/>
 
             <TextView
                 android:id="@+id/tv_time_1"
@@ -109,8 +107,7 @@
             <ImageView
                 android:id="@+id/img_current_condition_image_2"
                 android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/day323"/>
+                android:layout_height="30dp"/>
 
             <TextView
                 android:id="@+id/tv_time_2"
@@ -137,8 +134,7 @@
             <ImageView
                 android:id="@+id/img_current_condition_image_3"
                 android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/day323"/>
+                android:layout_height="30dp"/>
 
             <TextView
                 android:id="@+id/tv_time_3"
@@ -165,8 +161,7 @@
             <ImageView
                 android:id="@+id/img_current_condition_image_4"
                 android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/day323"/>
+                android:layout_height="30dp"/>
 
             <TextView
                 android:id="@+id/tv_time_4"

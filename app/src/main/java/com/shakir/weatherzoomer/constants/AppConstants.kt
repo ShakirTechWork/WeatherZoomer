@@ -15,6 +15,8 @@ object AppConstants {
         const val INCHES = "in"
         const val KILOMETERS = "km"
         const val MILES = "miles"
+        const val MILLIBARS = "mb"
+        const val INCHES_OF_MERCURY = "inHg"
     }
 
     object MoonPhases {

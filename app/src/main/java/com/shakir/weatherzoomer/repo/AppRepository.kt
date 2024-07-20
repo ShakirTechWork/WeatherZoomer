@@ -17,6 +17,7 @@ import com.shakir.weatherzoomer.model.WeatherData
 import com.shakir.weatherzoomer.model.WeatherForecastModel
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseUser
+import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModel
 import kotlinx.coroutines.flow.Flow
 
 class AppRepository(
@@ -99,6 +100,10 @@ class AppRepository(
 
     suspend fun deleteAllUserDataFromDatastore() {
         appDataStore.deleteAllUserData()
+    }
+
+    suspend fun fetchLocationResults(query: String): Flow<ApiResponse<SearchLocationResultModel?>> = result {
+        networkEndpoints.getSearchedLocationResults(BuildConfig.WEATHER_API_KEY, query)
     }
 
     suspend fun getCurrentWeatherData(

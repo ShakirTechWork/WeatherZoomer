@@ -24,9 +24,19 @@ class GoogleSignInManager(private val activityResultRegistry: ActivityResultRegi
     private val launcher: ActivityResultLauncher<Intent> =
         activityResultRegistry.register("key", lifeCycleOwner, ActivityResultContracts.StartActivityForResult()) { result ->
             try {
+                Utils.printDebugLog("activityResultRegistry result: $result")
+                Utils.printDebugLog("activityResultRegistry result.resultCode: ${result.resultCode}")
+                Utils.printDebugLog("activityResultRegistry result.data: ${result.data}")
+                Utils.printDebugLog("activityResultRegistry Activity.RESULT_OK: ${Activity.RESULT_OK}")
                 if (result.resultCode == Activity.RESULT_OK) {
                     if (Utils.isInternetAvailable(activity)) {
                         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                        Utils.printDebugLog("activityResultRegistry task: $task")
+                        Utils.printDebugLog("activityResultRegistry task.isSuccessful: ${task.isSuccessful}")
+                        Utils.printDebugLog("activityResultRegistry task.isComplete: ${task.isComplete}")
+                        Utils.printDebugLog("activityResultRegistry task.isCanceled: ${task.isCanceled}")
+                        Utils.printDebugLog("activityResultRegistry task.task.exception: ${task.exception}")
+                        Utils.printDebugLog("activityResultRegistry task: ${task.exception?.stackTrace}")
                         if (task.isSuccessful) {
                             val account: GoogleSignInAccount? = task.result
                             val authCredential = GoogleAuthProvider.getCredential(account?.idToken, null)

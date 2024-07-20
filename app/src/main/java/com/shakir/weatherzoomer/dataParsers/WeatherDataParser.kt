@@ -43,15 +43,15 @@ class WeatherDataParser(
 
     fun getCurrentTemperature(): String {
         return if (index == 0) {
-            "${weatherForecastData.current.temp_c.toInt()}${getUnit(ScaleOfMeasurement.TEMPERATURE)}"
+            "${weatherForecastData.current.temp_c.toInt()}${Utils.getUnit(systemOfMeasurement, ScaleOfMeasurement.TEMPERATURE)}"
         } else {
-            "${weatherForecastData.forecast.forecastday[index].day.avgtemp_c.toInt()}${getUnit(ScaleOfMeasurement.TEMPERATURE)}"
+            "${weatherForecastData.forecast.forecastday[index].day.avgtemp_c.toInt()}${Utils.getUnit(systemOfMeasurement, ScaleOfMeasurement.TEMPERATURE)}"
         }
     }
 
     fun getFeelsLikeTemperature(): String {
         return if (index == 0) {
-            "Feels like ${weatherForecastData.current.feelslike_c.toInt()}${getUnit(ScaleOfMeasurement.TEMPERATURE)}"
+            "Feels like ${weatherForecastData.current.feelslike_c.toInt()}${Utils.getUnit(systemOfMeasurement, ScaleOfMeasurement.TEMPERATURE)}"
         } else {
             ""
         }
@@ -70,6 +70,14 @@ class WeatherDataParser(
             weatherForecastData.current.condition.icon
         } else {
             weatherForecastData.forecast.forecastday[index].day.condition.icon
+        }
+    }
+
+    fun getConditionImage(): String {
+        return if (index == 0) {
+            "https:${weatherForecastData.current.condition.icon}"
+        } else {
+            "https:${weatherForecastData.forecast.forecastday[index].day.condition.icon}"
         }
     }
 
@@ -181,9 +189,9 @@ class WeatherDataParser(
 
     fun getWindSpeed(): String {
         return if (index == 0) {
-            "${weatherForecastData.current.wind_kph} ${getUnit(ScaleOfMeasurement.SPEED)}"
+            "${weatherForecastData.current.wind_kph} ${Utils.getUnit(systemOfMeasurement, ScaleOfMeasurement.SPEED)}"
         } else {
-            "${weatherForecastData.forecast.forecastday[index].day.maxwind_kph} ${getUnit(ScaleOfMeasurement.SPEED)}"
+            "${weatherForecastData.forecast.forecastday[index].day.maxwind_kph} ${Utils.getUnit(systemOfMeasurement, ScaleOfMeasurement.SPEED)}"
         }
     }
 
@@ -244,14 +252,14 @@ class WeatherDataParser(
                 Pair(
                     "Chance of Rainfall: ${weatherForecastData.forecast.forecastday[index].day.daily_chance_of_rain}%",
                     "Rain Precipitation: ${weatherForecastData.forecast.forecastday[index].day.totalprecip_mm} ${
-                        getUnit(ScaleOfMeasurement.PRECIPITATION)
+                        Utils.getUnit(systemOfMeasurement, ScaleOfMeasurement.PRECIPITATION)
                     }"
                 )
             } else {
                 Pair(
                     "Chance of Rainfall: ${weatherForecastData.forecast.forecastday[index].day.daily_chance_of_rain}%",
                     "Rain Precipitation: ${weatherForecastData.forecast.forecastday[index].day.totalprecip_in} ${
-                        getUnit(ScaleOfMeasurement.PRECIPITATION)
+                        Utils.getUnit(systemOfMeasurement, ScaleOfMeasurement.PRECIPITATION)
                     }"
                 )
             }
@@ -341,42 +349,6 @@ class WeatherDataParser(
         prompt.append("Max wind speed is ${getWindSpeed()}. ")
         prompt.append("Considering all these factors what are the things that should be taken care of like below asked questions: What should be worn, specifically cloth fabric, texture, material? What should be eaten? What should be done for skin care?. What should be done for hair care?.\nGive your response in as less words as possible.")
         return prompt.toString()
-    }
-
-    private fun getUnit(scaleOfMeasurement: ScaleOfMeasurement): String {
-        return when (scaleOfMeasurement) {
-            ScaleOfMeasurement.TEMPERATURE -> {
-                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
-                    AppConstants.Units.DEGREE_CELSIUS //celsius
-                } else {
-                    AppConstants.Units.DEGREE_FAHRENHEIT //fahrenheit
-                }
-            }
-
-            ScaleOfMeasurement.SPEED -> {
-                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
-                    AppConstants.Units.KILOMETERS_PER_HOUR //kilometers per hour
-                } else {
-                    AppConstants.Units.MILES_PER_HOUR //miles per hour
-                }
-            }
-
-            ScaleOfMeasurement.PRECIPITATION -> {
-                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
-                    AppConstants.Units.MILLIMETERS //millimetres
-                } else {
-                    AppConstants.Units.INCHES //inches
-                }
-            }
-
-            ScaleOfMeasurement.DISTANCE -> {
-                if (systemOfMeasurement == SystemOfMeasurement.METRIC) {
-                    AppConstants.Units.KILOMETERS //kilometer
-                } else {
-                    AppConstants.Units.MILES //miles
-                }
-            }
-        }
     }
 
 }

@@ -2,6 +2,7 @@ package com.shakir.weatherzoomer.ui.dashboard
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
@@ -17,8 +18,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
@@ -26,7 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.util.Util
+import coil.load
 import com.shakir.weatherzoomer.Application
 import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.adapter.DailyForecastAdapter
@@ -53,12 +56,10 @@ import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.PA
 import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.TOO_MANY_LOCATIONS_IN_BULK_REQUEST
 import com.shakir.weatherzoomer.exceptionHandler.WeatherApiException
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.model.AppRelatedData
 import com.shakir.weatherzoomer.model.UserModel
 import com.shakir.weatherzoomer.model.WeatherForecastModel
 import com.shakir.weatherzoomer.ui.signIn.SignInActivity
 import com.shakir.weatherzoomer.ui.takelocation.LocationActivity
-import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
 import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.github.matteobattilana.weather.PrecipType
 import com.google.ai.client.generativeai.GenerativeModel
@@ -74,9 +75,9 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.DatabaseException
-import com.google.firebase.remoteconfig.ConfigUpdate
-import com.google.firebase.remoteconfig.ConfigUpdateListener
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
+import com.shakir.ItemClickViewType
+import com.shakir.weatherzoomer.OnItemClickListener
+import com.shakir.weatherzoomer.model.Hour
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.EOFException
@@ -131,7 +132,28 @@ class DashboardFragment : Fragment() {
         )[DashboardViewModel::class.java]
         fetchUserAndWeatherData()
         attachClickListener()
+        askNotificationPermission()
+    }
 
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                }
+                shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS) -> {
+                    // Show a rationale to the user and request the permission again.
+                    requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                }
+                else -> {
+                    // Directly ask for the permission
+                    requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
     }
 
     private fun attachClickListener() {
@@ -326,11 +348,7 @@ class DashboardFragment : Fragment() {
         //setting current weather data
         binding.cvCurrentDataCard.visibility = View.VISIBLE
         binding.tvDateTime.text = weatherDataParser!!.getSelectedDate()
-        binding.imgCurrentTemp.setImageResource(resources.getIdentifier(
-            Utils.generateStringFromUrl(
-                weatherForecastData.current.condition.icon
-            ), "drawable", requireActivity().packageName
-        ))
+        binding.imgCurrentTemp.load(weatherDataParser!!.getConditionImage())
         binding.tvCurrentTemperature.text = weatherDataParser!!.getCurrentTemperature()
         binding.tvFeelsLike.text = weatherDataParser!!.getFeelsLikeTemperature()
         binding.tvCurrentCondition.text = weatherDataParser!!.getCurrentConditionText()
@@ -346,7 +364,22 @@ class DashboardFragment : Fragment() {
             if (dataListItemTimeHour == systemCurrentHour) {
                 position = indexNumber
                 temperatureList[position].isCurrentHour = true
-                val temperatureAdapter = TemperatureAdapter(temperatureList, requireContext(), systemOfMeasurement)
+                val temperatureAdapter = TemperatureAdapter(temperatureList, requireContext(), systemOfMeasurement,
+                    object : OnItemClickListener<Hour, ItemClickViewType> {
+                        override fun onItemClick(
+                            item: Hour,
+                            enum: ItemClickViewType,
+                            position: Int?
+                        ) {
+                            Utils.printDebugLog("item: $item")
+                            val action = DashboardFragmentDirections.actionDashboardToHourlyWeatherInfoFragment(item, systemOfMeasurement)
+                            navController.navigate(action)
+//                            val bundle = Bundle().apply {
+//                                putParcelable("hour", hour)
+//                            }
+//                            navController.navigate(R.id.action_dashboard_to_hourly_weather_info_fragment, bundle)
+                        }
+                    })
                 binding.rvForecastTemp.visibility = View.VISIBLE
                 binding.rvForecastTemp.adapter = temperatureAdapter
                 binding.rvForecastTemp.scrollToPosition(position)
@@ -793,6 +826,16 @@ class DashboardFragment : Fragment() {
                 alertDialog.setCancelable(false)
                 alertDialog.show()
             }
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted. Continue with the operation.
+        } else {
+            // Permission is denied. Inform the user that your app will not show notifications.
         }
     }
 

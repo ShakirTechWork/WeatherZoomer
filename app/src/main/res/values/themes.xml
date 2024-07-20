@@ -142,6 +142,7 @@
     <style name="TextInputEditTextStyle">
         <item name="android:textColor">@color/black</item>
         <item name="android:singleLine">true</item>
+        <item name="cursorColor">@color/black</item>
     </style>
 
     <style name="ManualLocationTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
@@ -167,6 +168,21 @@
     <style name="MyTimePickerTheme" parent="android:Widget.Material.Light.TimePicker">
         <item name="android:timePickerMode">clock</item>
     </style>
+
+    //Search bottom sheet style
+    <style name="CustomBottomSheetDialog" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
+    </style>
+    <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bg_light_mode_bottom_sheet</item>
+    </style>
+
+    <!-- res/values/styles.xml -->
+    <style name="CustomAlertDialog1" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        
+    </style>
+
 
 
 </resources>

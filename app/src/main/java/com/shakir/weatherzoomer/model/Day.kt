@@ -1,5 +1,9 @@
 package com.shakir.weatherzoomer.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Day(
     val air_quality: AirQuality,
     val avghumidity: Double,
@@ -22,4 +26,4 @@ data class Day(
     val totalprecip_mm: Double,
     val totalsnow_cm: Double,
     val uv: Double
-)
+) : Parcelable

@@ -104,8 +104,8 @@ class LocationActivity : AppCompatActivity() {
             }
         }
 
-        binding.tvEnterLocationManually.setSafeOnClickListener {
-            val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
+//        binding.tvEnterLocationManually.setSafeOnClickListener {
+            /*val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
             // Determine theme mode (light/dark)
             val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
@@ -142,9 +142,43 @@ class LocationActivity : AppCompatActivity() {
             btnCancel.setOnClickListener {
                 dialog.dismiss()
             }
-            dialog.show()
+            dialog.show()*/
+//            showCustomDialog()
+//        }
+
+        binding.tvEnterLocationManually.setSafeOnClickListener {
+            val bottomSheet = SearchLocationFragment.newInstance()
+            bottomSheet.setLocationSelectionListener(object: SearchLocationFragment.OnLocationSelectedListener{
+                override fun onLocationSelected(location: String) {
+                    storeLocationAndNavigate(location)
+                }
+
+            })
+            bottomSheet.show(supportFragmentManager, SearchLocationFragment.TAG)
         }
 
+    }
+
+    private fun showCustomDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_hourly_weather_data_dialog, null)
+
+        val dialogBuilder = AlertDialog.Builder(this, R.style.CustomAlertDialog1)
+            .setView(dialogView)
+
+        val dialog = dialogBuilder.create()
+
+        // Set up the views in the dialog
+        val dialogTitle = dialogView.findViewById<TextView>(R.id.dialogTitle)
+        val dialogMessage = dialogView.findViewById<TextView>(R.id.dialogMessage)
+        val dialogButton = dialogView.findViewById<Button>(R.id.dialogButton)
+
+        dialogTitle.text = "New Title"
+        dialogMessage.text = "New custom message here."
+        dialogButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private val resultLauncher = registerForActivityResult(
