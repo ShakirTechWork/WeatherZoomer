@@ -5,7 +5,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
+import androidx.core.view.GravityCompat
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.shakir.weatherzoomer.adapter.DrawerItemAdapter
 import com.shakir.weatherzoomer.databinding.ActivityMainBinding
 import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
 import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
@@ -56,6 +59,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val items = listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5")
+        val adapter = DrawerItemAdapter(items)
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = adapter
+
+    }
+
+    // Method to open the drawer from a fragment
+    fun openDrawer() {
+        binding.drawerLayout.openDrawer(GravityCompat.START)
     }
 
     override fun onDestroy() {

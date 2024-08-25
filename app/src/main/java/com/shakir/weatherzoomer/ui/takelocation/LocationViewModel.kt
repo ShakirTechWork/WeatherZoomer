@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
+import com.shakir.weatherzoomer.model.LocationModel
 import com.shakir.weatherzoomer.model.TakeGPSLocation
 import com.shakir.weatherzoomer.repo.AppRepository
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,53 @@ class LocationViewModel(private val appRepository: AppRepository) : ViewModel() 
                 )
                 if (result is FirebaseResponse.Success) {
                     storePrimaryLocationLocally(primaryLocation)
+                    _isPrimaryLocationUpdatedMLiveData.postValue(FirebaseResponse.Success(true))
+                } else if (result is FirebaseResponse.Failure) {
+                    _isPrimaryLocationUpdatedMLiveData.postValue(
+                        FirebaseResponse.Failure(
+                            result.exception
+                        )
+                    )
+                }
+            } else if (currentlySignedInUser is FirebaseResponse.Failure) {
+                _isPrimaryLocationUpdatedMLiveData.postValue(
+                    FirebaseResponse.Failure(
+                        currentlySignedInUser.exception
+                    )
+                )
+            }
+        }
+    }
+
+    fun addUserLocation(location: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentlySignedInUser = appRepository.getCurrentLoggedInUser()
+            if (currentlySignedInUser is FirebaseResponse.Success && currentlySignedInUser.data != null) {
+                val result = appRepository.addUserLocation(currentlySignedInUser.data.uid, location)
+                if (result is FirebaseResponse.Success) {
+                    _isPrimaryLocationUpdatedMLiveData.postValue(FirebaseResponse.Success(true))
+                } else if (result is FirebaseResponse.Failure) {
+                    _isPrimaryLocationUpdatedMLiveData.postValue(
+                        FirebaseResponse.Failure(
+                            result.exception
+                        )
+                    )
+                }
+            } else if (currentlySignedInUser is FirebaseResponse.Failure) {
+                _isPrimaryLocationUpdatedMLiveData.postValue(
+                    FirebaseResponse.Failure(
+                        currentlySignedInUser.exception
+                    )
+                )
+            }
+        }
+    }
+    fun addUserLocation2(location: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentlySignedInUser = appRepository.getCurrentLoggedInUser()
+            if (currentlySignedInUser is FirebaseResponse.Success && currentlySignedInUser.data != null) {
+                val result = appRepository.addUserLocation2(currentlySignedInUser.data.uid, location)
+                if (result is FirebaseResponse.Success) {
                     _isPrimaryLocationUpdatedMLiveData.postValue(FirebaseResponse.Success(true))
                 } else if (result is FirebaseResponse.Failure) {
                     _isPrimaryLocationUpdatedMLiveData.postValue(

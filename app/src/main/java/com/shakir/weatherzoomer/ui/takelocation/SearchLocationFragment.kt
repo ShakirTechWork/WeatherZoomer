@@ -1,28 +1,30 @@
 package com.shakir.weatherzoomer.ui.takelocation
 
+import android.app.Activity
+import android.app.Dialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.DisplayMetrics
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.FrameLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.shakir.weatherzoomer.Application
 import com.shakir.weatherzoomer.R
 import com.shakir.weatherzoomer.adapter.LocationSearchResultsAdapter
 import com.shakir.weatherzoomer.api.ApiResponse
 import com.shakir.weatherzoomer.databinding.FragmentSearchLocationBinding
-import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModelItem
-import com.shakir.weatherzoomer.ui.dashboard.DashboardViewModel
-import com.shakir.weatherzoomer.ui.dashboard.DashboardViewModelFactory
 import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
 
 class SearchLocationFragment() : BottomSheetDialogFragment() {
 
@@ -59,20 +61,18 @@ class SearchLocationFragment() : BottomSheetDialogFragment() {
                     val location = it.data
                     if (!location.isNullOrEmpty()) {
                         val adapter = LocationSearchResultsAdapter(it.data, object : LocationSearchResultsAdapter.OnLocationSelectedListener {
-                            override fun onLocationSelected(location: String) {
-                                onLocationSelectedListener.onLocationSelected(location)
+                            override fun onLocationSelected(location: String, isPrimaryLocation: Boolean) {
+                                onLocationSelectedListener.onLocationSelected(location, isPrimaryLocation)
                                 dismiss()
                             }
 
                         })
                         binding.rvLocations.adapter = adapter
                         binding.rvLocations.visibility = View.VISIBLE
-                    } else {
-                        Utils.showLongToast(requireContext(), "No location found!")
                     }
                 }
                 is ApiResponse.Failure -> {
-                    Utils.showLongToast(requireContext(), "No location found!")
+                    Utils.showLongToast(requireContext(), "Please try again later!")
                 }
                 is ApiResponse.Loading -> {
                     Utils.printDebugLog("loading")
@@ -108,6 +108,36 @@ class SearchLocationFragment() : BottomSheetDialogFragment() {
         return R.style.CustomBottomSheetDialog
     }
 
+    private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {
+        val bottomSheet =
+            bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout?
+        val behavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheet!!)
+        val layoutParams = bottomSheet.layoutParams
+
+        val windowHeight = getWindowHeight()
+        if (layoutParams != null) {
+            layoutParams.height = windowHeight
+        }
+        bottomSheet.layoutParams = layoutParams
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setOnShowListener { dialogInterface ->
+            val bottomSheetDialog = dialogInterface as BottomSheetDialog
+            setupFullHeight(bottomSheetDialog)
+        }
+        return dialog
+    }
+
+    private fun getWindowHeight(): Int {
+        // Calculate window height for fullscreen use
+        val displayMetrics = DisplayMetrics()
+        (context as Activity?)!!.windowManager.defaultDisplay.getMetrics(displayMetrics)
+        return displayMetrics.heightPixels
+    }
+
     companion object {
         const val TAG = "SearchLocationFragment"
         fun newInstance(): SearchLocationFragment {
@@ -116,7 +146,7 @@ class SearchLocationFragment() : BottomSheetDialogFragment() {
     }
 
     interface OnLocationSelectedListener {
-        fun onLocationSelected(location: String)
+        fun onLocationSelected(location: String, isPrimaryLocation: Boolean)
     }
 
 }

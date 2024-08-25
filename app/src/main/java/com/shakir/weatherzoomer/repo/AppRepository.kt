@@ -17,6 +17,7 @@ import com.shakir.weatherzoomer.model.WeatherData
 import com.shakir.weatherzoomer.model.WeatherForecastModel
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseUser
+import com.shakir.weatherzoomer.model.LocationModel
 import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModel
 import kotlinx.coroutines.flow.Flow
 
@@ -60,6 +61,13 @@ class AppRepository(
 
     fun updateUserPrimaryLocation(userId: String, primaryLocation: String): FirebaseResponse<Boolean> {
         return firebaseManager.updateUserPrimaryLocation(userId, primaryLocation)
+    }
+
+    fun addUserLocation(userId: String, location: String): FirebaseResponse<Boolean> {
+        return firebaseManager.addUserLocation(userId, location)
+    }
+    fun addUserLocation2(userId: String, location: String): FirebaseResponse<Boolean> {
+        return firebaseManager.addUserLocation2(userId, location)
     }
 
     fun updatePeriodicWeatherUpdatesData(userId: String, intervalInHours: Int, dndStartTime: Long, dndEndTime: Long): FirebaseResponse<Boolean> {

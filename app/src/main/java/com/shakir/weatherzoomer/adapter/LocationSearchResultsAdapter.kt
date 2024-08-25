@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.shakir.weatherzoomer.databinding.ItemLocationResultBinding
+import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModel
 import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModelItem
 import com.shakir.weatherzoomer.utils.Utils
@@ -32,15 +33,18 @@ class LocationSearchResultsAdapter(private val dataList: SearchLocationResultMod
             val location = "${locationObject.name}, ${locationObject.region}, ${locationObject.country}"
             binding.tvLocation.text = location
 
-            binding.cvParentLayout.setOnClickListener {
-                onLocationSelectedListener.onLocationSelected(location)
+            binding.cvParentLayout.setSafeOnClickListener {
+                onLocationSelectedListener.onLocationSelected(location, false)
+            }
+            binding.tvSetPrimaryLocation.setSafeOnClickListener {
+                onLocationSelectedListener.onLocationSelected(location, true)
             }
         }
 
     }
 
     interface OnLocationSelectedListener {
-        fun onLocationSelected(location: String)
+        fun onLocationSelected(location: String, isPrimaryLocation: Boolean)
     }
 
 }

@@ -28,7 +28,6 @@
             android:id="@+id/img_icon"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            tools:src="@drawable/day113"
             android:layout_weight="0.5"/>
         <TextView
             android:id="@+id/tv_status"

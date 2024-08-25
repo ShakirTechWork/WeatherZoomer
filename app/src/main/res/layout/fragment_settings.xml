@@ -602,5 +602,15 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
+        <TextView
+            android:id="@+id/tv_weather_api_attribution_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:padding="14dp"
+            android:text="@string/powered_by_weatherapi_com"
+            android:textSize="16sp"/>
+
     </LinearLayout>
 </ScrollView>

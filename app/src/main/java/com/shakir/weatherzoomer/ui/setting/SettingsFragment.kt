@@ -213,6 +213,12 @@ class SettingsFragment : Fragment() {
                 {})
         }
 
+        binding.tvWeatherApiAttributionText.setSafeOnClickListener {
+            Utils.printErrorLog("Navigating to weatherapi.com")
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.Other.WEATHER_API_ATTRIBUTION_URL))
+            startActivity(intent)
+        }
+
         /*binding.cdPeriodicLayout.setOnClickListener {
             navController.navigate(R.id.action_settings_to_weather_updates_fragment)
         }*/

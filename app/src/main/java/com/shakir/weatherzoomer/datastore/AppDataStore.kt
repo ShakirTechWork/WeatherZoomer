@@ -68,7 +68,7 @@ class AppDataStore(context: Context) {
     }
 
     val isAppOpenedFirstTime: Flow<Boolean> = dataStore.data.map {
-        it[IS_APP_OPENED_FIRST_TIME] ?: false
+        it[IS_APP_OPENED_FIRST_TIME] ?: true
     }
 
     // Create an age flow to retrieve age from the preferences

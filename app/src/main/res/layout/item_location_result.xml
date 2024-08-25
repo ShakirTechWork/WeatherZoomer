@@ -23,11 +23,23 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             style="@style/MediumBoldText"
             tools:text="Mumbai, Maharashtra, India"
             android:gravity="start"/>
+
+        <TextView
+            android:id="@+id/tv_set_primary_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_location"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/MediumBoldText"
+            android:text="@string/set_as_primary_location"
+            android:textColor="@color/color_primary_light"
+            android:gravity="start"
+            android:padding="5dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

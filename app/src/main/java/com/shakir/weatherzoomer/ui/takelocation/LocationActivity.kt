@@ -26,6 +26,7 @@ import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.shakir.weatherzoomer.utils.Utils
 import com.google.android.gms.location.*
 import com.google.android.material.textfield.TextInputEditText
+import com.shakir.weatherzoomer.model.LocationModel
 
 
 private const val TAG = "LocationActivity"
@@ -149,8 +150,10 @@ class LocationActivity : AppCompatActivity() {
         binding.tvEnterLocationManually.setSafeOnClickListener {
             val bottomSheet = SearchLocationFragment.newInstance()
             bottomSheet.setLocationSelectionListener(object: SearchLocationFragment.OnLocationSelectedListener{
-                override fun onLocationSelected(location: String) {
+                override fun onLocationSelected(location: String, isPrimaryLocation: Boolean) {
                     storeLocationAndNavigate(location)
+//                    addUserLocation(location)
+                    addUserLocation2(location)
                 }
 
             })
@@ -256,6 +259,14 @@ class LocationActivity : AppCompatActivity() {
         val intent = Intent(this@LocationActivity, MainActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    private fun addUserLocation(location: String) {
+        locationViewModel.addUserLocation(location)
+    }
+
+    private fun addUserLocation2(location: String) {
+        locationViewModel.addUserLocation2(location)
     }
 
     // Remember to stop updates when they're no longer needed

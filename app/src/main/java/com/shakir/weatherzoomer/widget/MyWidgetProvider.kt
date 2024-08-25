@@ -12,6 +12,8 @@ import android.widget.RemoteViews
 import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.R
 import com.shakir.weatherzoomer.api.NetworkEndpoints
+import com.shakir.weatherzoomer.constants.ScaleOfMeasurement
+import com.shakir.weatherzoomer.constants.SystemOfMeasurement
 import com.shakir.weatherzoomer.firebase.FirebaseManager
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
 import com.shakir.weatherzoomer.model.Hour
@@ -27,6 +29,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 
@@ -106,106 +109,9 @@ class MyWidgetProvider : AppWidgetProvider() {
                                                 "WEATHER_ZOOMER_LOG",
                                                 "fetch_weather_updates: Success: ${weatherData!!.location}"
                                             )
-
-                                            val currentTimeMillis = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                Instant.now().toEpochMilli()
-                                            } else {
-                                                System.currentTimeMillis()
-                                            }
-                                            val nearestObjects = getFourNearestHourlyData(weatherData.forecast.forecastday[0].hour, currentTimeMillis)
-                                            println("Current Time (Epoch): $currentTimeMillis")
-                                            println("Nearest Objects:")
-                                            nearestObjects.forEach {
-                                                println("Time: ${it.time} (Epoch: ${convertToMillis(it.time)})")
-                                            }
-
                                             // Iterate through each widget
-                                            for (appWidgetId in appWidgetIds) {
-                                                // Create an instance of RemoteViews for your widget layout
-                                                val views = RemoteViews(
-                                                    context.packageName,
-                                                    R.layout.widget_layout
-                                                )
-                                                views.setImageViewResource(R.id.img_current_condition_image, context.resources.getIdentifier(Utils.generateStringFromUrl(weatherData.current.condition.icon), "drawable", context.packageName))
-                                                views.setTextViewText(
-                                                    R.id.tv_location,
-                                                    weatherData.location.name
-                                                )
-                                                views.setTextViewText(
-                                                    R.id.tv_current_condition,
-                                                    weatherData.current.condition.text
-                                                )
-                                                views.setTextViewText(
-                                                    R.id.tv_current_temperature,
-                                                    weatherData.current.temp_c.toString()
-                                                )
-                                                views.setTextViewText(
-                                                    R.id.tv_temperature_1,
-                                                    nearestObjects[0].temp_c.toString()
-                                                )
-                                                views.setImageViewResource(
-                                                    R.id.img_current_condition_image_1,
-                                                    context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[0].condition.icon), "drawable", context.packageName)
-                                                )
-                                                views.setTextViewText(
-                                                    R.id.tv_time_1,
-                                                    Utils.convertToHourTime(nearestObjects[0].time_epoch.toLong())
-                                                )
-
-                                                views.setTextViewText(
-                                                    R.id.tv_temperature_2,
-                                                    nearestObjects[1].temp_c.toString()
-                                                )
-                                                views.setImageViewResource(
-                                                    R.id.img_current_condition_image_2,
-                                                    context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[1].condition.icon), "drawable", context.packageName)
-                                                )
-                                                views.setTextViewText(
-                                                    R.id.tv_time_2,
-                                                    Utils.convertToHourTime(nearestObjects[1].time_epoch.toLong())
-                                                )
-
-                                                views.setTextViewText(
-                                                    R.id.tv_temperature_3,
-                                                    nearestObjects[2].temp_c.toString()
-                                                )
-                                                views.setImageViewResource(
-                                                    R.id.img_current_condition_image_3,
-                                                    context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[2].condition.icon), "drawable", context.packageName)
-                                                )
-                                                views.setTextViewText(
-                                                    R.id.tv_time_3,
-                                                    Utils.convertToHourTime(nearestObjects[2].time_epoch.toLong())
-                                                )
-
-                                                views.setTextViewText(
-                                                    R.id.tv_temperature_4,
-                                                    nearestObjects[3].temp_c.toString()
-                                                )
-                                                views.setImageViewResource(
-                                                    R.id.img_current_condition_image_4,
-                                                    context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[3].condition.icon), "drawable", context.packageName)
-                                                )
-                                                views.setTextViewText(
-                                                    R.id.tv_time_4,
-                                                    Utils.convertToHourTime(nearestObjects[3].time_epoch.toLong())
-                                                )
-
-                                                // Set an OnClickListener for the refresh button
-                                                val refreshIntent = Intent(context, MyWidgetProvider::class.java)
-                                                refreshIntent.action = ACTION_REFRESH_WIDGET
-                                                refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                                                val pendingIntent = PendingIntent.getBroadcast(
-                                                    context,
-                                                    0,
-                                                    refreshIntent,
-                                                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                                                )
-                                                views.setOnClickPendingIntent(R.id.tv_refresh, pendingIntent)
-                                                
-                                                // Update the widget
-                                                appWidgetManager.updateAppWidget(appWidgetId, views)
-                                            }
+                                            setDataInWidget1(context, appWidgetManager, appWidgetIds, weatherData)
+//                                            setDataInWidget2(context, appWidgetManager, appWidgetIds, weatherData)
                                         } else {
                                             Log.e(
                                                 "WEATHER_ZOOMER_LOG",
@@ -279,6 +185,174 @@ class MyWidgetProvider : AppWidgetProvider() {
             "yes",
             "yes"
         )
+    }
+
+    private fun setDataInWidget1(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+        weatherData: WeatherForecastModel
+    ) {
+        for (appWidgetId in appWidgetIds) {
+            val views = RemoteViews(
+                context.packageName,
+                R.layout.widget_layout_1
+            )
+            views.setTextViewText(
+                R.id.tv_condition,
+                weatherData.current.condition.text
+            )
+            views.setTextViewText(
+                R.id.tv_temperature,
+                getTemperature(weatherData)
+            )
+            views.setTextViewText(
+                R.id.tv_feels_like_temperature,
+                getFeelsLikeTemperature(weatherData)
+            )
+            views.setTextViewText(
+                R.id.tv_date_time,
+                getDate(weatherData)
+            )
+            views.setTextViewText(
+                R.id.tv_location,
+                getSelectedLocation(weatherData)
+            )
+
+            // Update the widget
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+    }
+
+    private fun getTemperature(weatherData: WeatherForecastModel) : String{
+        return "${weatherData.current.temp_c.toInt()}${Utils.getUnit(SystemOfMeasurement.METRIC, ScaleOfMeasurement.TEMPERATURE)}"
+    }
+
+    private fun getFeelsLikeTemperature(weatherData: WeatherForecastModel) : String{
+        return "${weatherData.current.feelslike_c.toInt()}${Utils.getUnit(SystemOfMeasurement.METRIC, ScaleOfMeasurement.TEMPERATURE)}"
+    }
+
+    private fun getDate(weatherData: WeatherForecastModel): String {
+        val date = Date(weatherData.forecast.forecastday[0].date_epoch.toLong() * 1000L) // Convert seconds to milliseconds
+        val sdf = SimpleDateFormat("EEE dd MMM yyyy", Locale.getDefault())
+        return sdf.format(date)
+    }
+
+    private fun getSelectedLocation(weatherData: WeatherForecastModel): String {
+        val location = StringBuilder()
+        if (weatherData.location.name.isNotBlank()) {
+            location.append("${weatherData.location.name}, ")
+        }
+        if (weatherData.location.region.isNotBlank()) {
+            location.append("${weatherData.location.region}, ")
+        }
+        if (weatherData.location.country.isNotBlank()) {
+            location.append(weatherData.location.country)
+        }
+        return location.toString()
+    }
+    private fun setDataInWidget2(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+        weatherData: WeatherForecastModel
+    ) {
+        val currentTimeMillis = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Instant.now().toEpochMilli()
+        } else {
+            System.currentTimeMillis()
+        }
+        Log.d("WEATHER_ZOOMER_LOGS", "Current_time: $currentTimeMillis")
+        val nearestObjects = getFourNearestHourlyData(weatherData.forecast.forecastday[0].hour, currentTimeMillis)
+        nearestObjects.forEach {
+            Log.d("WEATHER_ZOOMER_LOGS", "Time: ${it.time} (Epoch: ${convertToMillis(it.time)})")
+        }
+        for (appWidgetId in appWidgetIds) {
+            // Create an instance of RemoteViews for your widget layout
+            val views = RemoteViews(
+                context.packageName,
+                R.layout.widget_layout
+            )
+            views.setImageViewResource(R.id.img_current_condition_image, context.resources.getIdentifier(Utils.generateStringFromUrl(weatherData.current.condition.icon), "drawable", context.packageName))
+            views.setTextViewText(
+                R.id.tv_location,
+                weatherData.location.name
+            )
+            views.setTextViewText(
+                R.id.tv_current_condition,
+                weatherData.current.condition.text
+            )
+            views.setTextViewText(
+                R.id.tv_current_temperature,
+                weatherData.current.temp_c.toString()
+            )
+            views.setTextViewText(
+                R.id.tv_temperature_1,
+                nearestObjects[0].temp_c.toString()
+            )
+            views.setImageViewResource(
+                R.id.img_current_condition_image_1,
+                context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[0].condition.icon), "drawable", context.packageName)
+            )
+            views.setTextViewText(
+                R.id.tv_time_1,
+                Utils.convertToHourTime(nearestObjects[0].time_epoch.toLong())
+            )
+
+            views.setTextViewText(
+                R.id.tv_temperature_2,
+                nearestObjects[1].temp_c.toString()
+            )
+            views.setImageViewResource(
+                R.id.img_current_condition_image_2,
+                context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[1].condition.icon), "drawable", context.packageName)
+            )
+            views.setTextViewText(
+                R.id.tv_time_2,
+                Utils.convertToHourTime(nearestObjects[1].time_epoch.toLong())
+            )
+
+            views.setTextViewText(
+                R.id.tv_temperature_3,
+                nearestObjects[2].temp_c.toString()
+            )
+            views.setImageViewResource(
+                R.id.img_current_condition_image_3,
+                context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[2].condition.icon), "drawable", context.packageName)
+            )
+            views.setTextViewText(
+                R.id.tv_time_3,
+                Utils.convertToHourTime(nearestObjects[2].time_epoch.toLong())
+            )
+
+            views.setTextViewText(
+                R.id.tv_temperature_4,
+                nearestObjects[3].temp_c.toString()
+            )
+            views.setImageViewResource(
+                R.id.img_current_condition_image_4,
+                context.resources.getIdentifier(Utils.generateStringFromUrl(nearestObjects[3].condition.icon), "drawable", context.packageName)
+            )
+            views.setTextViewText(
+                R.id.tv_time_4,
+                Utils.convertToHourTime(nearestObjects[3].time_epoch.toLong())
+            )
+
+            // Set an OnClickListener for the refresh button
+            val refreshIntent = Intent(context, MyWidgetProvider::class.java)
+            refreshIntent.action = ACTION_REFRESH_WIDGET
+            refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                0,
+                refreshIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.tv_refresh, pendingIntent)
+
+            // Update the widget
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
     }
 
     private fun getFourNearestHourlyData(hourlyDataList: List<Hour>, currentTimeMillis: Long): List<Hour> {

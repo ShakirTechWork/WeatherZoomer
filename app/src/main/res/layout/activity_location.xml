@@ -1,99 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.takelocation.LocationActivity"
-    style="@style/SCREEN"
-    android:padding="18dp">
+    style="@style/SCREEN">
 
-    <TextView
-        android:id="@+id/tv_title"
-        style="@style/BigBoldText3"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/need_your_location"
-        android:textSize="30sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:gravity="start"/>
+        android:padding="18dp">
 
-    <TextView
-        android:id="@+id/tv_subtitle"
-        style="@style/MediumSemiBoldText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/set_your_location"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="12dp"
-        android:gravity="start"/>
+        <TextView
+            android:id="@+id/tv_title"
+            style="@style/BigBoldText3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/need_your_location"
+            android:textSize="30sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:gravity="start"/>
 
-    <ImageView
-        android:id="@+id/img_picture"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_subtitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:src="@drawable/give_location_image"/>
+        <TextView
+            android:id="@+id/tv_subtitle"
+            style="@style/MediumSemiBoldText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/set_your_location"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="12dp"
+            android:gravity="start"/>
 
-<!--    <com.airbnb.lottie.LottieAnimationView-->
-<!--        android:id="@+id/lottie_anim_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="350dp"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/tv_subtitle"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        android:layout_marginTop="30dp"-->
-<!--        app:lottie_rawRes="@raw/location_anim"-->
-<!--        app:lottie_autoPlay="true"-->
-<!--        app:lottie_loop="true"-->
-<!--        android:visibility="gone"/>-->
+        <ImageView
+            android:id="@+id/img_picture"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_subtitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:src="@drawable/give_location_image"/>
 
+        <!--    <com.airbnb.lottie.LottieAnimationView-->
+        <!--        android:id="@+id/lottie_anim_view"-->
+        <!--        android:layout_width="match_parent"-->
+        <!--        android:layout_height="350dp"-->
+        <!--        app:layout_constraintTop_toBottomOf="@id/tv_subtitle"-->
+        <!--        app:layout_constraintStart_toStartOf="parent"-->
+        <!--        app:layout_constraintEnd_toEndOf="parent"-->
+        <!--        android:layout_marginTop="30dp"-->
+        <!--        app:lottie_rawRes="@raw/location_anim"-->
+        <!--        app:lottie_autoPlay="true"-->
+        <!--        app:lottie_loop="true"-->
+        <!--        android:visibility="gone"/>-->
 
-    <Button
-        android:id="@+id/btn_current_location"
-        style="@style/BUTTON"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/img_picture"
-        android:layout_marginTop="12dp"
-        android:padding="16dp"
-        android:text="@string/enable_current_location"/>
+        <CheckBox
+            android:id="@+id/chkbox_primary_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_picture"
+            android:text="@string/set_as_primary_location" />
 
-    <TextView
-        android:id="@+id/tv_enter_location_manually"
-        style="@style/MediumBoldText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/btn_current_location"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="6dp"
-        android:padding="16dp"
-        android:text="@string/enter_location_manually"
-        android:textColor="@color/color_primary_light"
-        android:textSize="16sp"/>
+        <Button
+            android:id="@+id/btn_current_location"
+            style="@style/BUTTON"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/chkbox_primary_location"
+            android:layout_marginTop="5dp"
+            android:padding="16dp"
+            android:text="@string/enable_current_location"/>
 
-    <TextView
-        android:id="@+id/tv_note"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/location_note"
-        style="@style/MediumSemiBoldText"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/tv_enter_location_manually"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_margin="10dp"/>
+        <TextView
+            android:id="@+id/tv_enter_location_manually"
+            style="@style/MediumBoldText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/btn_current_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="6dp"
+            android:padding="16dp"
+            android:text="@string/enter_location_manually"
+            android:textColor="@color/color_primary_light"
+            android:textSize="16sp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tv_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/location_note"
+            style="@style/MediumSemiBoldText"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/tv_enter_location_manually"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_margin="10dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

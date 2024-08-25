@@ -16,9 +16,12 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.shakir.weatherzoomer.model.LocationModel
+import com.shakir.weatherzoomer.model.UserLocationModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 class FirebaseManager {
@@ -112,6 +115,7 @@ class FirebaseManager {
                 FirebaseResponse.Success(null)
             }
         } catch (e: Exception) {
+            Utils.printDebugLog("dbciuebc: $e")
             FirebaseResponse.Failure(e)
         }
 
@@ -144,6 +148,54 @@ class FirebaseManager {
             )
         }
 
+        return future.join()
+    }
+
+    fun addUserLocation(userId: String, location: String): FirebaseResponse<Boolean> {
+        val future = CompletableFuture<FirebaseResponse<Boolean>>()
+
+        try {
+//            val userReference = Firebase.database.reference.child("users").child(userId)
+//            userReference.child("locations").setValue(locations).addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    future.complete(FirebaseResponse.Success(true))
+//                } else {
+//                    future.complete(FirebaseResponse.Failure(task.exception))
+//                }
+//            }
+        } catch (e: Exception) {
+            future.complete(
+                FirebaseResponse.Failure(e)
+            )
+        }
+
+        return future.join()
+    }
+
+    fun addUserLocation2(userId: String, location: String): FirebaseResponse<Boolean> {
+        val future = CompletableFuture<FirebaseResponse<Boolean>>()
+        try {
+            val newLocation = UserLocationModel(
+                selectedLocation = true,
+                currentLocation = false,
+                location = location
+            )
+
+            val locationKey = FirebaseDatabase.getInstance().reference.push().key ?: UUID.randomUUID().toString()
+
+            val userReference = FirebaseDatabase.getInstance().reference.child("users").child(userId).child("user_settings").child("locations")
+
+            userReference.child(locationKey).setValue(newLocation)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        future.complete(FirebaseResponse.Success(true))
+                    } else {
+                        future.complete(FirebaseResponse.Failure(task.exception))
+                    }
+                }
+        } catch (e: Exception) {
+            future.complete(FirebaseResponse.Failure(e))
+        }
         return future.join()
     }
 

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="150dp"
+    android:layout_height="wrap_content"
+    android:background="#00000000"
+    android:orientation="vertical"
+    android:padding="6dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/tv_temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:gravity="start"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        tools:text="34°C"
+        android:textSize="26sp"
+        android:shadowColor="#000000"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="1"
+        android:letterSpacing="0.03"/>
+
+    <TextView
+        android:id="@+id/tv_feels_like_temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_temperature"
+        android:layout_alignParentStart="true"
+        android:gravity="start"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        tools:text="Feels like 30°C"
+        android:textSize="11sp"
+        android:shadowColor="#000000"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:letterSpacing="0.03"/>
+
+    <TextView
+        android:id="@+id/tv_condition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_temperature"
+        android:layout_alignParentStart="true"
+        android:gravity="start"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        tools:text="Cloudy"
+        android:textSize="11sp"
+        android:shadowColor="#000000"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:letterSpacing="0.03"/>
+
+    <TextView
+        android:id="@+id/tv_date_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_condition"
+        android:layout_alignParentStart="true"
+        android:gravity="start"
+        tools:text="Wed, 25 Sep"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="11sp"
+        android:shadowColor="#000000"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="1"
+        android:letterSpacing="0.03"/>
+
+    <TextView
+        android:id="@+id/tv_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_date_time"
+        android:layout_alignParentStart="true"
+        android:lines="1"
+        android:ellipsize="end"
+        tools:text="Worli, Maharashtra, India"
+        android:textColor="#FFFFFF"
+        android:gravity="start"
+        android:textSize="11sp"
+        android:shadowColor="#000000"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="1"
+        android:letterSpacing="0.03"/>
+
+</LinearLayout>

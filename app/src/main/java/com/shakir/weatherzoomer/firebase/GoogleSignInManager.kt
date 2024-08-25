@@ -57,6 +57,7 @@ class GoogleSignInManager(private val activityResultRegistry: ActivityResultRegi
                                                         Utils.printDebugLog("Adding_User_In_DB :: Success")
                                                         callback.onSuccess()
                                                     } else if (response is FirebaseResponse.Failure) {
+                                                        Utils.printDebugLog("exception: ${response.exception}")
                                                         Utils.printDebugLog("Adding_User_In_DB :: Failure")
                                                         callback.onFailure(Exception("Something went wrong"))
                                                     }

@@ -20,28 +20,13 @@
         android:scaleType="centerCrop"/>
 
     <TextView
-        android:id="@+id/tv_weather_api_attribution_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/img_logo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"
-        android:padding="16dp"
-        android:text="@string/powered_by_weatherapi_com"
-        android:textSize="16sp"/>
-
-    <TextView
-        android:id="@+id/tv_tap_to_continue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tv_weather_api_attribution_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="10dp"
-        android:padding="16dp"
-        android:text="@string/tap_to_continue"
-        android:textSize="16sp"
-        android:visibility="gone"/>
+        style="@style/BigBoldText2"
+        android:text="@string/app_name"
+        android:textColor="@color/color_primary_light"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

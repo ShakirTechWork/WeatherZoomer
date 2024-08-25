@@ -102,4 +102,5 @@
     <string name="search_location">Search Location</string>
     <string name="condition_image">Condition Image</string>
     <string name="wind">Wind</string>
+    <string name="set_as_primary_location">Set as primary location.</string>
 </resources>

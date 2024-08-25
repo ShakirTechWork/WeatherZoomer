@@ -29,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
+import coil.clear
 import coil.load
 import com.shakir.weatherzoomer.Application
 import com.shakir.weatherzoomer.BuildConfig
@@ -76,7 +77,9 @@ import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.DatabaseException
 import com.shakir.ItemClickViewType
+import com.shakir.weatherzoomer.MainActivity
 import com.shakir.weatherzoomer.OnItemClickListener
+import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.model.Hour
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -133,7 +136,20 @@ class DashboardFragment : Fragment() {
         fetchUserAndWeatherData()
         attachClickListener()
         askNotificationPermission()
-    }
+
+        // Refresh function for the layout
+        binding.swipeRefreshLayout.setOnRefreshListener{
+
+            // Your code goes here
+            // In this code, we are just changing the text in the
+            // textbox
+            Utils.printDebugLog("swipeRefreshLayout: Refreshed")
+            fetchUserAndWeatherData()
+            // This line is important as it explicitly refreshes only once
+            // If "true" it implicitly refreshes forever
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
+}
 
     private fun askNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -158,7 +174,7 @@ class DashboardFragment : Fragment() {
 
     private fun attachClickListener() {
 
-        binding.tvChangeLocation.setOnClickListener {
+        /*binding.tvChangeLocation.setSafeOnClickListener {
             Utils.singleOptionAlertDialog(
                 requireContext(),
                 "Change Location",
@@ -170,6 +186,9 @@ class DashboardFragment : Fragment() {
                 startActivity(intent)
                 requireActivity().finish()
             }
+        }*/
+        binding.tvChangeLocation.setSafeOnClickListener {
+            (activity as? MainActivity)?.openDrawer()
         }
 
         binding.imgSettings.setOnClickListener {
@@ -349,11 +368,10 @@ class DashboardFragment : Fragment() {
         binding.cvCurrentDataCard.visibility = View.VISIBLE
         binding.tvDateTime.text = weatherDataParser!!.getSelectedDate()
         binding.imgCurrentTemp.load(weatherDataParser!!.getConditionImage())
+        Utils.printDebugLog("imgCurrentTemp: ${binding.imgCurrentTemp.drawable}")
         binding.tvCurrentTemperature.text = weatherDataParser!!.getCurrentTemperature()
         binding.tvFeelsLike.text = weatherDataParser!!.getFeelsLikeTemperature()
         binding.tvCurrentCondition.text = weatherDataParser!!.getCurrentConditionText()
-        binding.imgCurrentTemp.setImageResource(resources.getIdentifier(Utils.generateStringFromUrl(
-            weatherDataParser!!.getConditionImageUrl()), "drawable", requireActivity().packageName))
 
         //setting hour wise horizontal list
         val temperatureList = weatherDataParser!!.getHourlyTemperatureData()
@@ -570,6 +588,7 @@ class DashboardFragment : Fragment() {
     private fun resetViews() {
         binding.clTopHeaderLayout.visibility = View.GONE
         binding.cvCurrentDataCard.visibility = View.GONE
+        binding.imgCurrentTemp.clear()
         binding.cvAlertCard.visibility = View.GONE
         binding.tvAlertStartTime.visibility = View.GONE
         binding.tvAlertEndTime.visibility = View.GONE

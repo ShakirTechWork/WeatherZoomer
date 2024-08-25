@@ -11,5 +11,5 @@ data class UserModel(
     )
 ) {
     // Default no-argument constructor required by Firebase
-    constructor() : this("", "", "")
+    constructor() : this("", "")
 }
