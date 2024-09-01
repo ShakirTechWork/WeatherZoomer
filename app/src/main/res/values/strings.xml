@@ -103,4 +103,9 @@
     <string name="condition_image">Condition Image</string>
     <string name="wind">Wind</string>
     <string name="set_as_primary_location">Set as primary location.</string>
+    <string name="your_current_location">Your current location</string>
+    <string name="delete_saved_location">delete saved location</string>
+    <string name="recent_locations">Recent Locations</string>
+    <string name="locations">Locations</string>
+    <string name="add_new_location">Add new location</string>
 </resources>

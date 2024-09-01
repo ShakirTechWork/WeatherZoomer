@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    android:id="@+id/cd_parent_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    style="@style/CardViewStyle"
+    app:cardCornerRadius="10dp"
+    android:layout_margin="5dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/img_delete_saved_location"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@string/delete_saved_location"
+            android:src="@drawable/ic_baseline_delete_forever"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/ICON"/>
+
+        <TextView
+            android:id="@+id/tv_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/img_delete_saved_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="2dp"
+            style="@style/MediumBoldText"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="Mumbai, Maharashtra, Indiafrefvfvbdjkbdkvkjfdbjkf Mumbai, Maharashtra, Indiafrefvfvbdjkbdkvkjfdbjkf Mumbai, Maharashtra, Indiafrefvfvbdjkbdkvkjfdbjkf"
+            android:gravity="start"/>
+
+        <TextView
+            android:id="@+id/tv_is_current_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_location"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/MediumBoldText"
+            android:text="@string/your_current_location"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:gravity="end"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

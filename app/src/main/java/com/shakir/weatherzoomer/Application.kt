@@ -8,6 +8,7 @@ import com.shakir.weatherzoomer.firebase.FirebaseManager
 import com.shakir.weatherzoomer.model.AppRelatedData
 import com.shakir.weatherzoomer.repo.AppRepository
 import com.google.firebase.FirebaseApp
+import com.google.firebase.database.FirebaseDatabase
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
 import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +21,7 @@ class Application: Application() {
 
     override fun onCreate() {
         super.onCreate()
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true)
         // Initialize Firebase
         FirebaseApp.initializeApp(this)
 //        TextToSpeechManager.initialize(this)

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.shakir.weatherzoomer.R
 import com.shakir.weatherzoomer.model.Forecastday
 import com.shakir.weatherzoomer.utils.Utils
@@ -39,7 +40,7 @@ class DailyForecastAdapter(private val dataList: List<Forecastday>, private val 
         fun bind(data: Forecastday, context: Context) {
             tvDate.text = Utils.convertUnixTimeToDate(data.date_epoch.toLong())
             tvDay.text = Utils.convertUnixTimeToDayName(data.date_epoch.toLong())
-            imgIcon.setImageResource(context.resources.getIdentifier(Utils.generateStringFromUrl(data.day.condition.icon), "drawable", context.packageName))
+            imgIcon.load("https:${data.day.condition.icon}")
             tvStatus.text = data.day.condition.text
             tvHighestTemperature.text = "${data.day.maxtemp_c.toInt()}°C"
             tvLowestTemperature.text = "${data.day.mintemp_c.toInt()}°C"

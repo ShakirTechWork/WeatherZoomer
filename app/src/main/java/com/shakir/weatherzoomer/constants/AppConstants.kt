@@ -35,4 +35,9 @@ object AppConstants {
         const val IMPERIAL = "imperial"
     }
 
+    object PreferencesDatastore {
+        const val PREFERENCES_DATASTORE_NAME = "user_preferences"
+        const val USER_DETAILS = "user_details"
+    }
+
 }

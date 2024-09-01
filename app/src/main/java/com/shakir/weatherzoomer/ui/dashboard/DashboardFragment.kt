@@ -1,6 +1,7 @@
 package com.shakir.weatherzoomer.ui.dashboard
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -12,7 +13,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.TransactionTooLargeException
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
@@ -31,37 +32,6 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import coil.clear
 import coil.load
-import com.shakir.weatherzoomer.Application
-import com.shakir.weatherzoomer.BuildConfig
-import com.shakir.weatherzoomer.adapter.DailyForecastAdapter
-import com.shakir.weatherzoomer.adapter.TemperatureAdapter
-import com.shakir.weatherzoomer.databinding.FragmentDashboardBinding
-import com.shakir.weatherzoomer.utils.Utils
-import com.shakir.weatherzoomer.R
-import com.shakir.weatherzoomer.SharedViewModel
-import com.shakir.weatherzoomer.adapter.DateAdapter
-import com.shakir.weatherzoomer.api.ApiResponse
-import com.shakir.weatherzoomer.constants.AppConstants
-import com.shakir.weatherzoomer.constants.SystemOfMeasurement
-import com.shakir.weatherzoomer.dataParsers.WeatherDataParser
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_IS_DISABLED
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_HAVE_ACCESS
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_PROVIDED
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.EXCEEDED_CALLS_PER_MONTH_QUOTA
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INTERNAL_APPLICATION_ERROR
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_KEY
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_REQUEST_URL
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_JSON_BODY_IN_BULK_REQUEST
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.NO_LOCATION_FOUND
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.PARAMETER_Q_NOT_PROVIDED
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.TOO_MANY_LOCATIONS_IN_BULK_REQUEST
-import com.shakir.weatherzoomer.exceptionHandler.WeatherApiException
-import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.model.UserModel
-import com.shakir.weatherzoomer.model.WeatherForecastModel
-import com.shakir.weatherzoomer.ui.signIn.SignInActivity
-import com.shakir.weatherzoomer.ui.takelocation.LocationActivity
-import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.github.matteobattilana.weather.PrecipType
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.ServerException
@@ -77,10 +47,41 @@ import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.DatabaseException
 import com.shakir.ItemClickViewType
-import com.shakir.weatherzoomer.MainActivity
+import com.shakir.weatherzoomer.Application
+import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.OnItemClickListener
+import com.shakir.weatherzoomer.R
+import com.shakir.weatherzoomer.SharedViewModel
+import com.shakir.weatherzoomer.adapter.DailyForecastAdapter
+import com.shakir.weatherzoomer.adapter.DateAdapter
+import com.shakir.weatherzoomer.adapter.TemperatureAdapter
+import com.shakir.weatherzoomer.api.ApiResponse
+import com.shakir.weatherzoomer.constants.AppConstants
+import com.shakir.weatherzoomer.constants.SystemOfMeasurement
+import com.shakir.weatherzoomer.dataParsers.WeatherDataParser
+import com.shakir.weatherzoomer.databinding.FragmentDashboardBinding
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_IS_DISABLED
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_HAVE_ACCESS
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_PROVIDED
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.EXCEEDED_CALLS_PER_MONTH_QUOTA
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INTERNAL_APPLICATION_ERROR
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_KEY
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_REQUEST_URL
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_JSON_BODY_IN_BULK_REQUEST
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.NO_LOCATION_FOUND
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.PARAMETER_Q_NOT_PROVIDED
+import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.TOO_MANY_LOCATIONS_IN_BULK_REQUEST
+import com.shakir.weatherzoomer.exceptionHandler.WeatherApiException
 import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
+import com.shakir.weatherzoomer.firebase.FirebaseResponse
+import com.shakir.weatherzoomer.interfaces.MainActivityInteractionListener
 import com.shakir.weatherzoomer.model.Hour
+import com.shakir.weatherzoomer.model.UserModel
+import com.shakir.weatherzoomer.model.WeatherForecastModel
+import com.shakir.weatherzoomer.ui.signIn.SignInActivity
+import com.shakir.weatherzoomer.ui.takelocation.LocationActivity
+import com.shakir.weatherzoomer.utils.GifProgressDialog
+import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.EOFException
@@ -104,6 +105,8 @@ class DashboardFragment : Fragment() {
     private lateinit var navController: NavController
     private var _binding: FragmentDashboardBinding? = null
 
+    private var mainActivityInteractionListener: MainActivityInteractionListener? = null
+
     private val binding get() = _binding!!
 
     private lateinit var dashboardViewModel: DashboardViewModel
@@ -113,6 +116,18 @@ class DashboardFragment : Fragment() {
 
     private var currentIndex = 0
     private val handler = Handler(Looper.getMainLooper())
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is MainActivityInteractionListener) {
+            mainActivityInteractionListener = context
+        } else {
+            throw RuntimeException(
+                context.toString()
+                        + " must implement OnFragmentInteractionListener"
+            )
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -137,16 +152,9 @@ class DashboardFragment : Fragment() {
         attachClickListener()
         askNotificationPermission()
 
-        // Refresh function for the layout
         binding.swipeRefreshLayout.setOnRefreshListener{
-
-            // Your code goes here
-            // In this code, we are just changing the text in the
-            // textbox
             Utils.printDebugLog("swipeRefreshLayout: Refreshed")
             fetchUserAndWeatherData()
-            // This line is important as it explicitly refreshes only once
-            // If "true" it implicitly refreshes forever
             binding.swipeRefreshLayout.isRefreshing = false
         }
 }
@@ -174,21 +182,12 @@ class DashboardFragment : Fragment() {
 
     private fun attachClickListener() {
 
-        /*binding.tvChangeLocation.setSafeOnClickListener {
-            Utils.singleOptionAlertDialog(
-                requireContext(),
-                "Change Location",
-                "Want to change the location?",
-                "Yes",
-                true
-            ) {
-                val intent = Intent(requireContext(), LocationActivity::class.java)
-                startActivity(intent)
-                requireActivity().finish()
-            }
-        }*/
-        binding.tvChangeLocation.setSafeOnClickListener {
-            (activity as? MainActivity)?.openDrawer()
+        binding.imgHamburger.setSafeOnClickListener {
+            onInteractionWithSideNavigationDrawer()
+        }
+
+        binding.tvLocation.setSafeOnClickListener {
+            onInteractionWithSideNavigationDrawer()
         }
 
         binding.imgSettings.setOnClickListener {
@@ -248,6 +247,7 @@ class DashboardFragment : Fragment() {
             GifProgressDialog.initialize(requireContext())
             GifProgressDialog.show("Loading weather data")
             lifecycleScope.launch {
+                Utils.printDebugLog("Fetching_User_Data :: Loading2")
                 userDataResult = dashboardViewModel.getUserData()
                 when (userDataResult) {
                     is FirebaseResponse.Success -> {
@@ -255,7 +255,7 @@ class DashboardFragment : Fragment() {
                         if (userData != null) {
                             Utils.printDebugLog("Fetching_User_Data :: Success")
                             sharedViewModel.userData = userData
-                            if (userData.user_primary_location.isNotBlank()) {
+                            if (userData.user_settings.locations.isNotEmpty()) {
                                 Utils.printDebugLog("Got_primary_location :: ${userData.user_primary_location}")
                                 val primaryLocation = userData.user_primary_location
                                 systemOfMeasurement = when (userData.user_settings.preferred_unit) {
@@ -605,6 +605,34 @@ class DashboardFragment : Fragment() {
         binding.cvFutureData.visibility = View.GONE
     }
 
+    private fun onInteractionWithSideNavigationDrawer() {
+        Utils.printDebugLog("onInteractionWithSideNavigationDrawer")
+        mainActivityInteractionListener?.openNavigationDrawer()
+        sharedViewModel.onNewLocationRequestedLiveData.removeObservers(viewLifecycleOwner)
+        sharedViewModel.deleteSavedLocationLiveData.removeObservers(viewLifecycleOwner)
+        sharedViewModel.isLocationSelectedLiveData.removeObservers(viewLifecycleOwner)
+        sharedViewModel.onNewLocationRequestedLiveData.observe(viewLifecycleOwner) {isNewLocationRequested ->
+            Utils.printDebugLog("isNewLocationRequested: $isNewLocationRequested")
+            if (isNewLocationRequested) {
+                startActivity(Intent(requireContext(), LocationActivity::class.java))
+                requireActivity().finish()
+            }
+        }
+        sharedViewModel.deleteSavedLocationLiveData.observe(viewLifecycleOwner) { locationKey ->
+            if (locationKey.isNotBlank()) {
+                dashboardViewModel.deleteSavedLocation(locationKey)
+                Utils.printDebugLog("indexLocationDeletedMLiveData: $locationKey")
+            }
+        }
+        sharedViewModel.isLocationSelectedLiveData.observe(viewLifecycleOwner) { location ->
+            if (!location.isNullOrEmpty()) {
+                sharedViewModel.isLocationSelectedLiveData.removeObservers(viewLifecycleOwner)
+                Utils.printDebugLog("isLocationSelectedLiveData: $location")
+                sharedViewModel.selectLocation(null)
+            }
+        }
+    }
+
     private fun handleExceptions(exception: Exception?) {
         when (exception) {
             is FirebaseAuthInvalidUserException -> makeUserSignInAgain("Something went wrong. Sign in again.")
@@ -856,6 +884,11 @@ class DashboardFragment : Fragment() {
         } else {
             // Permission is denied. Inform the user that your app will not show notifications.
         }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        mainActivityInteractionListener = null
     }
 
 }

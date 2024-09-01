@@ -12,11 +12,13 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.shakir.weatherzoomer.model.LocationModel
 import com.shakir.weatherzoomer.model.UserLocationModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -28,6 +30,23 @@ class FirebaseManager {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().reference
+
+    private fun enableOfflineSupport(userId: String) {
+        //This method is used to make the firebase operation faster. it fetches the user data from local database internally
+        val userReference = databaseReference.child("users").child(userId)
+        userReference.keepSynced(true)
+        /*userReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val userModel = snapshot.getValue(UserModel::class.java)
+                // Handle the updated user model
+                Utils.printDebugLog("onDataChange: $userModel")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle possible errors
+            }
+        })*/
+    }
 
     suspend fun createUserWithEmailAndPassword2(
         email: String,
@@ -110,6 +129,7 @@ class FirebaseManager {
             val usersRef = databaseReference.child("users").child(userId).get().await()
             if (usersRef.exists()) {
                 val userModel = usersRef.getValue(UserModel::class.java)
+                enableOfflineSupport(userId)
                 FirebaseResponse.Success(userModel)
             } else {
                 FirebaseResponse.Success(null)
@@ -198,6 +218,33 @@ class FirebaseManager {
         }
         return future.join()
     }
+
+    fun deleteSavedLocation(userId: String, locationKey: String): FirebaseResponse<Boolean> {
+        val future = CompletableFuture<FirebaseResponse<Boolean>>()
+        try {
+            // Reference to the specific location node in the user's locations HashMap
+            val userReference = FirebaseDatabase.getInstance().reference
+                .child("users")
+                .child(userId)
+                .child("user_settings")
+                .child("locations")
+                .child(locationKey)
+
+            // Remove the location from the HashMap
+            userReference.removeValue().addOnCompleteListener { task ->
+                Utils.printDebugLog("task: ${task.isSuccessful}")
+                if (task.isSuccessful) {
+                    future.complete(FirebaseResponse.Success(true))
+                } else {
+                    future.complete(FirebaseResponse.Failure(task.exception))
+                }
+            }
+        } catch (e: Exception) {
+            future.complete(FirebaseResponse.Failure(e))
+        }
+        return future.join()
+    }
+
 
     fun updatePeriodicWeatherUpdatesData(
         userId: String,

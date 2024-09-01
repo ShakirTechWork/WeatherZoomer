@@ -74,4 +74,28 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
         }
     }
 
+    fun deleteSavedLocation(savedLocationsId: String) {
+        viewModelScope.launch {
+            val currentlySignedInUser = appRepository.getCurrentLoggedInUser()
+            if (currentlySignedInUser is FirebaseResponse.Success && currentlySignedInUser.data != null) {
+                val result = appRepository.deleteUserLocation(savedLocationsId, currentlySignedInUser.data.uid)
+                if (result is FirebaseResponse.Success) {
+
+                } else if (result is FirebaseResponse.Failure) {
+//                    _isPrimaryLocationUpdatedMLiveData.postValue(
+//                        FirebaseResponse.Failure(
+//                            result.exception
+//                        )
+//                    )
+                }
+            } else if (currentlySignedInUser is FirebaseResponse.Failure) {
+//                _isPrimaryLocationUpdatedMLiveData.postValue(
+//                    FirebaseResponse.Failure(
+//                        currentlySignedInUser.exception
+//                    )
+//                )
+            }
+        }
+    }
+
 }

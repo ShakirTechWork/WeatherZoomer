@@ -22,10 +22,46 @@
         android:layout_height="match_parent"
         android:layout_gravity="start">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tv_locations_title"
+                style="@style/MediumBoldText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_margin="10dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="20sp"
+                android:gravity="start"
+                android:text="@string/locations" />
+
+            <Button
+                android:id="@+id/btn_add_new_location"
+                style="@style/BUTTON"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/tv_locations_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_margin="10dp"
+                android:padding="5dp"
+                android:text="@string/add_new_location"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toBottomOf="@id/btn_add_new_location"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="vertical"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.navigation.NavigationView>
 

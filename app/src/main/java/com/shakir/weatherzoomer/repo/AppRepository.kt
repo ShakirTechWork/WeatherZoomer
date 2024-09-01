@@ -70,6 +70,10 @@ class AppRepository(
         return firebaseManager.addUserLocation2(userId, location)
     }
 
+    fun deleteUserLocation(userId: String, savedLocationsId: String): FirebaseResponse<Boolean> {
+        return firebaseManager.deleteSavedLocation(userId, savedLocationsId)
+    }
+
     fun updatePeriodicWeatherUpdatesData(userId: String, intervalInHours: Int, dndStartTime: Long, dndEndTime: Long): FirebaseResponse<Boolean> {
         return firebaseManager.updatePeriodicWeatherUpdatesData(userId, intervalInHours, dndStartTime, dndEndTime)
     }
