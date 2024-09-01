@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), MainActivityInteractionListener {
 
         firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
         firebaseRemoteConfigManager.observeRemoteConfigData().observe(this@MainActivity) {
-            Utils.printDebugLog("Firebase_Config SplashActivity data observed: $it")
+//            Utils.printDebugLog("Firebase_Config SplashActivity data observed: $it")
             for (item in it) {
                 if (item.key == "app_latest_version") {
                     if (BuildConfig.VERSION_NAME != item.value) {

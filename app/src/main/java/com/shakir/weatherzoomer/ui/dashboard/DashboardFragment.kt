@@ -148,7 +148,7 @@ class DashboardFragment : Fragment() {
             this,
             DashboardViewModelFactory(repository)
         )[DashboardViewModel::class.java]
-        fetchUserAndWeatherData()
+//        fetchUserAndWeatherData()
         attachClickListener()
         askNotificationPermission()
 
@@ -157,7 +157,131 @@ class DashboardFragment : Fragment() {
             fetchUserAndWeatherData()
             binding.swipeRefreshLayout.isRefreshing = false
         }
-}
+
+        //new implementation
+        attachNewObservers()
+        if (dashboardViewModel.weatherForecastLiveData.value == null) {
+            if (Utils.isInternetAvailable(requireContext())) {
+                Utils.printDebugLog("onViewCreated")
+                GifProgressDialog.initialize(requireContext())
+                GifProgressDialog.show("Loading weather data")
+                resetViews()
+                dashboardViewModel.getCurrentlySignedInUserWithData()
+            }
+        }
+    }
+
+    private fun fetchWeatherDataForLocation(location: String) {
+        GifProgressDialog.initialize(requireContext())
+        GifProgressDialog.show("Loading weather data")
+        resetViews()
+        dashboardViewModel.getWeatherForecastData(location, 3, "yes", "yes")
+    }
+
+    private fun attachNewObservers() {
+        dashboardViewModel.currentlySignedInUserLiveData.observe(viewLifecycleOwner) {response ->
+            when (response) {
+                is FirebaseResponse.Success -> {
+                    val userData = response.data
+                    if (userData != null) {
+                        Utils.printDebugLog("currentlySignedInUserLiveData :: Success | User_data: ${userData.user_name}")
+                        sharedViewModel.userData = userData
+                        val locations = userData.user_settings.locations
+                        if (locations.isNotEmpty()) {
+                            systemOfMeasurement = when (userData.user_settings.preferred_unit) {
+                                AppConstants.UserPreferredUnit.METRIC -> {
+                                    SystemOfMeasurement.METRIC
+                                }
+                                AppConstants.UserPreferredUnit.IMPERIAL -> {
+                                    SystemOfMeasurement.IMPERIAL
+                                }
+                                else -> {
+                                    SystemOfMeasurement.METRIC
+                                }
+                            }
+                            if (dashboardViewModel.weatherForecastLiveData.value == null) {
+                                var location = ""
+                                locations.forEach {
+                                    if (it.value.selectedLocation) {
+                                        location = it.value.location
+                                    }
+                                }
+                                dashboardViewModel.getWeatherForecastData(location, 3, "yes", "yes" )
+                            }
+                        } else {
+                            Utils.singleOptionAlertDialog(
+                                requireContext(),
+                                "No location found",
+                                "Please give the location name.",
+                                "OKAY",
+                                false
+                            ) {
+                                GifProgressDialog.dismiss()
+                                val intent = Intent(requireContext(), LocationActivity::class.java)
+                                startActivity(intent)
+                                requireActivity().finish()
+                            }
+                        }
+                    } else {
+                        GifProgressDialog.dismiss()
+                        Utils.singleOptionAlertDialog(
+                            requireContext(),
+                            "Something went wrong",
+                            "Please login again.",
+                            "OKAY",
+                            false
+                        ) {
+                            dashboardViewModel.signOutCurrentUser(requireActivity())
+                            val intent = Intent(requireContext(), SignInActivity::class.java)
+                            startActivity(intent)
+                            requireActivity().finish()
+                        }
+                    }
+                }
+                is FirebaseResponse.Failure -> {
+                    Utils.printErrorLog("currentlySignedInUserLiveData :: Failure: ${response.exception}")
+                    GifProgressDialog.dismiss()
+                    Utils.singleOptionAlertDialog(
+                        requireContext(),
+                        "Something went wrong",
+                        "Please login again.",
+                        "OKAY",
+                        false
+                    ) {
+                        dashboardViewModel.signOutCurrentUser(requireActivity())
+                        val intent = Intent(requireContext(), SignInActivity::class.java)
+                        startActivity(intent)
+                        requireActivity().finish()
+                    }
+                }
+                FirebaseResponse.Loading -> {
+                    Utils.printDebugLog("currentlySignedInUserLiveData :: Loading")
+                }
+            }
+        }
+
+        dashboardViewModel.weatherForecastLiveData.observe(viewLifecycleOwner) {weatherApiResponse ->
+            when (weatherApiResponse) {
+                is ApiResponse.Success -> {
+                    Utils.printDebugLog("weatherForecastLiveData: Success | ${weatherApiResponse.data?.location?.name}")
+                    weatherForecastData = weatherApiResponse.data
+                    if (weatherForecastData != null) {
+                        GifProgressDialog.dismiss()
+                        weatherDataParser = null
+                        setData(weatherForecastData!!, 0)
+                    }
+                }
+                is ApiResponse.Failure -> {
+                    GifProgressDialog.dismiss()
+                    Utils.printErrorLog("weatherForecastLiveData :: Failure ${weatherApiResponse.exception}")
+                    handleExceptions(weatherApiResponse.exception)
+                }
+                is ApiResponse.Loading -> {
+                    Utils.printDebugLog("weatherForecastLiveData :: Loading")
+                }
+            }
+        }
+    }
 
     private fun askNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -368,7 +492,6 @@ class DashboardFragment : Fragment() {
         binding.cvCurrentDataCard.visibility = View.VISIBLE
         binding.tvDateTime.text = weatherDataParser!!.getSelectedDate()
         binding.imgCurrentTemp.load(weatherDataParser!!.getConditionImage())
-        Utils.printDebugLog("imgCurrentTemp: ${binding.imgCurrentTemp.drawable}")
         binding.tvCurrentTemperature.text = weatherDataParser!!.getCurrentTemperature()
         binding.tvFeelsLike.text = weatherDataParser!!.getFeelsLikeTemperature()
         binding.tvCurrentCondition.text = weatherDataParser!!.getCurrentConditionText()
@@ -629,6 +752,7 @@ class DashboardFragment : Fragment() {
                 sharedViewModel.isLocationSelectedLiveData.removeObservers(viewLifecycleOwner)
                 Utils.printDebugLog("isLocationSelectedLiveData: $location")
                 sharedViewModel.selectLocation(null)
+                fetchWeatherDataForLocation(location)
             }
         }
     }

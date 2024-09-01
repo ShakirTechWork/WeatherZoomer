@@ -2,6 +2,7 @@ package com.shakir.weatherzoomer.repo
 
 import android.app.Activity
 import android.content.Context
+import androidx.lifecycle.MutableLiveData
 import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.api.ApiResponse
 import com.shakir.weatherzoomer.api.NetworkEndpoints
@@ -17,9 +18,11 @@ import com.shakir.weatherzoomer.model.WeatherData
 import com.shakir.weatherzoomer.model.WeatherForecastModel
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseUser
+import com.shakir.weatherzoomer.exceptionHandler.WeatherApiException
 import com.shakir.weatherzoomer.model.LocationModel
 import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModel
 import kotlinx.coroutines.flow.Flow
+import org.json.JSONObject
 
 class AppRepository(
     private val networkEndpoints: NetworkEndpoints,
@@ -139,5 +142,33 @@ class AppRepository(
             alerts
         )
     }
+
+    suspend fun getWeatherForecastData(
+        location: String,
+        days: Int,
+        aqi: String,
+        alerts: String
+    ): MutableLiveData<ApiResponse<WeatherForecastModel?>> {
+        val liveData = MutableLiveData<ApiResponse<WeatherForecastModel?>>()
+        liveData.postValue(ApiResponse.Loading) // Emit loading state
+        try {
+            val response = networkEndpoints.forecastWeather(
+                BuildConfig.WEATHER_API_KEY, location, days, aqi, alerts
+            )
+            if (response.isSuccessful) {
+                liveData.postValue(ApiResponse.Success(response.body()))
+            } else {
+                val errorJsonString = response.errorBody()?.string()
+                val jsonObject = JSONObject(errorJsonString ?: "")
+                val errorCode = jsonObject.getJSONObject("error").getInt("code")
+                val errorMessage = jsonObject.getJSONObject("error").getString("message")
+                liveData.postValue(ApiResponse.Failure(WeatherApiException(201, errorCode, errorMessage)))
+            }
+        } catch (exception: Exception) {
+            liveData.postValue(ApiResponse.Failure(exception))
+        }
+        return liveData
+    }
+
 
 }

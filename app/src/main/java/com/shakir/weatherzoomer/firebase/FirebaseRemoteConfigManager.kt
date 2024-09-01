@@ -44,10 +44,10 @@ class FirebaseRemoteConfigManager {
     }
 
     private fun addOnConfigChangedListener() {
-        Utils.printDebugLog("Firebase_Config: addOnConfigChangedListener: attached")
+//        Utils.printDebugLog("Firebase_Config: addOnConfigChangedListener: attached")
         configUpdateListener = object : ConfigUpdateListener {
             override fun onUpdate(configUpdate: ConfigUpdate) {
-                Utils.printDebugLog("Firebase_Config: addOnConfigUpdateListener: onUpdate called")
+//                Utils.printDebugLog("Firebase_Config: addOnConfigUpdateListener: onUpdate called")
                 val remoteConfigItemList = ArrayList<RemoteConfigItem>()
                 for (key in configUpdate.updatedKeys) {
                     Utils.printDebugLog("aaa: ${configUpdate.updatedKeys.contains("app_latest_version")}")
@@ -64,7 +64,7 @@ class FirebaseRemoteConfigManager {
             }
 
             override fun onError(error: FirebaseRemoteConfigException) {
-                Utils.printDebugLog("Firebase_Config: addOnConfigUpdateListener: onError called")
+//                Utils.printDebugLog("Firebase_Config: addOnConfigUpdateListener: onError called")
             }
 
         }
@@ -92,14 +92,14 @@ class FirebaseRemoteConfigManager {
     }*/
 
     private fun fetchAndActivateRemoteConfigData() {
-        Utils.printDebugLog("Firebase_Config: fetchAndActivateRemoteConfigData: Loading")
+//        Utils.printDebugLog("Firebase_Config: fetchAndActivateRemoteConfigData: Loading")
         firebaseRemoteConfig.fetch()
             .addOnCompleteListener { fetchTask ->
                 if (fetchTask.isSuccessful) {
-                    Utils.printDebugLog("Firebase_Config: fetchAndActivateRemoteConfigData: Success")
+//                    Utils.printDebugLog("Firebase_Config: fetchAndActivateRemoteConfigData: Success")
                     firebaseRemoteConfig.activate().addOnCompleteListener { activationTask ->
                         if (activationTask.isSuccessful) {
-                            Utils.printDebugLog("Firebase_Config: applyFetchedValues: Activation success")
+//                            Utils.printDebugLog("Firebase_Config: applyFetchedValues: Activation success")
                             val remoteConfigItemList = ArrayList<RemoteConfigItem>()
                             for ((key, value) in firebaseRemoteConfig.all) {
                                 val stringValue = value.asString()
@@ -108,11 +108,11 @@ class FirebaseRemoteConfigManager {
                             remoteConfigMLiveData.postValue(remoteConfigItemList)
                             addOnConfigChangedListener()
                         } else {
-                            Utils.printDebugLog("Firebase_Config: applyFetchedValues: Activation failed")
+//                            Utils.printDebugLog("Firebase_Config: applyFetchedValues: Activation failed")
                         }
                     }
                 } else {
-                    Utils.printDebugLog("Firebase_Config: fetchAndActivateRemoteConfigData: Failed")
+//                    Utils.printDebugLog("Firebase_Config: fetchAndActivateRemoteConfigData: Failed")
                 }
             }
     }
@@ -133,7 +133,7 @@ class FirebaseRemoteConfigManager {
 
     // Method to remove config update listener
     fun removeConfigUpdateListener() {
-        Utils.printDebugLog("Firebase_Config: removeConfigUpdateListener")
+//        Utils.printDebugLog("Firebase_Config: removeConfigUpdateListener")
         configUpdateListener?.let {
             configUpdateListenerRegistration?.remove()
             configUpdateListener = null
