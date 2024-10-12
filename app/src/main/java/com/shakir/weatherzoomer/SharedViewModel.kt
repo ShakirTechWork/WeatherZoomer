@@ -22,7 +22,8 @@ class SharedViewModel : ViewModel() {
     val onNewLocationRequestedLiveData : LiveData<Boolean>
         get() = _onNewLocationRequestedMLiveData
 
-    fun deleteLocationAtIndex(locationId: String) {
+    fun deleteLocation(locationId: String) {
+        userData?.user_settings?.locations?.remove(locationId)
         _deleteSavedLocationMLiveData.postValue(locationId)
     }
 

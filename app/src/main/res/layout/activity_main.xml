@@ -26,15 +26,50 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/img_app_logo"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginStart="10dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:src="@drawable/app_transparent_logo"
+                android:contentDescription="@string/app_logo"
+                android:scaleType="centerCrop"/>
+
+            <TextView
+                android:id="@+id/tv_app_name"
+                style="@style/MediumBoldText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="@id/img_app_logo"
+                app:layout_constraintStart_toEndOf="@id/img_app_logo"
+                app:layout_constraintBottom_toBottomOf="@id/img_app_logo"
+                android:layout_marginStart="5dp"
+                android:text="@string/app_name"
+                android:textSize="18sp"
+                android:textStyle="italic"/>
+
+            <View
+                android:id="@+id/view_separator_1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                app:layout_constraintTop_toBottomOf="@id/img_app_logo"
+                android:layout_marginTop="18dp"
+                android:background="@color/blue" />
+
             <TextView
                 android:id="@+id/tv_locations_title"
                 style="@style/MediumBoldText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view_separator_1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_margin="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="10dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textSize="20sp"
@@ -53,11 +88,26 @@
                 android:padding="5dp"
                 android:text="@string/add_new_location"/>
 
+            <TextView
+                android:id="@+id/tv_recent_locations_title"
+                style="@style/MediumSemiBoldText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/btn_add_new_location"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_margin="10dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:gravity="start"
+                android:text="@string/recent_locations"
+                android:textSize="16sp"/>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                app:layout_constraintTop_toBottomOf="@id/btn_add_new_location"
+                app:layout_constraintTop_toBottomOf="@id/tv_recent_locations_title"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:orientation="vertical"/>

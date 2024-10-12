@@ -61,15 +61,6 @@
         <!--        app:lottie_loop="true"-->
         <!--        android:visibility="gone"/>-->
 
-        <CheckBox
-            android:id="@+id/chkbox_primary_location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/img_picture"
-            android:text="@string/set_as_primary_location" />
-
         <Button
             android:id="@+id/btn_current_location"
             style="@style/BUTTON"
@@ -77,13 +68,13 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/chkbox_primary_location"
+            app:layout_constraintTop_toBottomOf="@id/img_picture"
             android:layout_marginTop="5dp"
             android:padding="16dp"
             android:text="@string/enable_current_location"/>
 
         <TextView
-            android:id="@+id/tv_enter_location_manually"
+            android:id="@+id/tv_search_location"
             style="@style/MediumBoldText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -92,7 +83,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="6dp"
             android:padding="16dp"
-            android:text="@string/enter_location_manually"
+            android:text="@string/search_location"
             android:textColor="@color/color_primary_light"
             android:textSize="16sp"/>
 
@@ -103,7 +94,7 @@
             android:text="@string/location_note"
             style="@style/MediumSemiBoldText"
             android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/tv_enter_location_manually"
+            app:layout_constraintTop_toBottomOf="@id/tv_search_location"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_margin="10dp"/>

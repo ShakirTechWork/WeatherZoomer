@@ -15,8 +15,6 @@ import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
 import com.shakir.weatherzoomer.interfaces.MainActivityInteractionListener
 import com.shakir.weatherzoomer.model.UserLocationItem
-import com.shakir.weatherzoomer.model.UserLocationModel
-import com.shakir.weatherzoomer.ui.dashboard.DashboardFragment
 import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
 import com.shakir.weatherzoomer.utils.Utils
 
@@ -81,8 +79,13 @@ class MainActivity : AppCompatActivity(), MainActivityInteractionListener {
                 Utils.printDebugLog("userSavedLocationList: $userSavedLocationList")
                 userSavedLocationAdapter = UserSavedLocationsAdapter(userSavedLocationList, object : UserSavedLocationsAdapter.OnItemInteractionListener {
                     override fun onItemDeleted(position: Int, locationId: String) {
-                        userSavedLocationAdapter.deleteItem(position)
-                        sharedViewModel.deleteLocationAtIndex(locationId)
+                        if (Utils.isInternetAvailable(this@MainActivity)) {
+                            userSavedLocationList.removeAt(position)
+                            userSavedLocationAdapter.notifyItemRemoved(position)
+                            sharedViewModel.deleteLocation(locationId)
+                        } else {
+                            Utils.showLongToast(this@MainActivity, "No internet available. Switch on your internet first.")
+                        }
                     }
                     override fun onItemSelectedListener(location: String) {
                         binding.drawerLayout.close()

@@ -7,7 +7,6 @@
     <string name="set_your_location">Set your location to start getting \nweather updates</string>
     <string name="enable_current_location">Enable current location</string>
     <string name="location_note">We only access your location while you are using the app to improve your experience.</string>
-    <string name="enter_location_manually">Enter location manually</string>
     <string name="enter_location_of_ur_choice">Enter location of your choice.</string>
     <string name="type_ur_location">Type your location.</string>
     <string name="set_location">Set location</string>

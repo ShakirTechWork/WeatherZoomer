@@ -28,6 +28,10 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
     val weatherForecastLiveData: LiveData<ApiResponse<WeatherForecastModel?>>
         get() = _weatherForecastMLiveData
 
+    private var _isLocationDeletedMLiveData = MutableLiveData<FirebaseResponse<Boolean>>(null)
+    val isLocationDeletedLiveData: LiveData<FirebaseResponse<Boolean>>
+        get() = _isLocationDeletedMLiveData
+
     fun getCurrentlySignedInUserWithData() {
         viewModelScope.launch {
             _currentlySignedInUserMLiveData.postValue(FirebaseResponse.Loading)
@@ -144,26 +148,12 @@ class DashboardViewModel(private val appRepository: AppRepository) : ViewModel()
         }
     }
 
-    fun deleteSavedLocation(savedLocationsId: String) {
-        viewModelScope.launch {
+    fun deleteLocation(locationId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
             val currentlySignedInUser = appRepository.getCurrentLoggedInUser()
             if (currentlySignedInUser is FirebaseResponse.Success && currentlySignedInUser.data != null) {
-                val result = appRepository.deleteUserLocation(savedLocationsId, currentlySignedInUser.data.uid)
-                if (result is FirebaseResponse.Success) {
-
-                } else if (result is FirebaseResponse.Failure) {
-//                    _isPrimaryLocationUpdatedMLiveData.postValue(
-//                        FirebaseResponse.Failure(
-//                            result.exception
-//                        )
-//                    )
-                }
-            } else if (currentlySignedInUser is FirebaseResponse.Failure) {
-//                _isPrimaryLocationUpdatedMLiveData.postValue(
-//                    FirebaseResponse.Failure(
-//                        currentlySignedInUser.exception
-//                    )
-//                )
+                Utils.printDebugLog("viewmodel delete")
+                _isLocationDeletedMLiveData.postValue(appRepository.deleteLocation(currentlySignedInUser.data.uid, locationId))
             }
         }
     }

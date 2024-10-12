@@ -14,7 +14,7 @@ class LocationSearchResultsAdapter(private val dataList: SearchLocationResultMod
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemLocationResultBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
+        return ViewHolder(binding, onLocationSelectedListener)
     }
 
     override fun getItemCount(): Int {
@@ -24,27 +24,27 @@ class LocationSearchResultsAdapter(private val dataList: SearchLocationResultMod
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = dataList[position]
         Utils.printDebugLog("item: ${item.name}")
-        holder.bind(item, onLocationSelectedListener)
+        holder.bind(item)
     }
 
-    class ViewHolder(private val binding: ItemLocationResultBinding): RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(
+        private val binding: ItemLocationResultBinding,
+        private val onLocationSelectedListener: OnLocationSelectedListener
+    ): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(locationObject: SearchLocationResultModelItem, onLocationSelectedListener: OnLocationSelectedListener) {
+        fun bind(locationObject: SearchLocationResultModelItem) {
             val location = "${locationObject.name}, ${locationObject.region}, ${locationObject.country}"
             binding.tvLocation.text = location
 
             binding.cvParentLayout.setSafeOnClickListener {
-                onLocationSelectedListener.onLocationSelected(location, false)
-            }
-            binding.tvSetPrimaryLocation.setSafeOnClickListener {
-                onLocationSelectedListener.onLocationSelected(location, true)
+                onLocationSelectedListener.onLocationSelected(location)
             }
         }
 
     }
 
     interface OnLocationSelectedListener {
-        fun onLocationSelected(location: String, isPrimaryLocation: Boolean)
+        fun onLocationSelected(location: String)
     }
 
 }

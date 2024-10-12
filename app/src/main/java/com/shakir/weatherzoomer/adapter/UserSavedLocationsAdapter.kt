@@ -42,11 +42,6 @@ class UserSavedLocationsAdapter(private val locations: ArrayList<UserLocationIte
         return locations.size
     }
 
-    fun deleteItem(index: Int) {
-        locations.removeAt(index)
-        notifyItemRemoved(index)
-    }
-
     interface OnItemInteractionListener {
         fun onItemDeleted(position: Int, locationId: String)
         fun onItemSelectedListener(location: String)

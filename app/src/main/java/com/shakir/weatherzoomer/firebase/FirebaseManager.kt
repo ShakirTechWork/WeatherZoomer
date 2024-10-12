@@ -12,11 +12,9 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.shakir.weatherzoomer.model.UserLocationModel
@@ -141,87 +139,98 @@ class FirebaseManager {
 
     }
 
-    fun updateUserPrimaryLocation(
-        userId: String,
-        primaryLocation: String
-    ): FirebaseResponse<Boolean> {
-        val future = CompletableFuture<FirebaseResponse<Boolean>>()
-
-        try {
-            val userReference = Firebase.database.reference.child("users").child(userId)
-            val updateMap = mapOf<String, Any>("user_primary_location" to primaryLocation)
-
-            userReference.updateChildren(updateMap)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        future.complete(FirebaseResponse.Success(true))
-                    } else {
-                        future.complete(
-                            FirebaseResponse.Failure(task.exception)
-                        )
-                    }
-                }
-
-        } catch (e: Exception) {
-            future.complete(
-                FirebaseResponse.Failure(e)
-            )
-        }
-
-        return future.join()
-    }
-
-    fun addUserLocation(userId: String, location: String): FirebaseResponse<Boolean> {
-        val future = CompletableFuture<FirebaseResponse<Boolean>>()
-
-        try {
-//            val userReference = Firebase.database.reference.child("users").child(userId)
-//            userReference.child("locations").setValue(locations).addOnCompleteListener { task ->
-//                if (task.isSuccessful) {
-//                    future.complete(FirebaseResponse.Success(true))
-//                } else {
-//                    future.complete(FirebaseResponse.Failure(task.exception))
-//                }
-//            }
-        } catch (e: Exception) {
-            future.complete(
-                FirebaseResponse.Failure(e)
-            )
-        }
-
-        return future.join()
-    }
-
-    fun addUserLocation2(userId: String, location: String): FirebaseResponse<Boolean> {
+    fun saveAndUpdateLocations(userId: String, newLocation: String, isCurrentLocation: Boolean): FirebaseResponse<Boolean> {
         val future = CompletableFuture<FirebaseResponse<Boolean>>()
         try {
-            val newLocation = UserLocationModel(
-                selectedLocation = true,
-                currentLocation = false,
-                location = location
-            )
-
-            val locationKey = FirebaseDatabase.getInstance().reference.push().key ?: UUID.randomUUID().toString()
-
             val userReference = FirebaseDatabase.getInstance().reference.child("users").child(userId).child("user_settings").child("locations")
 
-            userReference.child(locationKey).setValue(newLocation)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        future.complete(FirebaseResponse.Success(true))
-                    } else {
-                        future.complete(FirebaseResponse.Failure(task.exception))
-                    }
+            // Fetch existing locations
+            userReference.get().addOnSuccessListener { snapshot ->
+                val locationsMap: HashMap<String, UserLocationModel> = if (snapshot.exists()) {
+                    val existingLocations = snapshot.getValue(object : GenericTypeIndicator<HashMap<String, UserLocationModel>>() {})
+                    existingLocations ?: hashMapOf()
+                } else {
+                    hashMapOf()
                 }
+
+                Utils.printDebugLog("locationsMap___: $locationsMap")
+
+                if (locationsMap.isNotEmpty()) {
+                    // Update existing locations values
+                    locationsMap.forEach { (key, value) ->
+                        locationsMap[key] = value.copy(
+                            selectedLocation = false,
+                        )
+                    }
+
+                    if (isCurrentLocation) {
+                        var isCurrentLocationFound = false
+                        for (key in locationsMap.keys) {
+                            val value = locationsMap[key]
+                            Utils.printDebugLog("location_value: ${value?.currentLocation}")
+                            if (value?.currentLocation == true) {
+                                //update the current location
+                                locationsMap[key] = value.copy(
+                                    selectedLocation = true,
+                                    location = newLocation
+                                )
+                                isCurrentLocationFound = true
+                                break
+                            }
+                        }
+                        Utils.printDebugLog("isCurrentLocationFound: $isCurrentLocationFound")
+                        if (!isCurrentLocationFound) {
+                            val locationKey = FirebaseDatabase.getInstance().reference.push().key ?: UUID.randomUUID().toString()
+                            val newLocationModel = UserLocationModel(
+                                selectedLocation = true,
+                                currentLocation = true,
+                                location = newLocation
+                            )
+                            locationsMap[locationKey] = newLocationModel
+                        }
+                    } else {
+                        // Add the current location
+                        val locationKey = FirebaseDatabase.getInstance().reference.push().key ?: UUID.randomUUID().toString()
+                        val newLocationModel = UserLocationModel(
+                            selectedLocation = true,
+                            currentLocation = false,
+                            location = newLocation
+                        )
+                        locationsMap[locationKey] = newLocationModel
+                    }
+                } else {
+                    // Add the new location
+                    val locationKey = FirebaseDatabase.getInstance().reference.push().key ?: UUID.randomUUID().toString()
+                    val newLocationModel = UserLocationModel(
+                        selectedLocation = true,
+                        currentLocation = isCurrentLocation,
+                        location = newLocation
+                    )
+                    locationsMap[locationKey] = newLocationModel
+                }
+
+                userReference.setValue(locationsMap)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            future.complete(FirebaseResponse.Success(true))
+                        } else {
+                            future.complete(FirebaseResponse.Failure(task.exception))
+                        }
+                    }
+            }.addOnFailureListener { exception ->
+                future.complete(FirebaseResponse.Failure(exception))
+            }
         } catch (e: Exception) {
             future.complete(FirebaseResponse.Failure(e))
         }
         return future.join()
     }
 
-    fun deleteSavedLocation(userId: String, locationKey: String): FirebaseResponse<Boolean> {
+
+    suspend fun deleteLocation(userId: String, locationKey: String): FirebaseResponse<Boolean> {
         val future = CompletableFuture<FirebaseResponse<Boolean>>()
         try {
+            Utils.printDebugLog("firebase manager location delete for user id: $userId")
             // Reference to the specific location node in the user's locations HashMap
             val userReference = FirebaseDatabase.getInstance().reference
                 .child("users")
@@ -238,8 +247,13 @@ class FirebaseManager {
                 } else {
                     future.complete(FirebaseResponse.Failure(task.exception))
                 }
+            }.addOnFailureListener { exception ->
+                Utils.printDebugLog("firebase manager delete addOnFailureListener exception: $exception")
+                future.complete(FirebaseResponse.Failure(exception))
             }
         } catch (e: Exception) {
+            e.printStackTrace()
+            Utils.printDebugLog("firebase manager delete exception: $e")
             future.complete(FirebaseResponse.Failure(e))
         }
         return future.join()

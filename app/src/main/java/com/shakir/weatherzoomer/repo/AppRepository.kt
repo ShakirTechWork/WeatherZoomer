@@ -19,7 +19,6 @@ import com.shakir.weatherzoomer.model.WeatherForecastModel
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseUser
 import com.shakir.weatherzoomer.exceptionHandler.WeatherApiException
-import com.shakir.weatherzoomer.model.LocationModel
 import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModel
 import kotlinx.coroutines.flow.Flow
 import org.json.JSONObject
@@ -62,19 +61,12 @@ class AppRepository(
         firebaseManager.signOutCurrentUser(activity)
     }
 
-    fun updateUserPrimaryLocation(userId: String, primaryLocation: String): FirebaseResponse<Boolean> {
-        return firebaseManager.updateUserPrimaryLocation(userId, primaryLocation)
+    fun saveLocation(userId: String, location: String, isCurrentLocation: Boolean): FirebaseResponse<Boolean> {
+        return firebaseManager.saveAndUpdateLocations(userId, location, isCurrentLocation)
     }
 
-    fun addUserLocation(userId: String, location: String): FirebaseResponse<Boolean> {
-        return firebaseManager.addUserLocation(userId, location)
-    }
-    fun addUserLocation2(userId: String, location: String): FirebaseResponse<Boolean> {
-        return firebaseManager.addUserLocation2(userId, location)
-    }
-
-    fun deleteUserLocation(userId: String, savedLocationsId: String): FirebaseResponse<Boolean> {
-        return firebaseManager.deleteSavedLocation(userId, savedLocationsId)
+    suspend fun deleteLocation(userId: String, locationId: String): FirebaseResponse<Boolean> {
+        return firebaseManager.deleteLocation(userId, locationId)
     }
 
     fun updatePeriodicWeatherUpdatesData(userId: String, intervalInHours: Int, dndStartTime: Long, dndEndTime: Long): FirebaseResponse<Boolean> {
@@ -95,10 +87,6 @@ class AppRepository(
 
     suspend fun getAppRelatedData(): FirebaseResponse<AppRelatedData> {
         return firebaseManager.getAppRelatedData()
-    }
-
-    suspend fun saveUserPrimaryLocation(primaryLocation: String) {
-        return appDataStore.savePrimaryLocation(primaryLocation)
     }
 
     suspend fun updateIsAppOpenedFirstTime(value: Boolean) {

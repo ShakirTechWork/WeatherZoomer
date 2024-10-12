@@ -1,27 +1,24 @@
 package com.shakir.weatherzoomer.ui.dashboard
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.DeadObjectException
 import android.os.Handler
 import android.os.Looper
 import android.os.TransactionTooLargeException
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -169,6 +166,8 @@ class DashboardFragment : Fragment() {
                 dashboardViewModel.getCurrentlySignedInUserWithData()
             }
         }
+
+        checkForAppUpdates()
     }
 
     private fun fetchWeatherDataForLocation(location: String) {
@@ -200,13 +199,47 @@ class DashboardFragment : Fragment() {
                                 }
                             }
                             if (dashboardViewModel.weatherForecastLiveData.value == null) {
-                                var location = ""
-                                locations.forEach {
-                                    if (it.value.selectedLocation) {
-                                        location = it.value.location
+                                var selectedLocation = ""
+                                for (key in locations.keys) {
+                                    val userLocationModel = locations[key]!!
+                                    if (userLocationModel.currentLocation) {
+                                        selectedLocation = userLocationModel.location
+                                        break
                                     }
                                 }
-                                dashboardViewModel.getWeatherForecastData(location, 3, "yes", "yes" )
+                                if (selectedLocation.isBlank()) {
+                                    for (key in locations.keys) {
+                                        val userLocationModel = locations[key]!!
+                                        if (userLocationModel.selectedLocation) {
+                                            selectedLocation = userLocationModel.location
+                                            break
+                                        }
+                                    }
+                                }
+                                if (selectedLocation.isBlank()) {
+                                    val firstEntry = locations.entries.firstOrNull()
+                                    if (firstEntry != null) {
+                                        selectedLocation = firstEntry.value.location
+                                    }
+                                }
+                                if (selectedLocation.isBlank()) {
+                                    Utils.singleOptionAlertDialog(
+                                        requireContext(),
+                                        "No location found",
+                                        "Please give the location name.",
+                                        "OKAY",
+                                        false
+                                    ) {
+                                        GifProgressDialog.dismiss()
+                                        val intent = Intent(requireContext(), LocationActivity::class.java)
+                                        startActivity(intent)
+                                        requireActivity().finish()
+                                    }
+                                }
+                                if (selectedLocation.isNotBlank()) {
+                                    Utils.printDebugLog("selectedLocation -> $selectedLocation")
+                                    dashboardViewModel.getWeatherForecastData(selectedLocation, 3, "yes", "yes" )
+                                }
                             }
                         } else {
                             Utils.singleOptionAlertDialog(
@@ -279,6 +312,18 @@ class DashboardFragment : Fragment() {
                 is ApiResponse.Loading -> {
                     Utils.printDebugLog("weatherForecastLiveData :: Loading")
                 }
+            }
+        }
+
+        dashboardViewModel.isLocationDeletedLiveData.observe(viewLifecycleOwner) { locationDeleteResponse ->
+            when(locationDeleteResponse) {
+                is FirebaseResponse.Success -> {
+                    Utils.showLongToast(requireContext(), "Location Deleted Successfully")
+                }
+                is FirebaseResponse.Failure -> {
+                    Utils.showLongToast(requireContext(), "Something went wrong! Please try again")
+                }
+                FirebaseResponse.Loading -> {}
             }
         }
     }
@@ -555,6 +600,7 @@ class DashboardFragment : Fragment() {
             binding.tvAqiMessage.text = "${getString(R.string.advice)} ${airQualityData.message}"
             binding.tvAqiBasedOn.text = airQualityData.aqi_index_type
             val aqiIndex = airQualityData.index
+            Utils.printDebugLog("aqiIndexType: $aqiIndexType || aqiIndex: $aqiIndex")
             if (aqiIndexType.contains("UK")) {
                 binding.llUkAqiBand.visibility = View.VISIBLE
                 when (aqiIndex) {
@@ -719,6 +765,28 @@ class DashboardFragment : Fragment() {
         binding.cvSnowData.visibility = View.GONE
         binding.cvRainData.visibility = View.GONE
         binding.cvAirQuality.visibility = View.GONE
+        if (binding.llUkAqiBand.isVisible) {
+            binding.llUkAqiBand.visibility = View.GONE
+            binding.imgUkAqiIndex1.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex2.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex3.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex4.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex5.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex6.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex7.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex8.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex9.visibility = View.INVISIBLE
+            binding.imgUkAqiIndex10.visibility = View.INVISIBLE
+        }
+        if (binding.llUsaAqiBand.isVisible) {
+            binding.llUsaAqiBand.visibility = View.GONE
+            binding.imgUsaAqiIndex1.visibility = View.INVISIBLE
+            binding.imgUsaAqiIndex2.visibility = View.INVISIBLE
+            binding.imgUsaAqiIndex3.visibility = View.INVISIBLE
+            binding.imgUsaAqiIndex4.visibility = View.INVISIBLE
+            binding.imgUsaAqiIndex5.visibility = View.INVISIBLE
+            binding.imgUsaAqiIndex6.visibility = View.INVISIBLE
+        }
         binding.progressBarGeminiResponse.visibility = View.GONE
         binding.tvGeminiResponse.visibility = View.GONE
         binding.cvAiDayPlanner.visibility = View.GONE
@@ -743,8 +811,8 @@ class DashboardFragment : Fragment() {
         }
         sharedViewModel.deleteSavedLocationLiveData.observe(viewLifecycleOwner) { locationKey ->
             if (locationKey.isNotBlank()) {
-                dashboardViewModel.deleteSavedLocation(locationKey)
                 Utils.printDebugLog("indexLocationDeletedMLiveData: $locationKey")
+                dashboardViewModel.deleteLocation(locationKey)
             }
         }
         sharedViewModel.isLocationSelectedLiveData.observe(viewLifecycleOwner) { location ->
@@ -965,15 +1033,15 @@ class DashboardFragment : Fragment() {
         handler.post(runnable)
     }
 
-    fun checkForAppUpdates2() {
+    fun checkForAppUpdates() {
         val appUpdateManager = AppUpdateManagerFactory.create(requireContext())
-        Log.d("TAG", "updateAppCalled: "+ UpdateAvailability.UPDATE_AVAILABLE)
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
         // Checks that the platform will allow the specified type of update.
         appUpdateInfoTask.addOnSuccessListener { result: AppUpdateInfo ->
-            Log.d("TAG", "updateAppCalled: "+ result.updateAvailability())
+            Utils.printDebugLog("checkForAppUpdates:: ${result.updateAvailability()}")
             if (result.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                val builder = AlertDialog.Builder(requireContext())
+                Utils.printDebugLog("checkForAppUpdates:: yes_update_available")
+                /*val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle("Update the App!!!")
                 builder.setMessage("A mandatory update is ready for you! Please update the app to ensure a seamless experience.")
                 builder.setIcon(android.R.drawable.ic_dialog_alert)
@@ -990,12 +1058,11 @@ class DashboardFragment : Fragment() {
                         Toast.makeText(requireContext(), "Please update the app from play store!!!", Toast.LENGTH_LONG).show()
                     }
                 }
-//                builder.setNegativeButton("NO") { dialogInterface, which ->
-//                    requireActivity().finish()
-//                }
                 val alertDialog: AlertDialog = builder.create()
                 alertDialog.setCancelable(false)
-                alertDialog.show()
+                alertDialog.show()*/
+            } else {
+                Utils.printDebugLog("checkForAppUpdates:: no_update_available")
             }
         }
     }

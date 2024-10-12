@@ -3,13 +3,11 @@ package com.shakir.weatherzoomer.ui.takelocation
 import com.shakir.weatherzoomer.R
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,8 +23,7 @@ import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.shakir.weatherzoomer.utils.Utils
 import com.google.android.gms.location.*
-import com.google.android.material.textfield.TextInputEditText
-import com.shakir.weatherzoomer.model.LocationModel
+import com.shakir.weatherzoomer.firebase.FirebaseResponse
 
 
 private const val TAG = "LocationActivity"
@@ -39,7 +36,7 @@ class LocationActivity : AppCompatActivity() {
     private lateinit var locationCallback: LocationCallback
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
-    val turnOnGps = TurnOnGps(this)
+    private val turnOnGps = TurnOnGps(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +78,7 @@ class LocationActivity : AppCompatActivity() {
         locationViewModel.gpsLocationLiveData.observe(this) {
             val isGpsOn = it.isGpsOn
             val isLocationPermissionGranted = it.isLocationPermissionGranted
-            Log.d(TAG, "Values:  isGpsOn: ${isGpsOn}    isLocationPermissionGranted: ${isLocationPermissionGranted}")
+            Log.d(TAG, "Values:  isGpsOn: $isGpsOn    isLocationPermissionGranted: $isLocationPermissionGranted")
             if (!isLocationPermissionGranted && !isGpsOn) {
                 Log.d(TAG, "we have to take the location permission and ask to turn on the gps ")
             } else {
@@ -105,61 +102,42 @@ class LocationActivity : AppCompatActivity() {
             }
         }
 
-//        binding.tvEnterLocationManually.setSafeOnClickListener {
-            /*val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_manual_location_dialog, null)
-            // Determine theme mode (light/dark)
-            val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-
-            // Set background drawable based on theme mode
-            val drawableResId = if (isDarkMode) R.drawable.dialog_background_dark_mode else R.drawable.dialog_background_light_mode
-            dialogView.setBackgroundResource(drawableResId)
-            val builder = AlertDialog.Builder(this)
-            val dialog = builder.setView(dialogView).create()
-            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-            dialog.window?.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            val textTitle = dialogView.findViewById<TextView>(R.id.tv_title)
-            val edtTxtInputLocation = dialogView.findViewById<TextInputEditText>(R.id.text_input_edit_text)
-            val btnApply = dialogView.findViewById<Button>(R.id.btn_apply)
-            val btnCancel = dialogView.findViewById<Button>(R.id.btn_cancel)
-            textTitle.text = "Type your location"
-            edtTxtInputLocation.hint = "Type your location"
-            btnApply.text = "Set location"
-            btnApply.setOnClickListener {
-                val location = edtTxtInputLocation.text.toString().trim()
-                if (location.isNotBlank()) {
-                    if (Utils.isInternetAvailable(this@LocationActivity)) {
-                        storeLocationAndNavigate(location)
-                        dialog.dismiss()
-                    } else {
-                        Utils.showShortToast(this@LocationActivity, "Please check your internet connection")
-                    }
-                } else {
-                    Utils.showLongToast(this@LocationActivity, "Please enter the location first.")
-                }
-            }
-            btnCancel.setOnClickListener {
-                dialog.dismiss()
-            }
-            dialog.show()*/
-//            showCustomDialog()
-//        }
-
-        binding.tvEnterLocationManually.setSafeOnClickListener {
+        binding.tvSearchLocation.setSafeOnClickListener {
             val bottomSheet = SearchLocationFragment.newInstance()
             bottomSheet.setLocationSelectionListener(object: SearchLocationFragment.OnLocationSelectedListener{
-                override fun onLocationSelected(location: String, isPrimaryLocation: Boolean) {
-                    storeLocationAndNavigate(location)
-//                    addUserLocation(location)
-                    addUserLocation2(location)
+                override fun onLocationSelected(location: String) {
+                    locationViewModel.saveLocation(location,
+                        isCurrentLocation = false,
+                        isSelectedLocation = true
+                    )
                 }
 
             })
             bottomSheet.show(supportFragmentManager, SearchLocationFragment.TAG)
         }
 
+        //new implementation
+        attachObservers()
+
+    }
+
+    private fun attachObservers() {
+        locationViewModel.isLocationSavedLiveData.observe(this@LocationActivity) {saveLocationResponse ->
+            when (saveLocationResponse) {
+                is FirebaseResponse.Success -> {
+                    GifProgressDialog.dismiss()
+                    val intent = Intent(this@LocationActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+                is FirebaseResponse.Failure -> {
+
+                }
+                FirebaseResponse.Loading -> {
+
+                }
+            }
+        }
     }
 
     private fun showCustomDialog() {
@@ -246,27 +224,14 @@ class LocationActivity : AppCompatActivity() {
             override fun onLocationResult(locationResult: LocationResult) {
                 Log.d(TAG, "onLocationResult: $locationRequest")
                 stopLocationUpdates()
-                storeLocationAndNavigate("${locationResult.locations[0].latitude},${locationResult.locations[0].longitude}")
+                locationViewModel.saveLocation("${locationResult.locations[0].latitude},${locationResult.locations[0].longitude}",
+                    isCurrentLocation = true,
+                    isSelectedLocation = true
+                )
             }
         }
 
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
-    }
-
-    private fun storeLocationAndNavigate(location: String) {
-        locationViewModel.updateUserPrimaryLocation(location)
-        GifProgressDialog.dismiss()
-        val intent = Intent(this@LocationActivity, MainActivity::class.java)
-        startActivity(intent)
-        finish()
-    }
-
-    private fun addUserLocation(location: String) {
-        locationViewModel.addUserLocation(location)
-    }
-
-    private fun addUserLocation2(location: String) {
-        locationViewModel.addUserLocation2(location)
     }
 
     // Remember to stop updates when they're no longer needed

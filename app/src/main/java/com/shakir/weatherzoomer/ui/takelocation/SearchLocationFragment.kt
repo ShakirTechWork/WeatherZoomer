@@ -26,7 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class SearchLocationFragment() : BottomSheetDialogFragment() {
+class SearchLocationFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: FragmentSearchLocationBinding
 
@@ -61,8 +61,8 @@ class SearchLocationFragment() : BottomSheetDialogFragment() {
                     val location = it.data
                     if (!location.isNullOrEmpty()) {
                         val adapter = LocationSearchResultsAdapter(it.data, object : LocationSearchResultsAdapter.OnLocationSelectedListener {
-                            override fun onLocationSelected(location: String, isPrimaryLocation: Boolean) {
-                                onLocationSelectedListener.onLocationSelected(location, isPrimaryLocation)
+                            override fun onLocationSelected(location: String) {
+                                onLocationSelectedListener.onLocationSelected(location)
                                 dismiss()
                             }
 
@@ -146,7 +146,7 @@ class SearchLocationFragment() : BottomSheetDialogFragment() {
     }
 
     interface OnLocationSelectedListener {
-        fun onLocationSelected(location: String, isPrimaryLocation: Boolean)
+        fun onLocationSelected(location: String)
     }
 
 }
