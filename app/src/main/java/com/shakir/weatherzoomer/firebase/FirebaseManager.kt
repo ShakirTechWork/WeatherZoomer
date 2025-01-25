@@ -98,12 +98,8 @@ class FirebaseManager {
                         // User data doesn't exist, add a new entry
                         databaseReference.child("users")
                             .child(uid)
-                            .setValue(
-                                UserModel(
-                                    user_name = name,
-                                    user_email = email
-                                )
-                            ).await()
+                            .setValue(UserModel(user_name = name))
+                            .await()
                     }
                     // Return success response
                     FirebaseResponse.Success(true)
@@ -134,6 +130,36 @@ class FirebaseManager {
             }
         } catch (e: Exception) {
             Utils.printDebugLog("dbciuebc: $e")
+            FirebaseResponse.Failure(e)
+        }
+
+    }
+
+    suspend fun addUser(userName: String): FirebaseResponse<Boolean?> {
+        return try {
+            databaseReference.child("users")
+                .child(userName)
+                .setValue(UserModel(user_name = userName))
+                .await()
+            FirebaseResponse.Success(true)
+        } catch (e: Exception) {
+            FirebaseResponse.Failure(e)
+        }
+    }
+
+
+    suspend fun getUserByName(userName: String): FirebaseResponse<UserModel?> {
+        return try {
+            val usersRef = databaseReference.child("users").child(userName).get().await()
+            if (usersRef.exists()) {
+                val userModel = usersRef.getValue(UserModel::class.java)
+//                enableOfflineSupport(userName)
+                FirebaseResponse.Success(userModel)
+            } else {
+                FirebaseResponse.Success(null)
+            }
+        } catch (e: Exception) {
+            Utils.printDebugLog("getUserByName: $e")
             FirebaseResponse.Failure(e)
         }
 

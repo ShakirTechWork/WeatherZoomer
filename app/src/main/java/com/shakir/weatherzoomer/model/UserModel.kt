@@ -3,7 +3,6 @@ import com.shakir.weatherzoomer.constants.AppConstants
 
 data class UserModel(
     val user_name: String,
-    val user_email: String,
     val user_primary_location: String = "",
     val user_settings: UserSettingsModel = UserSettingsModel(
         AppConstants.UserPreferredUnit.METRIC,

@@ -78,7 +78,6 @@ class SettingsFragment : Fragment() {
         if (userData != null) {
             userName = userData!!.user_name
             binding.tvUserName.text = userName
-            userEmailId = userData!!.user_email
             binding.tvUserEmail.text = userEmailId
         }
         if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.METRIC) {

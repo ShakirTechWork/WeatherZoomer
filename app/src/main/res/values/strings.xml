@@ -24,7 +24,8 @@
     <string name="continue_with_google">Continue with Google</string>
     <string name="already_have_an_account"><u>Already have an account?</u></string>
     <string name="dont_have_an_account"><u>Don\'t have an account?</u></string>
-    <string name="login_underline"><u>Login</u></string>
+    <string name="login_screen_title">Please Login</string>
+    <string name="login">Login</string>
     <string name="hi_welcome">Hi, Welcome</string>
     <string name="sign_up_underline"><u>Sign Up</u></string>
     <string name="forgot_password">Forgot Password?</string>
@@ -97,7 +98,9 @@
     <string name="tap_to_continue">Tap to continue.</string>
     <string name="alert">Alert</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="login_note_text">Your username must be unique. Use the same username to access your data. A new username will create a new account.</string>
     <string name="read_and_accept_text">I have read and I accept the</string>
+    <string name="privacy_policy_text">By signing in, I agree to the app\'s</string>
     <string name="search_location">Search Location</string>
     <string name="condition_image">Condition Image</string>
     <string name="wind">Wind</string>

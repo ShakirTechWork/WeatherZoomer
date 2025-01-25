@@ -45,6 +45,45 @@ class AppRepository(
             firebaseManager.signInWithEmailAndPassword(email, password)
         }
 
+    suspend fun loginUserByName(userName: String): FirebaseResponse<UserModel?> {
+        val firstUserResult = getUserByName(userName)
+        if (firstUserResult is FirebaseResponse.Success) {
+            val firstUserData = firstUserResult.data
+            if (firstUserData == null) {
+                val userAdditionResult = firebaseManager.addUser(userName)
+                if (userAdditionResult is FirebaseResponse.Success) {
+                    val secondUserResult = getUserByName(userName)
+                    if (secondUserResult is FirebaseResponse.Success) {
+                        val secondUserData = firstUserResult.data
+                        if (secondUserData != null) {
+                            return FirebaseResponse.Success(firstUserData)
+                        } else {
+                            return FirebaseResponse.Failure(Exception("Something went wrong"))
+                        }
+                    } else if (secondUserResult is FirebaseResponse.Failure) {
+                        return FirebaseResponse.Failure(secondUserResult.exception)
+                    } else {
+                        return FirebaseResponse.Failure(Exception("Unknow exception"))
+                    }
+                } else if (userAdditionResult is FirebaseResponse.Failure) {
+                    return FirebaseResponse.Failure(userAdditionResult.exception)
+                } else {
+                    return FirebaseResponse.Failure(Exception("Something went wrong"))
+                }
+            } else {
+                return FirebaseResponse.Success(firstUserData)
+            }
+        } else if (firstUserResult is FirebaseResponse.Failure) {
+            return FirebaseResponse.Failure(firstUserResult.exception)
+        } else {
+            return FirebaseResponse.Failure(Exception("Something went wrong"))
+        }
+    }
+
+    suspend fun getUserByName(userName: String): FirebaseResponse<UserModel?> {
+        return firebaseManager.getUserByName(userName)
+    }
+
     suspend fun addUserIntoFirebase(name: String, email: String): FirebaseResponse<Boolean> {
         return firebaseManager.addUserIntoDatabase(name, email)
     }

@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity(), MainActivityInteractionListener {
     private var userSavedLocationList: ArrayList<UserLocationItem> = arrayListOf()
     private lateinit var userSavedLocationAdapter: UserSavedLocationsAdapter
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         Log.d(TAG, "onNewIntent: ")
     }
