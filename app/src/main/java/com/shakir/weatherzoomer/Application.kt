@@ -5,15 +5,9 @@ import com.shakir.weatherzoomer.api.NetworkEndpoints
 import com.shakir.weatherzoomer.api.RetrofitHelper
 import com.shakir.weatherzoomer.datastore.AppDataStore
 import com.shakir.weatherzoomer.firebase.FirebaseManager
-import com.shakir.weatherzoomer.model.AppRelatedData
 import com.shakir.weatherzoomer.repo.AppRepository
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.FirebaseDatabase
-import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.utils.Utils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class Application: Application() {
 

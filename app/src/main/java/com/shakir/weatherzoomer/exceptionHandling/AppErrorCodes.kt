@@ -1,0 +1,45 @@
+package com.shakir.weatherzoomer.exceptionHandling
+
+object AppErrorCodes {
+
+    //firebase
+    const val DATABASE_EXCEPTION = 60001
+    const val FIREBASE_NETWORK_EXCEPTION = 60002
+    const val FIREBASE_TOO_MANY_REQUESTS_EXCEPTION = 60003
+    const val FIREBASE_API_NOT_AVAILABLE_EXCEPTION = 60004
+    const val FIREBASE_REMOTE_CONFIG_EXCEPTION = 60005
+
+    const val RETROFIT_HTTP_EXCEPTION = 60006
+    const val UNKNOWN_HOST_EXCEPTION = 60007
+    const val SOCKET_TIMEOUT_EXCEPTION = 60008
+    const val STREAM_RESET_EXCEPTION = 60009
+    const val ROUTE_EXCEPTION = 60010
+    const val IO_EXCEPTION = 60011
+    const val JSON_SYNTAX_EXCEPTION = 60012
+    const val JSON_PARSE_EXCEPTION = 60013
+    const val CONNECT_EXCEPTION = 60014
+    const val PROTOCOL_EXCEPTION = 60015
+    const val SSL_EXCEPTION = 60016
+    const val GOOGLE_GENERATIVE_AI_EXCEPTION = 60017
+    const val NEW_USER_ID_NOT_GENERATED= 60018
+    const val EXCEPTION_WHILE_FETCHING_USER_DATA= 60019
+    const val USER_NOT_FOUND= 60020
+    const val USER_SAVED_LOCATION_NOT_FOUND= 60021
+
+    //weather api
+    const val API_KEY_NOT_PROVIDED = 1002
+    const val PARAMETER_Q_NOT_PROVIDED = 1003
+    const val INVALID_API_REQUEST_URL = 1005
+    const val NO_LOCATION_FOUND = 1006
+    const val INVALID_API_KEY = 2006
+    const val EXCEEDED_CALLS_PER_MONTH_QUOTA = 2007
+    const val API_KEY_IS_DISABLED = 2008
+    const val API_KEY_NOT_HAVE_ACCESS = 2009
+    const val INVALID_JSON_BODY_IN_BULK_REQUEST = 9000
+    const val TOO_MANY_LOCATIONS_IN_BULK_REQUEST = 9001
+    const val INTERNAL_APPLICATION_ERROR = 9999
+
+    //unknown error
+    const val UNKNOWN_ERROR = 20000
+
+}

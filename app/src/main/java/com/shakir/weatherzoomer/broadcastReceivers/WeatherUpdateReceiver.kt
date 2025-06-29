@@ -73,8 +73,8 @@ class WeatherUpdateReceiver : BroadcastReceiver() {
                                 Utils.printDebugLog("Fetching_User_Data :: Success: ${result.data}")
                                 val userData = result.data
                                 if (userData != null) {
-                                    val userPrimaryLocation = userData.user_primary_location
-                                    if (userPrimaryLocation.isNotBlank()) {
+                                    val userPrimaryLocation = userData.userSettings.currentLocation
+                                    if (!userPrimaryLocation.isNullOrBlank()) {
                                         val response = getCurrentWeather(userPrimaryLocation)
                                         Log.d(
                                             "WEATHER_ZOOMER_LOG",

@@ -7,7 +7,7 @@ import com.shakir.weatherzoomer.repo.AppRepository
 class LoginViewModelFactory(private val appRepository: AppRepository) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return LoginViewModelFactory(appRepository) as T
+        return LoginViewModel(appRepository) as T
     }
 
 }

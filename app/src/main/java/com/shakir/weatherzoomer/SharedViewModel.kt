@@ -22,8 +22,16 @@ class SharedViewModel : ViewModel() {
     val onNewLocationRequestedLiveData : LiveData<Boolean>
         get() = _onNewLocationRequestedMLiveData
 
+    private var selectedDayMLiveData = MutableLiveData(0)
+    val selectedDayLiveData: LiveData<Int>
+        get() = selectedDayMLiveData
+
+    fun setSelectedDay(selectedDay: Int) {
+        selectedDayMLiveData.postValue(selectedDay)
+    }
+
     fun deleteLocation(locationId: String) {
-        userData?.user_settings?.locations?.remove(locationId)
+//        userData?.user_settings?.locations?.remove(locationId)
         _deleteSavedLocationMLiveData.postValue(locationId)
     }
 

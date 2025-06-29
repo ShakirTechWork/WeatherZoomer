@@ -15,23 +15,27 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.UnknownException
+import com.shakir.weatherzoomer.interfaces.LocationSavedListener
 import com.shakir.weatherzoomer.model.UserLocationModel
+import com.shakir.weatherzoomer.response.AppResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class FirebaseManager {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().reference
+    private val usersListDatabaseReference: DatabaseReference = databaseReference.child(FirebaseConstants.USERS)
 
     private fun enableOfflineSupport(userId: String) {
         //This method is used to make the firebase operation faster. it fetches the user data from local database internally
-        val userReference = databaseReference.child("users").child(userId)
+        val userReference = usersListDatabaseReference.child(userId)
         userReference.keepSynced(true)
         /*userReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -96,10 +100,10 @@ class FirebaseManager {
                         FirebaseResponse.Success(true)
                     } else {
                         // User data doesn't exist, add a new entry
-                        databaseReference.child("users")
-                            .child(uid)
-                            .setValue(UserModel(user_name = name))
-                            .await()
+//                        databaseReference.child("users")
+//                            .child(uid)
+//                            .setValue(UserModel(user_name = name))
+//                            .await()
                     }
                     // Return success response
                     FirebaseResponse.Success(true)
@@ -120,7 +124,7 @@ class FirebaseManager {
 
     suspend fun getUserData(userId: String): FirebaseResponse<UserModel?> {
         return try {
-            val usersRef = databaseReference.child("users").child(userId).get().await()
+            val usersRef = usersListDatabaseReference.child(userId).get().await()
             if (usersRef.exists()) {
                 val userModel = usersRef.getValue(UserModel::class.java)
                 enableOfflineSupport(userId)
@@ -135,40 +139,144 @@ class FirebaseManager {
 
     }
 
-    suspend fun addUser(userName: String): FirebaseResponse<Boolean?> {
+    suspend fun getLoggedInUserData(userId: String): AppResponse<UserModel?> {
         return try {
-            databaseReference.child("users")
-                .child(userName)
-                .setValue(UserModel(user_name = userName))
-                .await()
-            FirebaseResponse.Success(true)
-        } catch (e: Exception) {
-            FirebaseResponse.Failure(e)
-        }
-    }
-
-
-    suspend fun getUserByName(userName: String): FirebaseResponse<UserModel?> {
-        return try {
-            val usersRef = databaseReference.child("users").child(userName).get().await()
+            val usersRef = usersListDatabaseReference.child(userId).get().await()
             if (usersRef.exists()) {
                 val userModel = usersRef.getValue(UserModel::class.java)
-//                enableOfflineSupport(userName)
-                FirebaseResponse.Success(userModel)
+                enableOfflineSupport(userId)
+                AppResponse.Success(userModel)
             } else {
-                FirebaseResponse.Success(null)
+                AppResponse.Success(null)
             }
         } catch (e: Exception) {
-            Utils.printDebugLog("getUserByName: $e")
-            FirebaseResponse.Failure(e)
+            Utils.printDebugLog("exception_while_fetching_user_data\n ${e.printStackTrace()}")
+            AppResponse.Failure(e)
         }
-
     }
 
-    fun saveAndUpdateLocations(userId: String, newLocation: String, isCurrentLocation: Boolean): FirebaseResponse<Boolean> {
-        val future = CompletableFuture<FirebaseResponse<Boolean>>()
+    suspend fun addUser(userName: String): AppResponse<Boolean> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Utils.printDebugLog("Adding user - $userName")
+                // Add the user data to Firebase Realtime Database
+//                databaseReference.child("users")
+//                    .child(userName)
+//                    .setValue(UserModel(user_name = userName))
+//                    .await()
+                AppResponse.Success(true) // Return success if no exceptions occur
+            } catch (e: Exception) {
+                AppResponse.Failure(e) // Handle any exceptions
+            }
+        }
+    }
+
+    suspend fun searchUser(userName: String, userPassword: String): AppResponse<UserModel?> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Utils.printDebugLog("Searching user - $userName")
+                val dataSnapshot = usersListDatabaseReference.child(userName).get().await()
+                if (dataSnapshot.exists()) {
+                    val userModel = dataSnapshot.getValue(UserModel::class.java)
+                    if (userName == userModel?.userPassword) {
+                        Utils.printDebugLog("user found- $userModel")
+                        AppResponse.Success(userModel)
+                    } else {
+                        Utils.printDebugLog("user found- $userModel")
+                        AppResponse.Success(null)
+                    }
+                } else {
+                    AppResponse.Success(null) // User not found
+                }
+            } catch (e: Exception) {
+                Utils.printDebugLog("getUserByName: $e")
+                AppResponse.Failure(e)
+            }
+        }
+    }
+
+    fun saveLocation(userId: String, location: String, isCurrentLocation: Boolean, locationSavedListener: LocationSavedListener) {
+        if (isCurrentLocation) {
+            usersListDatabaseReference
+                .child(userId)
+                .child(FirebaseConstants.USER_SETTINGS)
+                .child(FirebaseConstants.CURRENT_LOCATION)
+                .setValue(location)
+                .addOnCompleteListener { result ->
+                    if (result.isSuccessful) {
+                        locationSavedListener.onSuccess()
+                    } else {
+                        locationSavedListener.onError(result.exception)
+                    }
+                }
+        } else {
+            usersListDatabaseReference
+                .child(userId)
+                .child(FirebaseConstants.USER_SETTINGS)
+                .child(FirebaseConstants.OTHER_LOCATIONS)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val existingList = snapshot.getValue(object : GenericTypeIndicator<List<String>>() {}) ?: emptyList()
+                    val updatedList = (existingList + location).toSet().toList()
+                    usersListDatabaseReference
+                        .child(userId)
+                        .child(FirebaseConstants.USER_SETTINGS)
+                        .child(FirebaseConstants.OTHER_LOCATIONS)
+                        .setValue(updatedList)
+                        .addOnCompleteListener {  result ->
+                            if (result.isSuccessful) {
+                                locationSavedListener.onSuccess()
+                            } else {
+                                locationSavedListener.onError(result.exception)
+                            }
+                        }
+                }.addOnFailureListener {
+                    locationSavedListener.onError(it)
+                }
+        }
+    }
+
+    suspend fun saveLocation(userId: String, location: String, isCurrentLocation: Boolean): AppResponse<Boolean> {
+        return withContext(Dispatchers.IO) {
+            suspendCoroutine { continuation ->
+                val databaseRef = usersListDatabaseReference.child(userId).child(FirebaseConstants.USER_SETTINGS)
+
+                if (isCurrentLocation) {
+                    databaseRef.child(FirebaseConstants.CURRENT_LOCATION)
+                        .setValue(location)
+                        .addOnSuccessListener {
+                            continuation.resume(AppResponse.Success(true))
+                        }
+                        .addOnFailureListener { exception ->
+                            continuation.resume(AppResponse.Failure(exception))
+                        }
+                } else {
+                    val otherLocationsRef = databaseRef.child(FirebaseConstants.OTHER_LOCATIONS)
+
+                    otherLocationsRef.get().addOnSuccessListener { snapshot ->
+                        val existingList = snapshot.getValue(object : GenericTypeIndicator<List<String>>() {}) ?: emptyList()
+                        val updatedList = (existingList + location).toSet().toList()
+
+                        otherLocationsRef.setValue(updatedList)
+                            .addOnSuccessListener {
+                                continuation.resume(AppResponse.Success(true))
+                            }
+                            .addOnFailureListener { exception ->
+                                continuation.resume(AppResponse.Failure(exception))
+                            }
+                    }.addOnFailureListener { exception ->
+                        continuation.resume(AppResponse.Failure(exception))
+                    }
+                }
+            }
+        }
+    }
+
+
+    fun saveAndUpdateLocations(userId: String, newLocation: String, isCurrentLocation: Boolean): AppResponse<Boolean> {
+        val future = CompletableFuture<AppResponse<Boolean>>()
         try {
-            val userReference = FirebaseDatabase.getInstance().reference.child("users").child(userId).child("user_settings").child("locations")
+            val userReference = usersListDatabaseReference.child(userId).child(FirebaseConstants.USER_SETTINGS).child("locations")
 
             // Fetch existing locations
             userReference.get().addOnSuccessListener { snapshot ->
@@ -238,16 +346,16 @@ class FirebaseManager {
                 userReference.setValue(locationsMap)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            future.complete(FirebaseResponse.Success(true))
+                            future.complete(AppResponse.Success(true))
                         } else {
-                            future.complete(FirebaseResponse.Failure(task.exception))
+                            future.complete(AppResponse.Failure(task.exception ?: UnknownException()))
                         }
                     }
             }.addOnFailureListener { exception ->
-                future.complete(FirebaseResponse.Failure(exception))
+                future.complete(AppResponse.Failure(exception))
             }
         } catch (e: Exception) {
-            future.complete(FirebaseResponse.Failure(e))
+            future.complete(AppResponse.Failure(e))
         }
         return future.join()
     }
@@ -258,10 +366,9 @@ class FirebaseManager {
         try {
             Utils.printDebugLog("firebase manager location delete for user id: $userId")
             // Reference to the specific location node in the user's locations HashMap
-            val userReference = FirebaseDatabase.getInstance().reference
-                .child("users")
+            val userReference = usersListDatabaseReference
                 .child(userId)
-                .child("user_settings")
+                .child(FirebaseConstants.USER_SETTINGS)
                 .child("locations")
                 .child(locationKey)
 
@@ -294,7 +401,7 @@ class FirebaseManager {
 
         try {
             val userReference =
-                Firebase.database.reference.child("users").child(userId).child("user_settings")
+                usersListDatabaseReference.child(userId).child(FirebaseConstants.USER_SETTINGS)
                     .child("weather_updates")
             val updateMap = mapOf<String, Any>("hourly_interval" to intervalInHours)
 //            future.complete(FirebaseResponse.Success(true))
@@ -328,7 +435,7 @@ class FirebaseManager {
         return try {
             withContext(Dispatchers.IO) {
                 val userReference =
-                    Firebase.database.reference.child("users").child(userId).child("user_settings")
+                    usersListDatabaseReference.child(userId).child(FirebaseConstants.USER_SETTINGS)
                         .child("weather_updates")
                 val updateMap = mapOf<String, Any>(
                     "hourly_interval" to intervalInHours,
@@ -352,7 +459,7 @@ class FirebaseManager {
         return try {
             withContext(Dispatchers.IO) {
                 val userReference =
-                    Firebase.database.reference.child("users").child(userId).child("user_settings")
+                    usersListDatabaseReference.child(userId).child(FirebaseConstants.USER_SETTINGS)
                         .child("weather_updates")
                 val updateMap = mapOf<String, Any>(
                     "update_type" to "timely",
@@ -372,8 +479,8 @@ class FirebaseManager {
         preferredUnit: String
     ): FirebaseResponse<Boolean> {
         return try {
-            val userReference = Firebase.database.reference.child("users").child(userId).child("user_settings")
-            val updateMap = mapOf<String, Any>("preferred_unit" to preferredUnit)
+            val userReference = usersListDatabaseReference.child(userId).child(FirebaseConstants.USER_SETTINGS)
+            val updateMap = mapOf<String, Any>(FirebaseConstants.PREFERRED_UNIT to preferredUnit)
             userReference.updateChildren(updateMap).await()
             FirebaseResponse.Success(true)
         } catch (e: Exception) {
@@ -402,7 +509,7 @@ class FirebaseManager {
 
     private suspend fun getUserByUID(uid: String): FirebaseResponse<UserModel?> {
         return try {
-            val userReference = databaseReference.child("users").child(uid)
+            val userReference = usersListDatabaseReference.child(uid)
             val snapshot = userReference.get().await()
 
             val userData = snapshot.getValue(UserModel::class.java)

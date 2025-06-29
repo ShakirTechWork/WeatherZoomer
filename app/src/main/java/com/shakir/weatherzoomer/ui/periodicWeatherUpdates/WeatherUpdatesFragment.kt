@@ -86,7 +86,7 @@ class WeatherUpdatesFragment : Fragment(), TimeAdapter.OnTimeItemClickListener {
 
         val userData = sharedViewModel.userData
         Utils.printDebugLog("user_data: $userData")
-        val weatherUpdatesData = userData?.user_settings?.weather_updates
+        /*val weatherUpdatesData = userData?.user_settings?.weather_updates
         if (weatherUpdatesData != null) {
 //            weatherUpdatesViewModel.updateTypeMutableLiveData.value = weatherUpdatesData.update_type
 
@@ -121,7 +121,7 @@ class WeatherUpdatesFragment : Fragment(), TimeAdapter.OnTimeItemClickListener {
                 binding.btnSetTimelyUpdates.text = "Enable"
             }
 
-        }
+        }*/
 
         binding.cdPeriodicLayout.setOnClickListener {
             if (binding.llBottomPeriodicLayout.isVisible) {

@@ -4,11 +4,10 @@ package com.shakir.weatherzoomer.model
 //precipitation in mm for millimeters or in for inches
 //visibility in km for kilometer or miles for miles
 data class UserSettingsModel(
-    val preferred_unit: String,
-    val weather_updates: WeatherUpdatesModel,
-    val locations: HashMap<String, UserLocationModel> = hashMapOf()
+    val preferredUnit: String,
+    val currentLocation: String? = null,
+    val otherLocations: List<String> = emptyList()
 ) {
     // Default no-argument constructor required by Firebase
-    constructor() : this("", WeatherUpdatesModel("", 0, "","",arrayListOf()))
+    constructor() : this("")
 }
-

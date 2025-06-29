@@ -73,9 +73,9 @@ class MainActivity : AppCompatActivity(), MainActivityInteractionListener {
                 binding.btnAddNewLocation.setSafeOnClickListener {
                     sharedViewModel.onNewLocationRequested()
                 }
-                userSavedLocationList = ArrayList(
-                    sharedViewModel.userData!!.user_settings.locations.map { UserLocationItem(it.key, it.value) }
-                )
+//                userSavedLocationList = ArrayList(
+//                    sharedViewModel.userData!!.user_settings.locations.map { UserLocationItem(it.key, it.value) }
+//                )
                 Utils.printDebugLog("userSavedLocationList: $userSavedLocationList")
                 userSavedLocationAdapter = UserSavedLocationsAdapter(userSavedLocationList, object : UserSavedLocationsAdapter.OnItemInteractionListener {
                     override fun onItemDeleted(position: Int, locationId: String) {

@@ -136,8 +136,7 @@ class SignUpActivity : AppCompatActivity() {
                 }
                 is FirebaseResponse.Loading -> {
                     Utils.printDebugLog("Signup_User :: Loading")
-                    GifProgressDialog.initialize(this@SignUpActivity)
-                    GifProgressDialog.show("Creating your account")
+                    GifProgressDialog.show(this@SignUpActivity, "Creating your account")
                 }
                 else -> {
                     Utils.printErrorLog("Signup_User :: No Status Found")

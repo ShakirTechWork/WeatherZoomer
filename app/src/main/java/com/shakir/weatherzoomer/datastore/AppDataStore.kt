@@ -1,15 +1,23 @@
 package com.shakir.weatherzoomer.datastore
 
 import android.content.Context
+import android.os.Looper
 import android.util.Log
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.shakir.weatherzoomer.model.UserModel
 import com.shakir.weatherzoomer.utils.Utils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class AppDataStore(context: Context) {
@@ -32,7 +40,8 @@ class AppDataStore(context: Context) {
             }
         }
 
-        val IS_APP_OPENED_FIRST_TIME = booleanPreferencesKey("IS_APP_OPENED_FIRST_TIME")
+        val IS_WALK_THROUGH_SCREEN_VISITED = booleanPreferencesKey("IS_WALK_THROUGH_SCREEN_VISITED")
+        val USER_ID = stringPreferencesKey("USER_ID")
         val USER_EMAIL_KEY = stringPreferencesKey("USER_EMAIL")
         val USER_NAME_KEY =stringPreferencesKey("USER_NAME")
         val USER_TOKEN_KEY = stringPreferencesKey("USER_TOKEN")
@@ -54,9 +63,38 @@ class AppDataStore(context: Context) {
         }
     }
 
-    suspend fun updateIsAppOpenedFirstTime(value: Boolean) {
-        dataStore.edit {
-            it[IS_APP_OPENED_FIRST_TIME] = value
+    fun storeUserId(userId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.edit { preferences ->
+                preferences[USER_ID] = userId
+            }
+        }
+    }
+
+    fun getCurrentUserId(): Flow<String> {
+        return dataStore.data.map { preferences: Preferences ->
+            preferences[USER_ID] ?: ""
+        }.catch { exception ->
+            Utils.printDebugLog("Error reading USER_ID from DataStore: ${exception.message}")
+            emit("") // Provide a default value if an error occurs
+        }
+    }
+
+    fun walkthroughScreenSeen() {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.edit { preferences ->
+                preferences[IS_WALK_THROUGH_SCREEN_VISITED] = true
+            }
+        }
+    }
+
+    fun isWalkThroughScreenSeen(): Flow<Boolean> {
+        return dataStore.data.map { preferences: Preferences ->
+            Utils.printDebugLog("IS_WALK_THROUGH_SCREEN_VISITED: ${preferences[IS_WALK_THROUGH_SCREEN_VISITED]}")
+            preferences[IS_WALK_THROUGH_SCREEN_VISITED] ?: false
+        }.catch { exception ->
+            Utils.printDebugLog("Error reading DataStore: ${exception.message}")
+            emit(false) // Provide a default value if an error occurs
         }
     }
 
@@ -65,10 +103,6 @@ class AppDataStore(context: Context) {
             it[USER_PRIMARY_LOCATION] = primaryLocation
             Utils.printDebugLog("Stored primary location locally.")
         }
-    }
-
-    val isAppOpenedFirstTime: Flow<Boolean> = dataStore.data.map {
-        it[IS_APP_OPENED_FIRST_TIME] ?: true
     }
 
     // Create an age flow to retrieve age from the preferences
@@ -98,7 +132,7 @@ class AppDataStore(context: Context) {
         val token = it[USER_TOKEN_KEY] ?: ""
         val primaryLocation = it[USER_PRIMARY_LOCATION] ?: ""
 
-        val userModel = UserModel(name, email, token)
+        val userModel = UserModel(name, token)
         Log.d("WEATHER_ZOOMER_LOG", "Emitting userStoredData: $userModel")
         userModel
     }

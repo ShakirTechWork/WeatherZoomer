@@ -23,7 +23,9 @@ import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.shakir.weatherzoomer.utils.Utils
 import com.google.android.gms.location.*
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.UserNotFoundException
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
+import com.shakir.weatherzoomer.response.AppResponse
 
 
 private const val TAG = "LocationActivity"
@@ -106,35 +108,32 @@ class LocationActivity : AppCompatActivity() {
             val bottomSheet = SearchLocationFragment.newInstance()
             bottomSheet.setLocationSelectionListener(object: SearchLocationFragment.OnLocationSelectedListener{
                 override fun onLocationSelected(location: String) {
-                    locationViewModel.saveLocation(location,
-                        isCurrentLocation = false,
-                        isSelectedLocation = true
-                    )
+                    locationViewModel.saveLocation(location, false)
                 }
 
             })
             bottomSheet.show(supportFragmentManager, SearchLocationFragment.TAG)
         }
 
-        //new implementation
         attachObservers()
 
     }
 
     private fun attachObservers() {
-        locationViewModel.isLocationSavedLiveData.observe(this@LocationActivity) {saveLocationResponse ->
+        locationViewModel.isLocationSavedLiveData.observe(this@LocationActivity) { saveLocationResponse ->
             when (saveLocationResponse) {
-                is FirebaseResponse.Success -> {
+                is AppResponse.Success -> {
                     GifProgressDialog.dismiss()
                     val intent = Intent(this@LocationActivity, MainActivity::class.java)
                     startActivity(intent)
                     finish()
                 }
-                is FirebaseResponse.Failure -> {
-
-                }
-                FirebaseResponse.Loading -> {
-
+                is AppResponse.Failure -> {
+                    if (saveLocationResponse.exception is UserNotFoundException) {
+                        Utils.showShortToast(this@LocationActivity, "User not found.")
+                    } else {
+                        Utils.showShortToast(this@LocationActivity, "Something went wrong.")
+                    }
                 }
             }
         }
@@ -208,8 +207,7 @@ class LocationActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun requestLocationUpdates() {
-        GifProgressDialog.initialize(this@LocationActivity)
-        GifProgressDialog.show(getString(R.string.please_wait_taking_ur_location))
+        GifProgressDialog.show(this@LocationActivity, getString(R.string.please_wait_taking_ur_location))
         val locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(10000)
@@ -224,10 +222,7 @@ class LocationActivity : AppCompatActivity() {
             override fun onLocationResult(locationResult: LocationResult) {
                 Log.d(TAG, "onLocationResult: $locationRequest")
                 stopLocationUpdates()
-                locationViewModel.saveLocation("${locationResult.locations[0].latitude},${locationResult.locations[0].longitude}",
-                    isCurrentLocation = true,
-                    isSelectedLocation = true
-                )
+                locationViewModel.saveLocation("${locationResult.locations[0].latitude},${locationResult.locations[0].longitude}", true)
             }
         }
 

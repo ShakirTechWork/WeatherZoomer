@@ -82,7 +82,7 @@ class MyWidgetProvider : AppWidgetProvider() {
                             Utils.printDebugLog("Found_Currently_Signed_in_User :: uid: ${currentlySignedInUser.data.uid}")
                             val result =
                                 firebaseManager.getUserData(currentlySignedInUser.data.uid)
-                            if (result is FirebaseResponse.Success) {
+                            /*if (result is FirebaseResponse.Success) {
                                 Utils.printDebugLog("Fetching_User_Data :: Success: ${result.data}")
                                 val userData = result.data
                                 if (userData != null) {
@@ -131,7 +131,7 @@ class MyWidgetProvider : AppWidgetProvider() {
                                 Utils.printErrorLog("Fetching_User_Data :: Failure: ${result.exception}")
                             } else {
                                 Utils.printErrorLog("Fetching_User_Data :: Something_went_wrong_while_fetching_the_user_data")
-                            }
+                            }*/
                         } else {
                             Log.d("WEATHER_ZOOMER_LOG", "Currently_signed_in_user_not_found")
                         }

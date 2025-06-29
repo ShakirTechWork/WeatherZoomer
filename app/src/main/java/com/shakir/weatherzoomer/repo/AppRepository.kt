@@ -19,9 +19,16 @@ import com.shakir.weatherzoomer.model.WeatherForecastModel
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseUser
 import com.shakir.weatherzoomer.exceptionHandler.WeatherApiException
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.UnknownException
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.WeatherApiServiceException
+import com.shakir.weatherzoomer.interfaces.LocationSavedListener
 import com.shakir.weatherzoomer.model.searchLocation.SearchLocationResultModel
+import com.shakir.weatherzoomer.response.AppResponse
+import com.shakir.weatherzoomer.response.ErrorResponse
 import kotlinx.coroutines.flow.Flow
 import org.json.JSONObject
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class AppRepository(
     private val networkEndpoints: NetworkEndpoints,
@@ -45,44 +52,43 @@ class AppRepository(
             firebaseManager.signInWithEmailAndPassword(email, password)
         }
 
-    suspend fun loginUserByName(userName: String): FirebaseResponse<UserModel?> {
+    /*suspend fun loginUserByName(userName: String): AppResponse<UserModel?> {
         val firstUserResult = getUserByName(userName)
-        if (firstUserResult is FirebaseResponse.Success) {
-            val firstUserData = firstUserResult.data
-            if (firstUserData == null) {
-                val userAdditionResult = firebaseManager.addUser(userName)
-                if (userAdditionResult is FirebaseResponse.Success) {
-                    val secondUserResult = getUserByName(userName)
-                    if (secondUserResult is FirebaseResponse.Success) {
-                        val secondUserData = firstUserResult.data
-                        if (secondUserData != null) {
-                            return FirebaseResponse.Success(firstUserData)
-                        } else {
-                            return FirebaseResponse.Failure(Exception("Something went wrong"))
+        return when (firstUserResult) {
+            is AppResponse.Success -> {
+                val firstUserData = firstUserResult.data
+                if (firstUserData == null) {
+                    val userAdditionResult = firebaseManager.addUser(userName)
+                    when (userAdditionResult) {
+                        is AppResponse.Success -> {
+                            val secondUserResult = getUserByName(userName)
+                            when (secondUserResult) {
+                                is AppResponse.Success -> {
+                                    val secondUserData = secondUserResult.data
+                                    if (secondUserData != null) {
+                                        AppResponse.Success(secondUserData)
+                                    } else {
+                                        AppResponse.Failure(Exception("Something went wrong"))
+                                    }
+                                }
+                                is AppResponse.Failure -> {
+                                    AppResponse.Failure(secondUserResult.exception)
+                                }
+                            }
                         }
-                    } else if (secondUserResult is FirebaseResponse.Failure) {
-                        return FirebaseResponse.Failure(secondUserResult.exception)
-                    } else {
-                        return FirebaseResponse.Failure(Exception("Unknow exception"))
+                        is AppResponse.Failure -> {
+                            AppResponse.Failure(userAdditionResult.exception)
+                        }
                     }
-                } else if (userAdditionResult is FirebaseResponse.Failure) {
-                    return FirebaseResponse.Failure(userAdditionResult.exception)
                 } else {
-                    return FirebaseResponse.Failure(Exception("Something went wrong"))
+                    AppResponse.Success(firstUserData)
                 }
-            } else {
-                return FirebaseResponse.Success(firstUserData)
             }
-        } else if (firstUserResult is FirebaseResponse.Failure) {
-            return FirebaseResponse.Failure(firstUserResult.exception)
-        } else {
-            return FirebaseResponse.Failure(Exception("Something went wrong"))
+            is AppResponse.Failure -> {
+                AppResponse.Failure(firstUserResult.exception)
+            }
         }
-    }
-
-    suspend fun getUserByName(userName: String): FirebaseResponse<UserModel?> {
-        return firebaseManager.getUserByName(userName)
-    }
+    }*/
 
     suspend fun addUserIntoFirebase(name: String, email: String): FirebaseResponse<Boolean> {
         return firebaseManager.addUserIntoDatabase(name, email)
@@ -95,13 +101,20 @@ class AppRepository(
     suspend fun getUserData(userId: String): FirebaseResponse<UserModel?> {
         return firebaseManager.getUserData(userId)
     }
+    suspend fun getLoggedInUserData(userId: String): AppResponse<UserModel?> {
+        return firebaseManager.getLoggedInUserData(userId)
+    }
 
     suspend fun signOutCurrentUser(activity: Activity) {
         firebaseManager.signOutCurrentUser(activity)
     }
 
-    fun saveLocation(userId: String, location: String, isCurrentLocation: Boolean): FirebaseResponse<Boolean> {
+    fun saveLocationOld(userId: String, location: String, isCurrentLocation: Boolean): AppResponse<Boolean> {
         return firebaseManager.saveAndUpdateLocations(userId, location, isCurrentLocation)
+    }
+
+    suspend fun saveLocation(userId: String, location: String, isCurrentLocation: Boolean): AppResponse<Boolean> {
+        return firebaseManager.saveLocation(userId, location, isCurrentLocation)
     }
 
     suspend fun deleteLocation(userId: String, locationId: String): FirebaseResponse<Boolean> {
@@ -128,12 +141,12 @@ class AppRepository(
         return firebaseManager.getAppRelatedData()
     }
 
-    suspend fun updateIsAppOpenedFirstTime(value: Boolean) {
-        return appDataStore.updateIsAppOpenedFirstTime(value)
+    fun walkthroughScreenSeen() {
+        return appDataStore.walkthroughScreenSeen()
     }
 
-    fun isAppOpenedFirstTime(): Flow<Boolean> {
-        return appDataStore.isAppOpenedFirstTime
+    fun isWalkThroughScreenSeen(): Flow<Boolean> {
+        return appDataStore.isWalkThroughScreenSeen()
     }
 
     fun getUserPrimaryLocation(): Flow<String> {
@@ -195,6 +208,33 @@ class AppRepository(
             liveData.postValue(ApiResponse.Failure(exception))
         }
         return liveData
+    }
+
+    suspend fun fetchWeatherData(location: String, days: Int, aqi: String, alerts: String): AppResponse<WeatherForecastModel?> {
+        return try {
+            val response = networkEndpoints.forecastWeather(
+                BuildConfig.WEATHER_API_KEY, location, days, aqi, alerts
+            )
+            if (response.isSuccessful) {
+                AppResponse.Success(response.body())
+            } else {
+                val errorJsonString = response.errorBody()?.string()
+                val jsonObject = JSONObject(errorJsonString ?: "")
+                val errorCode = jsonObject.getJSONObject("error").getInt("code")
+                val errorMessage = jsonObject.getJSONObject("error").getString("message")
+                AppResponse.Failure(WeatherApiServiceException())
+            }
+        } catch (exception: Exception) {
+            AppResponse.Failure(exception)
+        }
+    }
+
+    fun storeUser(userId: String) {
+        appDataStore.storeUserId(userId)
+    }
+
+    fun getCurrentUserId(): Flow<String> {
+        return appDataStore.getCurrentUserId()
     }
 
 

@@ -11,33 +11,27 @@ import com.shakir.weatherzoomer.R
 object GifProgressDialog {
 
     private var dialog: Dialog? = null
-    private var isVisible = false
 
-    fun initialize(context: Context) {
+    fun show(context: Context, message: String) {
         dialog = Dialog(context)
         dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog?.setContentView(R.layout.custom_progress_gif_dialog)
         dialog?.setCancelable(false)
-    }
-
-    fun show(message: String) {
         dialog?.findViewById<TextView>(R.id.tv_message)?.text = message
         val imageView = dialog?.findViewById<ImageView>(R.id.progress_gif)
         Glide.with(imageView!!)
             .load(R.drawable.logo_animation_loop) // Replace with the path to your GIF
             .into(imageView)
         dialog?.show()
-        isVisible = true
     }
 
     fun dismiss() {
-        if (isVisible && dialog != null) {
+        if (dialog?.isShowing == true) {
             val imageView = dialog?.findViewById<ImageView>(R.id.progress_gif)
             Glide.with(imageView!!)
                 .clear(imageView)
             dialog?.dismiss()
             dialog = null
-            isVisible = false
         }
     }
 }

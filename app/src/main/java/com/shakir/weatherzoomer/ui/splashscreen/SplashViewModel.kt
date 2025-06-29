@@ -4,54 +4,33 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.model.AppRelatedData
 import com.shakir.weatherzoomer.repo.AppRepository
-import kotlinx.coroutines.flow.Flow
+import com.shakir.weatherzoomer.utils.Utils
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SplashViewModel(private val appRepository: AppRepository) : ViewModel() {
 
-    private val _currentLoggedInUserMutableLiveData = MutableLiveData<FirebaseResponse<Boolean>>()
+    private val nextScreenMutableLiveData = MutableLiveData<NextScreen>()
 
-    val currentLoggedInUserLiveData: LiveData<FirebaseResponse<Boolean>>
-        get() = _currentLoggedInUserMutableLiveData
+    val nextScreenLiveData: LiveData<NextScreen>
+        get() = nextScreenMutableLiveData
 
-    private val _appRelatedMLiveData = MutableLiveData<AppRelatedData?>()
-
-    val appRelatedLiveData: LiveData<AppRelatedData?>
-        get() = _appRelatedMLiveData
-
-    init {
-        getCurrentLoggedInUser()
-    }
-
-    fun updateAppRelatedData(appRelatedData: AppRelatedData) {
-        _appRelatedMLiveData.postValue(appRelatedData)
-    }
-
-    private fun getCurrentLoggedInUser() {
-        _currentLoggedInUserMutableLiveData.postValue(FirebaseResponse.Loading)
+    fun decideNextScreen() {
         viewModelScope.launch {
-            val currentlySignedInUser = appRepository.getCurrentLoggedInUser()
-            if (currentlySignedInUser is FirebaseResponse.Success) {
-                if (currentlySignedInUser.data!=null) {
-                    _currentLoggedInUserMutableLiveData.postValue(FirebaseResponse.Success(true))
+            val isWalkThroughScreenSeen = appRepository.isWalkThroughScreenSeen().first()
+            if (isWalkThroughScreenSeen) {
+                val userId = appRepository.getCurrentUserId().first()
+                Utils.printDebugLog("userId: $userId")
+                if (userId.isNotBlank()) {
+                    nextScreenMutableLiveData.postValue(NextScreen.MAIN_ACTIVITY)
                 } else {
-                    _currentLoggedInUserMutableLiveData.postValue(FirebaseResponse.Success(false))
+                    nextScreenMutableLiveData.postValue(NextScreen.WALK_THROUGH_ACTIVITY)
                 }
-            } else if (currentlySignedInUser is FirebaseResponse.Failure) {
-                _currentLoggedInUserMutableLiveData.postValue(
-                    FirebaseResponse.Failure(
-                        currentlySignedInUser.exception
-                    )
-                )
+            } else {
+                nextScreenMutableLiveData.postValue(NextScreen.WALK_THROUGH_ACTIVITY)
             }
         }
-    }
-
-    fun isAppOpenedFirstTime(): Flow<Boolean> {
-        return appRepository.isAppOpenedFirstTime()
     }
 
 }

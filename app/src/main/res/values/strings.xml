@@ -110,4 +110,7 @@
     <string name="recent_locations">Recent Locations</string>
     <string name="locations">Locations</string>
     <string name="add_new_location">Add new location</string>
+    <string name="tap_to_plan_your_day">Tap to plan your day</string>
+    <string name="see_weather_from_below_list">See Weather from below list of dates.</string>
+    <string name="planning_your_day">Planning your day</string>
 </resources>

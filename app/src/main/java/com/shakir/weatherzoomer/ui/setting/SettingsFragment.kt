@@ -24,17 +24,14 @@ import com.shakir.weatherzoomer.constants.AppEnum
 import com.shakir.weatherzoomer.databinding.FragmentSettingsBinding
 import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.model.UserModel
 import com.shakir.weatherzoomer.ui.signIn.SignInActivity
 import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
 class SettingsFragment : Fragment() {
 
-    private var userData: UserModel? = null
     private lateinit var navController: NavController
     private var _binding: FragmentSettingsBinding? = null
 
@@ -42,9 +39,6 @@ class SettingsFragment : Fragment() {
 
     private lateinit var settingsViewModel: SettingsViewModel
     private val sharedViewModel: SharedViewModel by activityViewModels()
-
-    private var userName = ""
-    private var userEmailId = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,15 +68,12 @@ class SettingsFragment : Fragment() {
         binding.tvAppVersion.text = "${getString(R.string.app_version)} ${BuildConfig.VERSION_NAME}"
         attachClickListener()
         attachObserver()
-        userData = sharedViewModel.userData
-        if (userData != null) {
-            userName = userData!!.user_name
-            binding.tvUserName.text = userName
-            binding.tvUserEmail.text = userEmailId
+        if (sharedViewModel.userData != null) {
+            binding.tvUserId.text = sharedViewModel.userData!!.userId
         }
-        if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.METRIC) {
+        if (sharedViewModel.userData!!.userSettings.preferredUnit==AppConstants.UserPreferredUnit.METRIC) {
             binding.imgMetricTick.setImageResource(R.drawable.tick_circle)
-        } else if (userData!!.user_settings.preferred_unit==AppConstants.UserPreferredUnit.IMPERIAL) {
+        } else if (sharedViewModel.userData!!.userSettings.preferredUnit==AppConstants.UserPreferredUnit.IMPERIAL) {
             binding.imgImperialTick.setImageResource(R.drawable.tick_circle)
         }
     }
@@ -201,7 +192,7 @@ class SettingsFragment : Fragment() {
             Utils.twoOptionAlertDialog(
                 requireContext(),
                 "Confirmation",
-                "Deleting your account will delete all the data related to your account in WeatherZoomer App. Are you sure you want to delete your account? \n User Name: $userName \n Email ID: $userEmailId",
+                "Deleting your account will delete all the data related to your account in WeatherZoomer App. Are you sure you want to delete your account? \n User Name: ${sharedViewModel.userData} \n Email ID: ${sharedViewModel.userData}",
                 "Yes",
                 "Cancel",
                 true,

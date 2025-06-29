@@ -5,141 +5,89 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shakir.weatherzoomer.api.ApiResponse
-import com.shakir.weatherzoomer.exceptionHandler.CustomException
-import com.shakir.weatherzoomer.exceptionHandler.ExceptionErrorCodes
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.UserNotFoundException
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.UserStoredLocationNotFoundException
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
 import com.shakir.weatherzoomer.model.UserModel
 import com.shakir.weatherzoomer.model.WeatherForecastModel
 import com.shakir.weatherzoomer.repo.AppRepository
+import com.shakir.weatherzoomer.response.AppResponse
 import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DashboardViewModel(private val appRepository: AppRepository) : ViewModel() {
 
-    private var _currentlySignedInUserMLiveData = MutableLiveData<FirebaseResponse<UserModel?>>(null)
-    val currentlySignedInUserLiveData: LiveData<FirebaseResponse<UserModel?>>
-        get() = _currentlySignedInUserMLiveData
-
-    private var _weatherForecastMLiveData = MutableLiveData<ApiResponse<WeatherForecastModel?>>(null)
-    val weatherForecastLiveData: LiveData<ApiResponse<WeatherForecastModel?>>
-        get() = _weatherForecastMLiveData
+    private var userMLiveData = MutableLiveData<UserModel?>(null)
+    val userLiveData: LiveData<UserModel?>
+        get() = userMLiveData
 
     private var _isLocationDeletedMLiveData = MutableLiveData<FirebaseResponse<Boolean>>(null)
     val isLocationDeletedLiveData: LiveData<FirebaseResponse<Boolean>>
         get() = _isLocationDeletedMLiveData
 
-    fun getCurrentlySignedInUserWithData() {
+    private var weatherMutableLiveData = MutableLiveData<AppResponse<WeatherForecastModel?>>(null)
+    val weatherLiveData: LiveData<AppResponse<WeatherForecastModel?>>
+        get() = weatherMutableLiveData
+
+    private var weatherForecastModel: WeatherForecastModel? = null
+
+    fun loadData() {
+        Utils.printDebugLog("loadData_called")
         viewModelScope.launch {
-            _currentlySignedInUserMLiveData.postValue(FirebaseResponse.Loading)
-            val currentSignedInUserResponse = appRepository.getCurrentLoggedInUser()
-            when (currentSignedInUserResponse) {
-                is FirebaseResponse.Success -> {
-                    if (currentSignedInUserResponse.data != null) {
-                        Utils.printDebugLog("currentSignedInUserResponse viewmodel:: Success | uid: ${currentSignedInUserResponse.data.uid}")
-                        val userDataResponse = appRepository.getUserData(currentSignedInUserResponse.data.uid)
-                        when (userDataResponse) {
-                            is FirebaseResponse.Success -> {
-                                Utils.printDebugLog("userDataResponse viewmodel:: Success")
-                                _currentlySignedInUserMLiveData.postValue(userDataResponse)
+            val currentUser = appRepository.getCurrentUserId().first()
+            if (currentUser.isNotBlank()) {
+                val userDataResponse = appRepository.getLoggedInUserData(currentUser)
+                when (userDataResponse) {
+                    is AppResponse.Success -> {
+                        Utils.printDebugLog("userDataResponse viewmodel:: Success")
+                        val userData = userDataResponse.data
+                        userMLiveData.postValue(userData)
+                        if (userData != null) {
+                            val currentLocation = userData.userSettings.currentLocation
+                            val otherLocations = userData.userSettings.otherLocations
+                            val selectedLocation: String?
+                            if (currentLocation != null) {
+                                selectedLocation = currentLocation
+                            } else if (otherLocations.isNotEmpty()) {
+                                selectedLocation = otherLocations[0]
+                            } else {
+                                selectedLocation = null
                             }
-                            is FirebaseResponse.Failure -> {
-                                Utils.printErrorLog("userDataResponse viewmodel:: Failure: ${userDataResponse.exception}")
-                                FirebaseResponse.Failure(userDataResponse.exception)
+                            if (!selectedLocation.isNullOrBlank()) {
+                                val response = withContext(Dispatchers.IO) {
+                                    appRepository.fetchWeatherData(selectedLocation, 3, "yes", "yes")
+                                }
+                                when(response) {
+                                    is AppResponse.Success -> {
+                                        weatherForecastModel = response.data
+                                        weatherMutableLiveData.postValue(AppResponse.Success(response.data))
+                                    }
+                                    is AppResponse.Failure -> {
+                                        weatherMutableLiveData.postValue(AppResponse.Failure(response.exception))
+                                    }
+                                }
+                            } else {
+                                weatherMutableLiveData.postValue(AppResponse.Failure(UserStoredLocationNotFoundException()))
                             }
-                            FirebaseResponse.Loading -> {
-                                //no use here
-                            }
+                        } else {
+                            weatherMutableLiveData.postValue(AppResponse.Failure(UserNotFoundException()))
                         }
-                    } else {
-                        FirebaseResponse.Failure(
-                            CustomException(
-                                ExceptionErrorCodes.UNKNOWN_EXCEPTION,
-                                "Something went wrong!"
-                            )
-                        )
+                    }
+                    is AppResponse.Failure -> {
+                        weatherMutableLiveData.postValue(AppResponse.Failure(userDataResponse.exception))
                     }
                 }
-                is FirebaseResponse.Failure -> {
-                    FirebaseResponse.Failure(
-                        currentSignedInUserResponse.exception
-                    )
-                }
-                FirebaseResponse.Loading -> {
-                    //no use here
-                }
-            }
-        }
-    }
-
-    suspend fun getUserData(): FirebaseResponse<UserModel?> {
-        val currentlySignedInUser = appRepository.getCurrentLoggedInUser()
-        return if (currentlySignedInUser is FirebaseResponse.Success) {
-            if (currentlySignedInUser.data != null) {
-                Utils.printDebugLog("Found_Currently_Signed_in_User :: uid: ${currentlySignedInUser.data.uid}")
-                val result = appRepository.getUserData(currentlySignedInUser.data.uid)
-                if (result is FirebaseResponse.Success) {
-                    Utils.printDebugLog("Fetched_User_Data :: ${result.data}")
-                    FirebaseResponse.Success(result.data)
-                } else if (result is FirebaseResponse.Failure) {
-                    Utils.printErrorLog("Fetching_User_Data :: Failure: ${result.exception}")
-                    FirebaseResponse.Failure(result.exception)
-                } else {
-                    Utils.printErrorLog("Fetching_User_Data :: Failure:")
-                    FirebaseResponse.Failure(
-                        CustomException(
-                            ExceptionErrorCodes.UNKNOWN_EXCEPTION,
-                            "Something went wrong!"
-                        )
-                    )
-                }
             } else {
-                FirebaseResponse.Failure(
-                    CustomException(
-                        ExceptionErrorCodes.UNKNOWN_EXCEPTION,
-                        "Something went wrong!"
-                    )
-                )
+                weatherMutableLiveData.postValue(AppResponse.Failure(UserNotFoundException()))
             }
-        } else if (currentlySignedInUser is FirebaseResponse.Failure) {
-            FirebaseResponse.Failure(
-                currentlySignedInUser.exception
-            )
-        } else {
-            FirebaseResponse.Failure(
-                CustomException(
-                    ExceptionErrorCodes.UNKNOWN_EXCEPTION,
-                    "Something went wrong!"
-                )
-            )
         }
     }
 
-    fun getForecastData(
-        location: String,
-        numOfDays: Int,
-        aqi: String,
-        alerts: String
-    ): Flow<ApiResponse<WeatherForecastModel?>> {
-        return appRepository.getForecastData(location, numOfDays, aqi, alerts)
-    }
-
-    fun getWeatherForecastData(
-        location: String,
-        numOfDays: Int,
-        aqi: String,
-        alerts: String
-    ) {
-        viewModelScope.launch {
-            _weatherForecastMLiveData.postValue(ApiResponse.Loading) // Emit loading state
-            val response = withContext(Dispatchers.IO) {
-                appRepository.getWeatherForecastData(location, numOfDays, aqi, alerts)
-            }
-            _weatherForecastMLiveData.postValue(response.value) // Post the success or failure state
-        }
+    fun getWeatherData(): WeatherForecastModel? {
+        return weatherForecastModel
     }
 
     fun signOutCurrentUser(activity: Activity) {

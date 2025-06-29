@@ -121,8 +121,7 @@ class SignInActivity : AppCompatActivity() {
 
                 is FirebaseResponse.Loading -> {
                     Utils.printDebugLog("Signing_User_In: loading")
-                    GifProgressDialog.initialize(this@SignInActivity)
-                    GifProgressDialog.show("Signing you in")
+                    GifProgressDialog.show(this@SignInActivity,"Signing you in")
                 }
             }
         }
@@ -220,8 +219,7 @@ class SignInActivity : AppCompatActivity() {
 
                         override fun onLoading() {
                             Utils.printDebugLog("signInWithGoogleAccount: Loading")
-                            GifProgressDialog.initialize(this@SignInActivity)
-                            GifProgressDialog.show("Creating your account")
+                            GifProgressDialog.show(this@SignInActivity, "Creating your account")
                         }
                     })
                 } else {

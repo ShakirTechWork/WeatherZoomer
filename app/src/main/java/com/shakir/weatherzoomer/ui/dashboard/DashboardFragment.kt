@@ -6,10 +6,8 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.os.DeadObjectException
 import android.os.Handler
 import android.os.Looper
-import android.os.TransactionTooLargeException
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,13 +33,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthActionCodeException
-import com.google.firebase.auth.FirebaseAuthEmailException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.database.DatabaseException
 import com.shakir.ItemClickViewType
 import com.shakir.weatherzoomer.Application
 import com.shakir.weatherzoomer.BuildConfig
@@ -51,53 +42,31 @@ import com.shakir.weatherzoomer.SharedViewModel
 import com.shakir.weatherzoomer.adapter.DailyForecastAdapter
 import com.shakir.weatherzoomer.adapter.DateAdapter
 import com.shakir.weatherzoomer.adapter.TemperatureAdapter
-import com.shakir.weatherzoomer.api.ApiResponse
 import com.shakir.weatherzoomer.constants.AppConstants
 import com.shakir.weatherzoomer.constants.SystemOfMeasurement
 import com.shakir.weatherzoomer.dataParsers.WeatherDataParser
 import com.shakir.weatherzoomer.databinding.FragmentDashboardBinding
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_IS_DISABLED
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_HAVE_ACCESS
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.API_KEY_NOT_PROVIDED
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.EXCEEDED_CALLS_PER_MONTH_QUOTA
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INTERNAL_APPLICATION_ERROR
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_KEY
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_API_REQUEST_URL
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.INVALID_JSON_BODY_IN_BULK_REQUEST
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.NO_LOCATION_FOUND
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.PARAMETER_Q_NOT_PROVIDED
-import com.shakir.weatherzoomer.exceptionHandler.AppErrorCode.WeatherApiCodes.TOO_MANY_LOCATIONS_IN_BULK_REQUEST
-import com.shakir.weatherzoomer.exceptionHandler.WeatherApiException
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.UserNotFoundException
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.UserStoredLocationNotFoundException
+import com.shakir.weatherzoomer.exceptionHandling.exceptions.WeatherApiServiceException
 import com.shakir.weatherzoomer.extensionFunctions.setSafeOnClickListener
 import com.shakir.weatherzoomer.firebase.FirebaseResponse
 import com.shakir.weatherzoomer.interfaces.MainActivityInteractionListener
 import com.shakir.weatherzoomer.model.Hour
-import com.shakir.weatherzoomer.model.UserModel
 import com.shakir.weatherzoomer.model.WeatherForecastModel
-import com.shakir.weatherzoomer.ui.signIn.SignInActivity
+import com.shakir.weatherzoomer.response.AppResponse
 import com.shakir.weatherzoomer.ui.takelocation.LocationActivity
 import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.shakir.weatherzoomer.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.EOFException
-import java.net.ConnectException
-import java.net.MalformedURLException
-import java.net.SocketException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import java.net.UnknownServiceException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import javax.net.ssl.SSLException
-import javax.net.ssl.SSLHandshakeException
 
 class DashboardFragment : Fragment() {
 
     private var weatherDataParser: WeatherDataParser? = null
-    private var weatherForecastData: WeatherForecastModel? = null
-    private lateinit var userDataResult: FirebaseResponse<UserModel?>
     private lateinit var navController: NavController
     private var _binding: FragmentDashboardBinding? = null
 
@@ -107,8 +76,6 @@ class DashboardFragment : Fragment() {
 
     private lateinit var dashboardViewModel: DashboardViewModel
     private val sharedViewModel: SharedViewModel by activityViewModels()
-
-    private lateinit var systemOfMeasurement: SystemOfMeasurement
 
     private var currentIndex = 0
     private val handler = Handler(Looper.getMainLooper())
@@ -150,176 +117,47 @@ class DashboardFragment : Fragment() {
 
         binding.swipeRefreshLayout.setOnRefreshListener{
             Utils.printDebugLog("swipeRefreshLayout: Refreshed")
-            refreshEntireData()
             binding.swipeRefreshLayout.isRefreshing = false
+            load()
         }
 
-        //new implementation
-        attachNewObservers()
-        if (dashboardViewModel.weatherForecastLiveData.value == null) {
-            if (Utils.isInternetAvailable(requireContext())) {
-                Utils.printDebugLog("onViewCreated")
-                GifProgressDialog.initialize(requireContext())
-                GifProgressDialog.show("Loading weather data")
-                resetViews()
-                dashboardViewModel.getCurrentlySignedInUserWithData()
-            }
+        attachDataObserver()
+        if (dashboardViewModel.weatherLiveData.value == null) {
+            load()
         }
-
         checkForAppUpdates()
     }
 
-    private fun refreshEntireData() {
-        if (Utils.isInternetAvailable(requireContext())) {
-            Utils.printDebugLog("onViewCreated")
-            GifProgressDialog.initialize(requireContext())
-            GifProgressDialog.show("Loading weather data")
-            resetViews()
-            dashboardViewModel.getCurrentlySignedInUserWithData()
-        }
-    }
-
-    private fun fetchWeatherDataForLocation(location: String) {
-        GifProgressDialog.initialize(requireContext())
-        GifProgressDialog.show("Loading weather data")
-        resetViews()
-        dashboardViewModel.getWeatherForecastData(location, 3, "yes", "yes")
-    }
-
-    private fun attachNewObservers() {
-        dashboardViewModel.currentlySignedInUserLiveData.observe(viewLifecycleOwner) {response ->
-            when (response) {
-                is FirebaseResponse.Success -> {
-                    val userData = response.data
-                    if (userData != null) {
-                        Utils.printDebugLog("currentlySignedInUserLiveData :: Success | User_data: ${userData.user_name}")
-                        sharedViewModel.userData = userData
-                        val locations = userData.user_settings.locations
-                        if (locations.isNotEmpty()) {
-                            systemOfMeasurement = when (userData.user_settings.preferred_unit) {
-                                AppConstants.UserPreferredUnit.METRIC -> {
-                                    SystemOfMeasurement.METRIC
-                                }
-                                AppConstants.UserPreferredUnit.IMPERIAL -> {
-                                    SystemOfMeasurement.IMPERIAL
-                                }
-                                else -> {
-                                    SystemOfMeasurement.METRIC
-                                }
-                            }
-                            if (dashboardViewModel.weatherForecastLiveData.value == null) {
-                                var selectedLocation = ""
-                                for (key in locations.keys) {
-                                    val userLocationModel = locations[key]!!
-                                    if (userLocationModel.currentLocation) {
-                                        selectedLocation = userLocationModel.location
-                                        break
-                                    }
-                                }
-                                if (selectedLocation.isBlank()) {
-                                    for (key in locations.keys) {
-                                        val userLocationModel = locations[key]!!
-                                        if (userLocationModel.selectedLocation) {
-                                            selectedLocation = userLocationModel.location
-                                            break
-                                        }
-                                    }
-                                }
-                                if (selectedLocation.isBlank()) {
-                                    val firstEntry = locations.entries.firstOrNull()
-                                    if (firstEntry != null) {
-                                        selectedLocation = firstEntry.value.location
-                                    }
-                                }
-                                if (selectedLocation.isBlank()) {
-                                    Utils.singleOptionAlertDialog(
-                                        requireContext(),
-                                        "No location found",
-                                        "Please give the location name.",
-                                        "OKAY",
-                                        false
-                                    ) {
-                                        GifProgressDialog.dismiss()
-                                        val intent = Intent(requireContext(), LocationActivity::class.java)
-                                        startActivity(intent)
-                                        requireActivity().finish()
-                                    }
-                                }
-                                if (selectedLocation.isNotBlank()) {
-                                    Utils.printDebugLog("selectedLocation -> $selectedLocation")
-                                    dashboardViewModel.getWeatherForecastData(selectedLocation, 3, "yes", "yes" )
-                                }
-                            }
-                        } else {
-                            Utils.singleOptionAlertDialog(
-                                requireContext(),
-                                "No location found",
-                                "Please give the location name.",
-                                "OKAY",
-                                false
-                            ) {
-                                GifProgressDialog.dismiss()
-                                val intent = Intent(requireContext(), LocationActivity::class.java)
-                                startActivity(intent)
-                                requireActivity().finish()
-                            }
+    private fun attachDataObserver() {
+        dashboardViewModel.weatherLiveData.observe(viewLifecycleOwner) { appResponse ->
+            Utils.printDebugLog("jbfihdvchr")
+            when (appResponse) {
+                is AppResponse.Success -> {
+                    GifProgressDialog.dismiss()
+                    sharedViewModel.userData = dashboardViewModel.userLiveData.value
+                    val weatherData = appResponse.data
+                    if (weatherData != null) {
+                        setData(weatherData, sharedViewModel.selectedDayLiveData.value!!)
+                    }
+                }
+                is AppResponse.Failure -> {
+                    GifProgressDialog.dismiss()
+                    appResponse.exception.printStackTrace()
+                    when (appResponse.exception) {
+                        is UserNotFoundException -> {
+                            Utils.showLongToast(requireContext(), "UserNotFoundException")
                         }
-                    } else {
-                        GifProgressDialog.dismiss()
-                        Utils.singleOptionAlertDialog(
-                            requireContext(),
-                            "Something went wrong",
-                            "Please login again.",
-                            "OKAY",
-                            false
-                        ) {
-                            dashboardViewModel.signOutCurrentUser(requireActivity())
-                            val intent = Intent(requireContext(), SignInActivity::class.java)
-                            startActivity(intent)
-                            requireActivity().finish()
+                        is UserStoredLocationNotFoundException -> {
+                            Utils.showLongToast(requireContext(), "UserStoredLocationNotFoundException")
+                            makeUserEnterTheLocationAgain()
+                        }
+                        is WeatherApiServiceException -> {
+                            Utils.showLongToast(requireContext(), "WeatherApiServiceException")
+                        }
+                        else -> {
+                            Utils.showLongToast(requireContext(), "UnknownException")
                         }
                     }
-                }
-                is FirebaseResponse.Failure -> {
-                    Utils.printErrorLog("currentlySignedInUserLiveData :: Failure: ${response.exception}")
-                    GifProgressDialog.dismiss()
-                    Utils.singleOptionAlertDialog(
-                        requireContext(),
-                        "Something went wrong",
-                        "Please login again.",
-                        "OKAY",
-                        false
-                    ) {
-                        dashboardViewModel.signOutCurrentUser(requireActivity())
-                        val intent = Intent(requireContext(), SignInActivity::class.java)
-                        startActivity(intent)
-                        requireActivity().finish()
-                    }
-                }
-                FirebaseResponse.Loading -> {
-                    Utils.printDebugLog("currentlySignedInUserLiveData :: Loading")
-                }
-            }
-        }
-
-        dashboardViewModel.weatherForecastLiveData.observe(viewLifecycleOwner) {weatherApiResponse ->
-            when (weatherApiResponse) {
-                is ApiResponse.Success -> {
-                    Utils.printDebugLog("weatherForecastLiveData: Success | ${weatherApiResponse.data?.location?.name}")
-                    weatherForecastData = weatherApiResponse.data
-                    if (weatherForecastData != null) {
-                        GifProgressDialog.dismiss()
-                        weatherDataParser = null
-                        setData(weatherForecastData!!, 0)
-                    }
-                }
-                is ApiResponse.Failure -> {
-                    GifProgressDialog.dismiss()
-                    Utils.printErrorLog("weatherForecastLiveData :: Failure ${weatherApiResponse.exception}")
-                    handleExceptions(weatherApiResponse.exception)
-                }
-                is ApiResponse.Loading -> {
-                    Utils.printDebugLog("weatherForecastLiveData :: Loading")
                 }
             }
         }
@@ -335,6 +173,12 @@ class DashboardFragment : Fragment() {
                 FirebaseResponse.Loading -> {}
             }
         }
+    }
+
+    private fun load() {
+        resetViews()
+        GifProgressDialog.show(requireContext(), "Please wait")
+        dashboardViewModel.loadData()
     }
 
     private fun askNotificationPermission() {
@@ -389,19 +233,23 @@ class DashboardFragment : Fragment() {
             )
             val textTitle = dialogView.findViewById<TextView>(R.id.tv_title)
             val rvDates = dialogView.findViewById<RecyclerView>(R.id.rv_dates)
-            textTitle.text = "See Weather from below list of dates."
+            textTitle.text = getString(R.string.see_weather_from_below_list)
 
-            val datesAdapter = DateAdapter(weatherForecastData!!.forecast.forecastday, object: DateAdapter.OnItemSelectedListener {
+            val datesAdapter = DateAdapter(dashboardViewModel.getWeatherData()!!.forecast.forecastday, object: DateAdapter.OnItemSelectedListener {
                 override fun onItemSelected(index: Int) {
                     Utils.printDebugLog("selected_index: $index")
                     dialog.dismiss()
-                    binding.tvGeminiTitle.text = "Tap to plan your day"
+                    binding.tvGeminiTitle.text = getString(R.string.tap_to_plan_your_day)
                     binding.llTopGeminiLayout.isClickable = true
                     binding.progressBarGeminiResponse.visibility = View.GONE
                     binding.tvGeminiResponse.text = ""
                     binding.tvGeminiResponse.visibility = View.GONE
                     weatherDataParser = null
-                    setData(weatherForecastData!!, index)
+                    sharedViewModel.setSelectedDay(index)
+                    val weatherData = dashboardViewModel.getWeatherData()
+                    if (weatherData != null) {
+                        setData(weatherData, index)
+                    }
                 }
             })
             rvDates.adapter = datesAdapter
@@ -421,7 +269,7 @@ class DashboardFragment : Fragment() {
 
     private fun setData(weatherForecastData: WeatherForecastModel, index: Int) {
 
-        weatherDataParser = WeatherDataParser(weatherForecastData, index, systemOfMeasurement)
+        weatherDataParser = WeatherDataParser(weatherForecastData, index, getSystemOfMeasurement())
 
         //setting location
         binding.clTopHeaderLayout.visibility = View.VISIBLE
@@ -444,7 +292,7 @@ class DashboardFragment : Fragment() {
             if (dataListItemTimeHour == systemCurrentHour) {
                 position = indexNumber
                 temperatureList[position].isCurrentHour = true
-                val temperatureAdapter = TemperatureAdapter(temperatureList, requireContext(), systemOfMeasurement,
+                val temperatureAdapter = TemperatureAdapter(temperatureList, requireContext(), getSystemOfMeasurement(),
                     object : OnItemClickListener<Hour, ItemClickViewType> {
                         override fun onItemClick(
                             item: Hour,
@@ -452,7 +300,7 @@ class DashboardFragment : Fragment() {
                             position: Int?
                         ) {
                             Utils.printDebugLog("item: $item")
-                            val action = DashboardFragmentDirections.actionDashboardToHourlyWeatherInfoFragment(item, systemOfMeasurement)
+                            val action = DashboardFragmentDirections.actionDashboardToHourlyWeatherInfoFragment(item, getSystemOfMeasurement())
                             navController.navigate(action)
 //                            val bundle = Bundle().apply {
 //                                putParcelable("hour", hour)
@@ -468,7 +316,7 @@ class DashboardFragment : Fragment() {
         }
 
         //setting snow precipitation data if data is present
-        var isSnowDataDisplayed = false //this variable is used to show only one from snow and rain. because for some loctions it is showing both
+        val isSnowDataDisplayed: Boolean  //this variable is used to show only one from snow and rain. because for some loctions it is showing both
         val snowFallData = weatherDataParser!!.getSnowPrecipitaionData()
         if (snowFallData != null) {
             isSnowDataDisplayed = true
@@ -498,58 +346,26 @@ class DashboardFragment : Fragment() {
             if (aqiIndexType.contains("UK")) {
                 binding.llUkAqiBand.visibility = View.VISIBLE
                 when (aqiIndex) {
-                    1 -> {
-                        binding.imgUkAqiIndex1.visibility = View.VISIBLE
-                    }
-                    2 -> {
-                        binding.imgUkAqiIndex2.visibility = View.VISIBLE
-                    }
-                    3 -> {
-                        binding.imgUkAqiIndex3.visibility = View.VISIBLE
-                    }
-                    4 -> {
-                        binding.imgUkAqiIndex4.visibility = View.VISIBLE
-                    }
-                    5 -> {
-                        binding.imgUkAqiIndex5.visibility = View.VISIBLE
-                    }
-                    6 -> {
-                        binding.imgUkAqiIndex6.visibility = View.VISIBLE
-                    }
-                    7 -> {
-                        binding.imgUkAqiIndex7.visibility = View.VISIBLE
-                    }
-                    8 -> {
-                        binding.imgUkAqiIndex8.visibility = View.VISIBLE
-                    }
-                    9 -> {
-                        binding.imgUkAqiIndex9.visibility = View.VISIBLE
-                    }
-                    10 -> {
-                        binding.imgUkAqiIndex10.visibility = View.VISIBLE
-                    }
+                    1 -> binding.imgUkAqiIndex1.visibility = View.VISIBLE
+                    2 -> binding.imgUkAqiIndex2.visibility = View.VISIBLE
+                    3 -> binding.imgUkAqiIndex3.visibility = View.VISIBLE
+                    4 -> binding.imgUkAqiIndex4.visibility = View.VISIBLE
+                    5 -> binding.imgUkAqiIndex5.visibility = View.VISIBLE
+                    6 -> binding.imgUkAqiIndex6.visibility = View.VISIBLE
+                    7 -> binding.imgUkAqiIndex7.visibility = View.VISIBLE
+                    8 -> binding.imgUkAqiIndex8.visibility = View.VISIBLE
+                    9 -> binding.imgUkAqiIndex9.visibility = View.VISIBLE
+                    10 -> binding.imgUkAqiIndex10.visibility = View.VISIBLE
                 }
             } else {
                 binding.llUsaAqiBand.visibility = View.VISIBLE
                 when (aqiIndex) {
-                    1 -> {
-                        binding.imgUsaAqiIndex1.visibility = View.VISIBLE
-                    }
-                    2 -> {
-                        binding.imgUsaAqiIndex2.visibility = View.VISIBLE
-                    }
-                    3 -> {
-                        binding.imgUsaAqiIndex3.visibility = View.VISIBLE
-                    }
-                    4 -> {
-                        binding.imgUsaAqiIndex4.visibility = View.VISIBLE
-                    }
-                    5 -> {
-                        binding.imgUsaAqiIndex5.visibility = View.VISIBLE
-                    }
-                    6 -> {
-                        binding.imgUsaAqiIndex6.visibility = View.VISIBLE
-                    }
+                    1 -> binding.imgUsaAqiIndex1.visibility = View.VISIBLE
+                    2 -> binding.imgUsaAqiIndex2.visibility = View.VISIBLE
+                    3 -> binding.imgUsaAqiIndex3.visibility = View.VISIBLE
+                    4 -> binding.imgUsaAqiIndex4.visibility = View.VISIBLE
+                    5 -> binding.imgUsaAqiIndex5.visibility = View.VISIBLE
+                    6 -> binding.imgUsaAqiIndex6.visibility = View.VISIBLE
                 }
             }
         }
@@ -616,6 +432,20 @@ class DashboardFragment : Fragment() {
             )
         binding.rvDailyForecast.adapter =
             dailyForecastAdapter
+    }
+
+    private fun getSystemOfMeasurement(): SystemOfMeasurement {
+        return when (sharedViewModel.userData?.userSettings?.preferredUnit) {
+            AppConstants.UserPreferredUnit.METRIC -> {
+                SystemOfMeasurement.METRIC
+            }
+            AppConstants.UserPreferredUnit.IMPERIAL -> {
+                SystemOfMeasurement.IMPERIAL
+            }
+            else -> {
+                SystemOfMeasurement.METRIC
+            }
+        }
     }
 
     private fun setSnowFallDataWithAnimation(chanceOfSnowfall: String, snowPrecipitation: String) {
@@ -714,156 +544,17 @@ class DashboardFragment : Fragment() {
                 sharedViewModel.isLocationSelectedLiveData.removeObservers(viewLifecycleOwner)
                 Utils.printDebugLog("isLocationSelectedLiveData: $location")
                 sharedViewModel.selectLocation(null)
-                fetchWeatherDataForLocation(location)
             }
         }
     }
 
-    private fun handleExceptions(exception: Exception?) {
-        when (exception) {
-            is FirebaseAuthInvalidUserException -> makeUserSignInAgain("Something went wrong. Sign in again.")
-            is FirebaseAuthActionCodeException -> makeUserSignInAgain("Something went wrong. Sign in again.")
-            is FirebaseAuthUserCollisionException -> makeUserSignInAgain("Something went wrong. Sign in again.")
-            is FirebaseAuthRecentLoginRequiredException -> makeUserSignInAgain("Something went wrong. Sign in again.")
-            is FirebaseAuthEmailException -> makeUserSignInAgain("Something went wrong. Sign in again.")
-            is FirebaseNetworkException -> {
-                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
-                    refreshEntireData()
-                }
-            }
-            is SocketTimeoutException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is SocketException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is WeatherApiException -> handleWeatherApiException(exception)
-            is DeadObjectException -> showSimpleMessage("Something went wrong. Please kill and reopen the app.")
-            is TransactionTooLargeException -> {
-                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
-                    refreshEntireData()
-                }
-            }
-            is DatabaseException -> {
-                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
-                    refreshEntireData()
-                }
-            }
-            is ConnectException -> {
-                makeUserRetryAgain("Internet connection is not available. Please check your internet connection.") {
-                    refreshEntireData()
-                }
-            }
-            is SocketException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is MalformedURLException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is UnknownHostException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is UnknownServiceException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is SSLHandshakeException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is SSLException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            is EOFException -> {
-                makeUserRetryAgain("Something went wrong. May be an internet problem") {
-                    refreshEntireData()
-                }
-            }
-            else -> {
-                makeUserRetryAgain("Something went wrong. Try again.") {
-                    refreshEntireData()
-                }
-            }
-        }
-    }
-
-    private fun handleWeatherApiException(weatherApiException: WeatherApiException) {
-        val errorCode = weatherApiException.errorCode
-        if (errorCode == API_KEY_NOT_PROVIDED ||
-            errorCode == INVALID_API_REQUEST_URL ||
-            errorCode == INVALID_API_KEY ||
-            errorCode == EXCEEDED_CALLS_PER_MONTH_QUOTA ||
-            errorCode == API_KEY_IS_DISABLED ||
-            errorCode == API_KEY_NOT_HAVE_ACCESS ||
-            errorCode == INVALID_JSON_BODY_IN_BULK_REQUEST ||
-            errorCode == TOO_MANY_LOCATIONS_IN_BULK_REQUEST ||
-            errorCode == INTERNAL_APPLICATION_ERROR) {
-            makeUserRetryAgain("Something went wrong") {
-                refreshEntireData()
-            }
-        } else if (errorCode == PARAMETER_Q_NOT_PROVIDED || errorCode == NO_LOCATION_FOUND) {
-            makeUserEnterTheLocationAgain("Location Not found. Please enter the location again.")
-        }
-    }
-
-    private fun showSimpleMessage(message: String) {
+    private fun makeUserEnterTheLocationAgain() {
         val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
-            .setMessage(message)
-            .setCancelable(false)
-            .setPositiveButton("Ok") { dialog, _ ->
-                dialog.dismiss()
-            }
-
-        dialogBuilder.show()
-    }
-
-    private fun makeUserRetryAgain(message: String, retryAction: () -> Unit = {}) {
-        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
-            .setMessage(message)
-            .setCancelable(false)
-            .setPositiveButton("Retry") { dialog, _ ->
-                dialog.dismiss()
-                retryAction()
-            }
-
-        dialogBuilder.show()
-    }
-
-    private fun makeUserEnterTheLocationAgain(message: String) {
-        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
-            .setMessage(message)
+            .setMessage("Please enter the location.")
             .setCancelable(false)
             .setPositiveButton("Ok") { dialog, _ ->
                 dialog.dismiss()
                 val intent = Intent(requireContext(), LocationActivity::class.java)
-                startActivity(intent)
-                requireActivity().finish()
-            }
-        dialogBuilder.show()
-    }
-
-    private fun makeUserSignInAgain(message: String) {
-        val dialogBuilder = MaterialAlertDialogBuilder(requireContext())
-            .setMessage(message)
-            .setCancelable(true)
-            .setPositiveButton("Ok") { dialog, _ ->
-                dialog.dismiss()
-                dashboardViewModel.signOutCurrentUser(requireActivity())
-                val intent = Intent(requireContext(), SignInActivity::class.java)
                 startActivity(intent)
                 requireActivity().finish()
             }
@@ -879,7 +570,7 @@ class DashboardFragment : Fragment() {
         Utils.printDebugLog("AI_Prompt: $prompt")
         lifecycleScope.launch (Dispatchers.Main) {
             try {
-                binding.tvGeminiTitle.text = "Please Wait, planning your day"
+                binding.tvGeminiTitle.text = getString(R.string.planning_your_day)
                 binding.tvGeminiResponse.visibility = View.GONE
                 binding.tvGeminiResponse.text = ""
                 binding.progressBarGeminiResponse.visibility = View.VISIBLE
@@ -888,14 +579,14 @@ class DashboardFragment : Fragment() {
                 displayTextCharacterByCharacter(response.text!!)
             } catch (exception: ServerException) {
                 binding.llTopGeminiLayout.isClickable = true
-                binding.tvGeminiTitle.text = "Tap to plan your day"
+                binding.tvGeminiTitle.text = getString(R.string.tap_to_plan_your_day)
                 binding.tvGeminiResponse.visibility = View.GONE
                 binding.tvGeminiResponse.text = ""
                 binding.progressBarGeminiResponse.visibility = View.GONE
                 Utils.showLongToast(requireContext(), "Please try again!")
             } catch (e: Exception) {
                 binding.llTopGeminiLayout.isClickable = true
-                binding.tvGeminiTitle.text = "Tap to plan your day"
+                binding.tvGeminiTitle.text = getString(R.string.tap_to_plan_your_day)
                 binding.tvGeminiResponse.visibility = View.GONE
                 binding.tvGeminiResponse.text = ""
                 binding.progressBarGeminiResponse.visibility = View.GONE
@@ -920,14 +611,14 @@ class DashboardFragment : Fragment() {
                 } else {
                     currentIndex = 0
                     binding.llTopGeminiLayout.isClickable = true
-                    binding.tvGeminiTitle.text = "Tap to plan your day"
+                    binding.tvGeminiTitle.text = "s"
                 }
             }
         }
         handler.post(runnable)
     }
 
-    fun checkForAppUpdates() {
+    private fun checkForAppUpdates() {
         val appUpdateManager = AppUpdateManagerFactory.create(requireContext())
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
         // Checks that the platform will allow the specified type of update.

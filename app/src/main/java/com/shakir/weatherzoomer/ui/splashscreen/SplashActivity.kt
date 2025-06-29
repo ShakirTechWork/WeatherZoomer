@@ -5,36 +5,21 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.shakir.weatherzoomer.Application
-import com.shakir.weatherzoomer.BuildConfig
 import com.shakir.weatherzoomer.MainActivity
 import com.shakir.weatherzoomer.databinding.ActivitySplashBinding
-import com.shakir.weatherzoomer.exceptionHandler.ExceptionHandler
-import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
-import com.shakir.weatherzoomer.firebase.FirebaseResponse
-import com.shakir.weatherzoomer.ui.signIn.SignInActivity
-import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
+import com.shakir.weatherzoomer.ui.login.LoginActivity
 import com.shakir.weatherzoomer.ui.walkthrough.WalkThroughActivity
 import com.shakir.weatherzoomer.utils.Utils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
 
     private lateinit var splashViewModel: SplashViewModel
-
-    private lateinit var firebaseRemoteConfigManager: FirebaseRemoteConfigManager
-
-    private var isAppUpdateNotRequired = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,93 +30,24 @@ class SplashActivity : AppCompatActivity() {
 
         splashViewModel =
             ViewModelProvider(this, SplashViewModelFactory(repository))[SplashViewModel::class.java]
-        checkNextScreen()
 
-    }
-
-    private fun checkNextScreen() {
-        lifecycleScope.launch {
-            Utils.printDebugLog("app_started")
-            delay(3000L)
-            firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
-            firebaseRemoteConfigManager.observeRemoteConfigData().observe(this@SplashActivity) {
-                Utils.printDebugLog("Firebase_Config SplashActivity data observed: $it")
-                for (item in it) {
-                    if (item.key == "app_latest_version") {
-                        isAppUpdateNotRequired = BuildConfig.VERSION_NAME == item.value
-                        if (isAppUpdateNotRequired) {
-                            lifecycleScope.launch {
-                                val boolean = isAppOpenedByUserFirstTime()
-                                Utils.printDebugLog("is_app_opened_first_time: $boolean")
-                                if (!boolean) {
-                                    splashViewModel.currentLoggedInUserLiveData.observe(this@SplashActivity) {
-                                        when (it) {
-                                            is FirebaseResponse.Success -> {
-                                                if ((it.data != null) && it.data) {
-                                                    Utils.printDebugLog("Currently_LoggedIn_User: Success (user is already logged in)")
-                                                    navigate("MainActivity")
-                                                } else {
-                                                    Utils.printDebugLog("Currently_LoggedIn_User: no user found")
-                                                    navigate("SignInActivity")
-                                                }
-                                            }
-
-                                            is FirebaseResponse.Failure -> {
-                                                Utils.printErrorLog("Currently_LoggedIn_User: Failure ${it.exception}")
-                                                ExceptionHandler.handleException(this@SplashActivity, it.exception!!)
-                                            }
-
-                                            is FirebaseResponse.Loading -> {
-                                                Utils.printDebugLog("Currently_LoggedIn_User: Loading")
-                                            }
-
-                                        }
-                                    }
-                                } else {
-                                    navigate("WalkThroughActivity")
-                                }
-                            }
-                        } else {
-                            navigate("UpdateAppActivity")
-                        }
-                        break
-                    }
+        Utils.printDebugLog("app_started")
+        splashViewModel.nextScreenLiveData.observe(this) {
+            val intent = when (it) {
+                NextScreen.WALK_THROUGH_ACTIVITY -> {
+                    Intent(this@SplashActivity, WalkThroughActivity::class.java)
+                }
+                NextScreen.LOGIN_ACTIVITY -> {
+                    Intent(this@SplashActivity, LoginActivity::class.java)
+                }
+                NextScreen.MAIN_ACTIVITY -> {
+                    Intent(this@SplashActivity, MainActivity::class.java)
                 }
             }
-            Utils.printDebugLog("action_ended")
-        }
-    }
-
-    private suspend fun isAppOpenedByUserFirstTime(): Boolean {
-        return withContext(Dispatchers.Main) {
-            splashViewModel.isAppOpenedFirstTime()
-                .firstOrNull() ?: false
-        }
-    }
-
-    private fun navigate(nextScreen: String) {
-        Utils.printDebugLog("Navigating_to: $nextScreen")
-        if (nextScreen == "SignInActivity") {
-            val intent = Intent(this@SplashActivity, SignInActivity::class.java)
-            startActivity(intent)
-            finish()
-        } else if (nextScreen == "WalkThroughActivity") {
-            val intent = Intent(this@SplashActivity, WalkThroughActivity::class.java)
-            startActivity(intent)
-            finish()
-        } else if (nextScreen == "UpdateAppActivity"){
-            startActivity(Intent(this@SplashActivity, UpdateAppActivity::class.java))
-            finish()
-        } else {
-            val intent = Intent(this@SplashActivity, MainActivity::class.java)
             startActivity(intent)
             finish()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        firebaseRemoteConfigManager.removeConfigUpdateListener()
+        splashViewModel.decideNextScreen()
     }
 
     private fun isAppUpdateAvailable(): Boolean {

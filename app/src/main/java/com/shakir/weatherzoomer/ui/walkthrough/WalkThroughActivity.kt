@@ -11,13 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.shakir.weatherzoomer.Application
-import com.shakir.weatherzoomer.BuildConfig
+import com.shakir.weatherzoomer.MainActivity
 import com.shakir.weatherzoomer.R
 import com.shakir.weatherzoomer.adapter.WalkthroughAdapter
 import com.shakir.weatherzoomer.databinding.ActivityWalkThroughBinding
-import com.shakir.weatherzoomer.firebase.FirebaseRemoteConfigManager
-import com.shakir.weatherzoomer.ui.signIn.SignInActivity
-import com.shakir.weatherzoomer.ui.updateApp.UpdateAppActivity
+import com.shakir.weatherzoomer.response.AppResponse
+import com.shakir.weatherzoomer.utils.GifProgressDialog
 import com.shakir.weatherzoomer.utils.Utils
 
 class WalkThroughActivity : AppCompatActivity() {
@@ -27,8 +26,6 @@ class WalkThroughActivity : AppCompatActivity() {
 
     private lateinit var walkthroughAdapter: WalkthroughAdapter
 
-    private lateinit var firebaseRemoteConfigManager: FirebaseRemoteConfigManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWalkThroughBinding.inflate(layoutInflater)
@@ -36,22 +33,6 @@ class WalkThroughActivity : AppCompatActivity() {
         val repository = (application as Application).appRepository
 
         walkThroughViewModel = ViewModelProvider(this, WalkThroughViewModelFactory(repository))[WalkThroughViewModel::class.java]
-
-        walkThroughViewModel.signOutCurrentUser(this@WalkThroughActivity)
-
-        firebaseRemoteConfigManager = FirebaseRemoteConfigManager()
-        firebaseRemoteConfigManager.observeRemoteConfigData().observe(this@WalkThroughActivity) {
-            Utils.printDebugLog("Firebase_Config WalkThroughActivity data observed: $it")
-            for (item in it) {
-                if (item.key == "app_latest_version") {
-                    if (BuildConfig.VERSION_NAME != item.value) {
-                        startActivity(Intent(this@WalkThroughActivity, UpdateAppActivity::class.java))
-                        finish()
-                    }
-                    break
-                }
-            }
-        }
 
         walkthroughAdapter = WalkthroughAdapter(this, getWalkthroughPages())
         binding.viewPager.adapter = walkthroughAdapter
@@ -64,6 +45,33 @@ class WalkThroughActivity : AppCompatActivity() {
                 setCurrentIndicator(position)
             }
         })
+
+        walkThroughViewModel.userRegistrationLiveData.observe(this) { result ->
+            GifProgressDialog.dismiss()
+            Utils.printDebugLog("observer: $result")
+            when (result) {
+                is AppResponse.Success -> {
+                    walkThroughViewModel.walkthroughScreenSeen()
+                    walkThroughViewModel.storeUser(result.data!!)
+                    Utils.printDebugLog("user_registration_successful :: ${result.data}")
+                    val intent = Intent(this@WalkThroughActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+                is AppResponse.Failure -> {
+                    Utils.printDebugLog("user_registration_failed :: ${result.exception}")
+                    Utils.singleOptionAlertDialog(
+                        this@WalkThroughActivity,
+                        "Failed",
+                        "Something went wrong while logging you in. Please try again.",
+                        "Retry",
+                        true
+                    ) {
+                        login()
+                    }
+                }
+            }
+        }
 
         binding.tvPrevious.setOnClickListener {
             if (binding.viewPager.currentItem > 0) {
@@ -78,10 +86,16 @@ class WalkThroughActivity : AppCompatActivity() {
         }
 
         binding.tvStart.setOnClickListener {
-            walkThroughViewModel.updateIsAppOpenedFirstTime(false)
-            val intent = Intent(this@WalkThroughActivity, SignInActivity::class.java)
-            startActivity(intent)
-            finish()
+            login()
+        }
+    }
+
+    private fun login() {
+        if (Utils.isInternetAvailable(this@WalkThroughActivity)) {
+            GifProgressDialog.show(this@WalkThroughActivity, "Please Wait")
+            walkThroughViewModel.registerUser()
+        } else {
+            Utils.showLongToast(this@WalkThroughActivity, "Please enable internet.")
         }
     }
 
@@ -156,11 +170,6 @@ class WalkThroughActivity : AppCompatActivity() {
                 "Enjoy seamless experience with our user-friendly interface"
             )
         )
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        firebaseRemoteConfigManager.removeConfigUpdateListener()
     }
 
 }
