@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.navArgs
 import coil.load
-import com.github.matteobattilana.weather.PrecipType
+//import com.github.matteobattilana.weather.PrecipType
 import com.shakir.weatherzoomer.constants.SystemOfMeasurement
 import com.shakir.weatherzoomer.dataParsers.WeatherHourDataParser
 import com.shakir.weatherzoomer.databinding.FragmentHourlyWeatherInfoBinding
@@ -83,30 +83,30 @@ class HourlyWeatherInfoFragment : Fragment() {
     private fun setSnowFallDataWithAnimation(chanceOfSnowfall: String) {
         binding.cvSnowData.visibility = View.VISIBLE
         binding.tvChanceOfSnowFall.text = chanceOfSnowfall
-        val weather = PrecipType.SNOW
-        Utils.printDebugLog("Snow")
-        binding.snowView.apply {
-            setWeatherData(weather)
-            speed = 200 // How fast
-            emissionRate = 40f // How many particles
-            angle = 325 // The angle of the fall
-            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
-        }
+//        val weather = PrecipType.SNOW
+//        Utils.printDebugLog("Snow")
+//        binding.snowView.apply {
+//            setWeatherData(weather)
+//            speed = 200 // How fast
+//            emissionRate = 40f // How many particles
+//            angle = 325 // The angle of the fall
+//            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
+//        }
     }
 
     private fun setRainFallDataWithAnimation(chanceOfRainfall: String, rainPrecipitation: String) {
         binding.cvRainData.visibility = View.VISIBLE
         binding.tvChanceOfRainFall.text = chanceOfRainfall
         binding.tvRainPrecipitation.text = rainPrecipitation
-        val weather = PrecipType.RAIN
-        Utils.printDebugLog("Rain")
-        binding.rainView.apply {
-            setWeatherData(weather)
-            speed = 600 // How fast
-            emissionRate = 90f // How many particles
-            angle = 325 // The angle of the fall
-            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
-        }
+//        val weather = PrecipType.RAIN
+//        Utils.printDebugLog("Rain")
+//        binding.rainView.apply {
+//            setWeatherData(weather)
+//            speed = 600 // How fast
+//            emissionRate = 90f // How many particles
+//            angle = 325 // The angle of the fall
+//            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
+//        }
     }
 
 }

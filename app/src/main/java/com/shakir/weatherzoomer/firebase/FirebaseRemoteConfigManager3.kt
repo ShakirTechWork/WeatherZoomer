@@ -2,7 +2,8 @@ package com.shakir.weatherzoomer.firebase
 
 import com.google.firebase.remoteconfig.ConfigUpdateListener
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
+import com.google.firebase.remoteconfig.remoteConfigSettings
+//import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.shakir.weatherzoomer.R
 import com.shakir.weatherzoomer.utils.Utils
 

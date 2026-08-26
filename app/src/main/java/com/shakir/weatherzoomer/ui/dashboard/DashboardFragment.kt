@@ -26,7 +26,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
 import coil.clear
 import coil.load
-import com.github.matteobattilana.weather.PrecipType
+//import com.github.matteobattilana.weather.PrecipType
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.ServerException
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -130,7 +130,7 @@ class DashboardFragment : Fragment() {
 
     private fun attachDataObserver() {
         dashboardViewModel.weatherLiveData.observe(viewLifecycleOwner) { appResponse ->
-            Utils.printDebugLog("jbfihdvchr")
+            Utils.printDebugLog("jbfihdvchr: $appResponse")
             when (appResponse) {
                 is AppResponse.Success -> {
                     GifProgressDialog.dismiss()
@@ -159,6 +159,9 @@ class DashboardFragment : Fragment() {
                         }
                     }
                 }
+                else -> {
+                    Utils.printDebugLog("else_condition:")
+                }
             }
         }
 
@@ -171,6 +174,9 @@ class DashboardFragment : Fragment() {
                     Utils.showLongToast(requireContext(), "Something went wrong! Please try again")
                 }
                 FirebaseResponse.Loading -> {}
+                else -> {
+                    Utils.printDebugLog("isLocationDeletedLiveData_else_condition:")
+                }
             }
         }
     }
@@ -257,7 +263,7 @@ class DashboardFragment : Fragment() {
         }
 
         binding.llTopGeminiLayout.setOnClickListener {
-            generateGeminiAnswer()
+//            generateGeminiAnswer()
         }
 
         /*binding.cvAirQuality.setOnClickListener {
@@ -452,30 +458,30 @@ class DashboardFragment : Fragment() {
         binding.cvSnowData.visibility = View.VISIBLE
         binding.tvChanceOfSnowFall.text = chanceOfSnowfall
         binding.tvSnowPreciitation.text = snowPrecipitation
-        val weather = PrecipType.SNOW
+//        val weather = PrecipType.SNOW
         Utils.printDebugLog("Snow")
-        binding.snowView.apply {
-            setWeatherData(weather)
-            speed = 200 // How fast
-            emissionRate = 40f // How many particles
-            angle = 325 // The angle of the fall
-            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
-        }
+//        binding.snowView.apply {
+//            setWeatherData(weather)
+//            speed = 200 // How fast
+//            emissionRate = 40f // How many particles
+//            angle = 325 // The angle of the fall
+//            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
+//        }
     }
 
     private fun setRainFallDataWithAnimation(chanceOfRainfall: String, rainPrecipitation: String) {
         binding.cvRainData.visibility = View.VISIBLE
         binding.tvChanceOfRainFall.text = chanceOfRainfall
         binding.tvRainPrecipitation.text = rainPrecipitation
-        val weather = PrecipType.RAIN
+//        val weather = PrecipType.RAIN
         Utils.printDebugLog("Rain")
-        binding.rainView.apply {
-            setWeatherData(weather)
-            speed = 600 // How fast
-            emissionRate = 90f // How many particles
-            angle = 325 // The angle of the fall
-            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
-        }
+//        binding.rainView.apply {
+//            setWeatherData(weather)
+//            speed = 600 // How fast
+//            emissionRate = 90f // How many particles
+//            angle = 325 // The angle of the fall
+//            fadeOutPercent = 1.0f // When to fade out (0.0f-1.0f)
+//        }
     }
 
     private fun resetViews() {
